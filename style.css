@@ -1,0 +1,167 @@
+/* ===============================
+   VOLLEDIGE CSS (style.css)
+   Inclusief Pijltjes-Fix
+   =============================== */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    background-color: #1a1a1a;
+    margin: 0;
+    padding: 20px;
+    color: #e0e0e0;
+}
+.container { max-width: 700px; margin: 0 auto; }
+h1 {
+    text-align: center;
+    background-color: #2a2a2a;
+    color: white;
+    padding: 20px;
+    margin: 0 0 20px 0;
+    border-radius: 8px;
+    font-size: 1.5em;
+}
+
+/* ==================
+   PIJLTJES FIX HIER
+   ================== */
+.collapsible {
+    background-color: #333333;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+/* Pijltje OMLAAG */
+.collapsible:after { 
+    content: '▼'; /* <-- DIRECT SYMBOOL */
+    font-size: 0.8em; 
+    color: #e0e0e0; 
+    float: right; 
+}
+/* Pijltje OMHOOG (wanneer actief) */
+.collapsible.active:after { 
+    content: "▲"; /* <-- DIRECT SYMBOOL */
+}
+/* ==================
+   EINDE PIJLTJES FIX
+   ================== */
+
+.content { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; }
+ul { list-style-type: none; padding: 0; margin: 10px 0; }
+li {
+    padding: 12px 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+}
+li:last-child { border-bottom: none; }
+input[type="checkbox"] {
+    transform: scale(1.5); 
+    margin-right: 15px;
+    cursor: pointer;
+}
+label { font-size: 1em; flex-grow: 1; cursor: pointer; color: #e0e0e0; }
+input[type="checkbox"]:checked + label { text-decoration: line-through; color: #888; }
+.submit-button {
+    display: block;
+    width: 90%;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.submit-button:hover { background-color: #218838; }
+.submit-button:disabled { background-color: #555; cursor: not-allowed; }
+#status-message {
+    text-align: center;
+    padding: 10px;
+    margin: 10px auto;
+    border-radius: 5px;
+    display: none;
+    font-weight: bold;
+}
+#status-message.success { background-color: #28a745; color: white; }
+#status-message.error { background-color: #dc3545; color: white; }
+
+.user-info {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+#medewerker-naam-display {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #2ecc71;
+    text-align: center;
+}
+.info-veld {
+    display: flex;
+    flex-direction: column;
+}
+.user-info label {
+    font-weight: bold;
+    color: #e0e0e0;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+.user-info select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box; 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%2F%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.6-3.6%205.4-7.8%205.4-12.8%200-5-1.8-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 10px;
+}
+
+/* Stijl voor de uitlogknop */
+#logout-button {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 1000;
+}
+#logout-button:hover {
+    background-color: #c82333;
+}
+
+/* Checklists standaard verbergen */
+.checklist-section {
+    display: none;
+}
+
+/* Deze class wordt door JS toegevoegd om de lijsten te tonen */
+.container.checklists-zichtbaar .checklist-section {
+    display: block;
+}
