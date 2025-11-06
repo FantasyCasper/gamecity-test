@@ -165,3 +165,51 @@ input[type="checkbox"]:checked + label { text-decoration: line-through; color: #
 .container.checklists-zichtbaar .checklist-section {
     display: block;
 }
+
+/* ===============================
+   RESPONSIVE STIJLEN (TELEFOON)
+   =============================== */
+
+/* Deze regels gelden voor schermen die 720px of smaller zijn */
+@media (max-width: 720px) {
+    
+    body {
+        padding: 10px; /* Minder witruimte aan de zijkanten */
+    }
+
+    .container {
+        /* Verwijder de vaste breedte en marges */
+        max-width: 100%; 
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        font-size: 1.3em; /* Iets kleiner lettertype voor de titel */
+        padding: 15px;
+    }
+
+    .user-info {
+        padding: 15px; /* Minder padding in de box */
+        margin-bottom: 15px;
+    }
+
+    .collapsible {
+        padding: 15px;
+    }
+
+    .content {
+        padding: 0 15px; /* Iets minder padding in de uitgeklapte lijst */
+    }
+
+    .submit-button {
+        padding: 15px;
+        font-size: 1em; /* Iets kleinere knoptekst */
+    }
+
+    #logout-button {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+    }
+}

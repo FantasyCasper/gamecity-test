@@ -99,3 +99,31 @@ h1 {
     color: white;
     display: block;
 }
+
+/* ===============================
+   RESPONSIVE STIJLEN (TELEFOON)
+   =============================== */
+
+@media (max-width: 720px) {
+
+    body {
+        padding: 10px;
+        /* Zorg dat de box bovenaan start ipv in het midden */
+        align-items: flex-start; 
+        min-height: 100vh;
+        height: auto;
+    }
+
+    .login-container {
+        /* Verwijder de vaste breedte en maak het schermvullend */
+        width: 100%;
+        max-width: 100%;
+        margin-top: 20px; /* Een beetje ruimte bovenaan */
+        padding: 20px; /* Minder padding aan de zijkanten */
+    }
+
+    h1 {
+        font-size: 1.5em; /* Iets kleiner */
+        margin-bottom: 20px;
+    }
+}
