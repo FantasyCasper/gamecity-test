@@ -19,7 +19,8 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 400px;
-    box-sizing: border-box; /* Zorgt dat padding de breedte niet breekt */
+    box-sizing: border-box;
+    /* Zorgt dat padding de breedte niet breekt */
 }
 
 h1 {
@@ -54,12 +55,13 @@ h1 {
     color: #e0e0e0;
     border-radius: 5px;
     font-size: 1em;
-    box-sizing: border-box; 
+    box-sizing: border-box;
 }
 
 #login-button {
     padding: 15px;
-    background-color: #28a745; /* Groene knop */
+    background-color: #28a745;
+    /* Groene knop */
     color: white;
     border: none;
     border-radius: 5px;
@@ -84,18 +86,21 @@ h1 {
     margin-bottom: 15px;
     border-radius: 5px;
     font-weight: bold;
-    display: none; /* Standaard verborgen */
+    display: none;
+    /* Standaard verborgen */
     text-align: center;
 }
 
 #login-status.error {
-    background-color: #dc3545; /* Rood */
+    background-color: #dc3545;
+    /* Rood */
     color: white;
     display: block;
 }
 
 #login-status.loading {
-    background-color: #555; /* Grijs */
+    background-color: #555;
+    /* Grijs */
     color: white;
     display: block;
 }
@@ -109,7 +114,7 @@ h1 {
     body {
         padding: 10px;
         /* Zorg dat de box bovenaan start ipv in het midden */
-        align-items: flex-start; 
+        align-items: flex-start;
         min-height: 100vh;
         height: auto;
     }
@@ -118,12 +123,15 @@ h1 {
         /* Verwijder de vaste breedte en maak het schermvullend */
         width: 100%;
         max-width: 100%;
-        margin-top: 20px; /* Een beetje ruimte bovenaan */
-        padding: 20px; /* Minder padding aan de zijkanten */
+        margin-top: 20px;
+        /* Een beetje ruimte bovenaan */
+        padding: 20px;
+        /* Minder padding aan de zijkanten */
     }
 
     h1 {
-        font-size: 1.5em; /* Iets kleiner */
+        font-size: 1.5em;
+        /* Iets kleiner */
         margin-bottom: 20px;
     }
 }
