@@ -1,0 +1,79 @@
+/* Stijlen specifiek voor het admin panel */
+
+body {
+    padding-top: 60px; /* Ruimte voor de 'terug' knop */
+}
+
+#back-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 8px 12px;
+    background-color: #555;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 1000;
+}
+#back-button:hover {
+    background-color: #777;
+}
+
+/* Stijlen voor de log-tabel */
+#log-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#log-table thead {
+    background-color: #333; /* Donkere header */
+}
+
+#log-table th, #log-table td {
+    padding: 12px;
+    border-bottom: 1px solid #444;
+    text-align: left;
+    color: #e0e0e0;
+    font-size: 0.9em;
+}
+
+#log-table th {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#log-table tbody tr:hover {
+    background-color: #2a2a2a; /* Iets lichtere rij bij hover */
+}
+
+/* Responsive tabel: op telefoons wordt het een lijst */
+@media (max-width: 720px) {
+    #log-table thead {
+        display: none; /* Verberg de headers */
+    }
+    #log-table tr {
+        display: block;
+        border: 1px solid #555;
+        margin-bottom: 15px;
+    }
+    #log-table td {
+        display: block;
+        text-align: right; /* Waarden rechts */
+        border-bottom: 1px dotted #444;
+    }
+    #log-table td:last-child {
+        border-bottom: none;
+    }
+    /* Voeg de 'header' toe met CSS */
+    #log-table td:before {
+        content: attr(data-label); /* Dit pakt de 'data-label' die we met JS toevoegen */
+        float: left;
+        font-weight: bold;
+        color: #fff;
+    }
+}
