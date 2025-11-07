@@ -135,3 +135,18 @@ h1 {
         margin-bottom: 20px;
     }
 }
+
+/* ===============================
+   FIX VOOR LELIJKE AUTOFILL
+   =============================== */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    /* Verandert de TEKSTKLEUR van wit naar onze lichte kleur */
+    -webkit-text-fill-color: #e0e0e0 !important;
+    
+    /* Forceert de ACHTERGROND om donker te blijven */
+    box-shadow: 0 0 0 30px #333 inset !important;
+}
