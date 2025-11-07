@@ -249,3 +249,32 @@ input[type="checkbox"]:checked + label {
     
     /* De oude #logout-button stijl is hier niet meer nodig */
 }
+
+/* ===============================
+   ADMIN KNOP STIJLEN
+   =============================== */
+
+#admin-button {
+    display: none; /* STANDAARD VERBORGEN */
+    
+    /* Stijlen om het op een knop te laten lijken */
+    background-color: #007bff; /* Een mooie blauwe kleur */
+    color: white !important;
+    text-decoration: none;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+
+#admin-button:hover {
+    background-color: #0056b3;
+}
+
+/* Deze class wordt door JS toegevoegd om de knop te tonen */
+#admin-button.zichtbaar {
+    display: block;
+}

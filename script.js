@@ -30,19 +30,34 @@ const CHECKLIST_DATA = {
 };
 
 // --- DEEL 1: DE "BEWAKER" (LocalStorage) ---
+// --- DEEL 1: DE "BEWAKER" (LocalStorage) ---
 (function() {
     const ingelogdeMedewerker = localStorage.getItem('ingelogdeMedewerker');
-
+    const ingelogdeRol = localStorage.getItem('ingelogdeRol'); // <-- NIEUWE REGEL
+    
     if (!ingelogdeMedewerker) {
+        // ... (terugsturen, dit blijft hetzelfde) ...
         alert("Je bent niet ingelogd. Je wordt nu teruggestuurd naar de inlogpagina.");
-        window.location.href = "login/"; // Verwijst naar de login-map
+        window.location.href = "login/"; 
         return; 
     } 
     
+    // Welkom-bericht (blijft hetzelfde)
     const medewerkerDisplay = document.getElementById('medewerker-naam-display');
     if (medewerkerDisplay) {
         medewerkerDisplay.textContent = `Ingelogd als: ${ingelogdeMedewerker}`;
     }
+
+    // ========================
+    //   NIEUWE ROL-CHECK
+    // ========================
+    if (ingelogdeRol === 'manager') {
+        const adminButton = document.getElementById('admin-button');
+        if (adminButton) {
+            adminButton.classList.add('zichtbaar');
+        }
+    }
+    // ========================
 
     // Koppel de listeners nu de gebruiker is geverifieerd
     koppelListeners();

@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.status === "success") {
                 // Opslaan in browsergeheugen
                 localStorage.setItem('ingelogdeMedewerker', data.volledigeNaam);
+                localStorage.setItem('ingelogdeRol', data.rol); // <-- VOEG DEZE REGEL TOE
                 // Doorsturen naar de hoofd-app
                 window.location.href = "../index.html"; // Ga één map omhoog
                 
