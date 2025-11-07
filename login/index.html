@@ -13,22 +13,7 @@
 
     <div class="login-container">
         <form id="login-form">
-            <h1>Inloggen</h1>
-            
-            <div id="login-status"></div>
-
-            <div class="input-veld">
-                <label for="email">E-mailadres</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="input-veld">
-                <label for="password">Wachtwoord</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            
-            <button type="submit" id="login-button">Inloggen</button>
-        </form>
+            </form>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-compat.js"></script>
@@ -37,7 +22,11 @@
 
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js');
+        // Pad is nu '../service-worker.js' (gaat 1 map omhoog)
+        navigator.serviceWorker.register('../service-worker.js')
+          .then(function(registration) {
+            console.log('Service Worker geregistreerd (loginpagina)');
+          });
       }
     </script>
     
