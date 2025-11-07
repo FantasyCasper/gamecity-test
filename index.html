@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="nl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>Checklists Activiteitencentrum</title>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
-
 <body>
 
     <button id="logout-button">Uitloggen</button>
 
     <div class="container">
-        <h1>Checklists Gamecity Open-Sluiten</h1>
+        <h1>Checklists Activiteitencentrum</h1>
 
         <div class="user-info">
-
             <div id="medewerker-naam-display">Laden...</div>
-
             <div class="info-veld">
                 <label for="activiteit-select">Kies activiteit:</label>
                 <select id="activiteit-select">
@@ -35,12 +31,10 @@
 
         <div id="status-message"></div>
 
-
         <div class="checklist-section" id="sectie-openen">
             <button class="collapsible">Checklist Openen</button>
             <div class="content">
                 <ul id="lijst-openen"></ul>
-
                 <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">
                     Openen Voltooid & Verzenden
                 </button>
@@ -51,7 +45,6 @@
             <button class="collapsible">Checklist Sluiten</button>
             <div class="content">
                 <ul id="lijst-sluiten"></ul>
-
                 <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">
                     Sluiten Voltooid & Verzenden
                 </button>
@@ -59,18 +52,16 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(function (registration) {
-                    console.log('Service Worker geregistreerd met scope:', registration.scope);
-                })
-                .catch(function (error) {
-                    console.log('Service Worker registratie mislukt:', error);
-                });
-        }
-    </script>
-</body>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore-compat.js"></script>
 
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+      }
+    </script>
+    
+    <script src="script.js"></script>
+</body>
 </html>
