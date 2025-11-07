@@ -1,71 +1,99 @@
 /* ===============================
-   LOGIN LOGICA (login.js)
+   LOGIN LOGICA (FIREBASE VERSIE)
    =============================== */
 
-// ##################################################################
-// #                        BELANGRIJKE STAP                        #
-// # PLAK HIER JE GOOGLE WEB APP URL (DEZELFDE ALS IN SCRIPT.JS)    #
-// ##################################################################
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tSrtNqwiQrpvFW0v6KFI0y0t8gomgbV-C2AzRYdKlE0es7k7z9U72jb7HArTxQHatw/exec";
+// -----------------------------------------------------------------
+// STAP 1: JOUW FIREBASE CONFIG
+// Plak hier het 'firebaseConfig' object dat je 
+// van de Firebase website hebt gekopieerd (Stap 2, Deel E).
+// -----------------------------------------------------------------
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHUy897zy7Ay405HMh--oPQx0De670s_A",
+  authDomain: "gamecity-opensluit.firebaseapp.com",
+  projectId: "gamecity-opensluit",
+  storageBucket: "gamecity-opensluit.firebasestorage.app",
+  messagingSenderId: "770535174835",
+  appId: "1:770535174835:web:eb9a28bf8f273e2b5ff6c6"
+};
+
+// -----------------------------------------------------------------
+// STAP 2: FIREBASE INITIALISEREN
+// -----------------------------------------------------------------
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 
 // --- Wacht tot de pagina geladen is ---
-document.addEventListener("DOMContentLoaded", function () {
-
+document.addEventListener("DOMContentLoaded", function() {
+    
     const loginForm = document.getElementById("login-form");
     const loginButton = document.getElementById("login-button");
     const statusDiv = document.getElementById("login-status");
 
-    loginForm.addEventListener("submit", function (event) {
+    loginForm.addEventListener("submit", function(event) {
         event.preventDefault(); // Voorkom dat de pagina herlaadt
-
-        const username = document.getElementById("username").value;
-        const pincode = document.getElementById("pincode").value;
+        
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
 
         // Validatie
-        if (username === "" || pincode === "") {
+        if (email === "" || password === "") {
             toonStatus("Vul alle velden in.", "error");
             return;
         }
 
-        // De knop uitschakelen en status tonen
         loginButton.disabled = true;
         loginButton.textContent = "Bezig...";
         toonStatus("Inloggen...", "loading");
 
-        // De data die we naar de backend sturen
-        const payload = {
-            type: "LOGIN", // Dit vertelt Code.gs dat het een login-poging is
-            username: username.toLowerCase(), // Altijd kleine letters sturen
-            pincode: pincode
-        };
+        // =======================================================
+        //   DE NIEUWE FIREBASE LOGIN LOGICA
+        // =======================================================
 
-        // De fetch-call naar de Google Script API
-        fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    // ------ DIT IS DE MAGISCHE STAP ------
-                    // Sla de naam van de medewerker op in het lokale geheugen van de browser
-                    localStorage.setItem('ingelogdeMedewerker', data.volledigeNaam);
-
-                    // Stuur de gebruiker door naar de checklist-pagina
-
-                    window.location.href = "../index.html";
-
+        // 1. Probeer in te loggen bij Firebase Authentication
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Login gelukt! Nu de 'volledige_naam' ophalen.
+                const user = userCredential.user;
+                
+                // 2. Haal het gekoppelde profiel-document op uit Firestore
+                return db.collection('profiles').doc(user.uid).get();
+            })
+            .then((doc) => {
+                // 3. Profiel-document opgehaald
+                if (doc.exists) {
+                    const volledigeNaam = doc.data().volledige_naam;
+                    
+                    // 4. Sla de naam op in het browsergeheugen
+                    localStorage.setItem('ingelogdeMedewerker', volledigeNaam);
+                    
+                    // 5. Stuur door naar de checklist-pagina
+                    window.location.href = "../index.html"; // Ga één map omhoog
+                
                 } else {
-                    // De API stuurde een fout terug (via checkLogin)
-                    throw new Error(data.message);
+                    // Help! De gebruiker kon inloggen, maar heeft geen profiel
+                    // Dit gebeurt als je stap 5-10 van de 'Nieuwe Werkwijze' hebt overgeslagen.
+                    throw new Error("Login gelukt, maar geen profiel-data gevonden. Neem contact op met de beheerder.");
                 }
             })
-            .catch(error => {
-                // Er ging iets mis (netwerkfout, of de 'throw' van hierboven)
-                toonStatus(error.message, "error");
+            .catch((error) => {
+                // Er ging iets mis.
+                console.error("Login Fout:", error);
+                
+                let bericht;
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                    case 'auth/invalid-credential':
+                        bericht = "Verkeerd e-mailadres of wachtwoord.";
+                        break;
+                    default:
+                        bericht = error.message;
+                }
+                
+                toonStatus(bericht, "error");
                 loginButton.disabled = false;
                 loginButton.textContent = "Inloggen";
             });
