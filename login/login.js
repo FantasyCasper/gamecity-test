@@ -1,31 +1,13 @@
 /* ===============================
-   LOGIN LOGICA (FIREBASE VERSIE)
+   LOGIN LOGICA (GOOGLE SCRIPT VERSIE)
    =============================== */
 
-// -----------------------------------------------------------------
-// STAP 1: JOUW FIREBASE CONFIG
-// Plak hier het 'firebaseConfig' object dat je 
-// van de Firebase website hebt gekopieerd (Stap 2, Deel E).
-// -----------------------------------------------------------------
+// ##################################################################
+// #                        BELANGRIJKE STAP                        #
+// # PLAK HIER JE GOOGLE WEB APP URL (UIT STAP 1C)                  #
+// ##################################################################
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tSrtNqwiQrpvFW0v6KFI0y0t8gomgbV-C2AzRYdKlE0es7k7z9U72jb7HArTxQHatw/exec";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDHUy897zy7Ay405HMh--oPQx0De670s_A",
-  authDomain: "gamecity-opensluit.firebaseapp.com",
-  projectId: "gamecity-opensluit",
-  storageBucket: "gamecity-opensluit.firebasestorage.app",
-  messagingSenderId: "770535174835",
-  appId: "1:770535174835:web:eb9a28bf8f273e2b5ff6c6"
-};
-
-// -----------------------------------------------------------------
-// STAP 2: FIREBASE INITIALISEREN
-// -----------------------------------------------------------------
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-
-// --- Wacht tot de pagina geladen is ---
 document.addEventListener("DOMContentLoaded", function() {
     
     const loginForm = document.getElementById("login-form");
@@ -33,13 +15,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const statusDiv = document.getElementById("login-status");
 
     loginForm.addEventListener("submit", function(event) {
-        event.preventDefault(); // Voorkom dat de pagina herlaadt
+        event.preventDefault(); 
         
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const username = document.getElementById("username").value;
+        const pincode = document.getElementById("pincode").value;
 
-        // Validatie
-        if (email === "" || password === "") {
+        if (username === "" || pincode === "") {
             toonStatus("Vul alle velden in.", "error");
             return;
         }
@@ -48,60 +29,41 @@ document.addEventListener("DOMContentLoaded", function() {
         loginButton.textContent = "Bezig...";
         toonStatus("Inloggen...", "loading");
 
-        // =======================================================
-        //   DE NIEUWE FIREBASE LOGIN LOGICA
-        // =======================================================
+        const payload = {
+            type: "LOGIN", 
+            username: username.toLowerCase(),
+            pincode: pincode
+        };
 
-        // 1. Probeer in te loggen bij Firebase Authentication
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Login gelukt! Nu de 'volledige_naam' ophalen.
-                const user = userCredential.user;
+        // De fetch-call naar de Google Script API
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Opslaan in browsergeheugen
+                localStorage.setItem('ingelogdeMedewerker', data.volledigeNaam);
+                // Doorsturen naar de hoofd-app
+                window.location.href = "../index.html"; // Ga één map omhoog
                 
-                // 2. Haal het gekoppelde profiel-document op uit Firestore
-                return db.collection('profiles').doc(user.uid).get();
-            })
-            .then((doc) => {
-                // 3. Profiel-document opgehaald
-                if (doc.exists) {
-                    const volledigeNaam = doc.data().volledige_naam;
-                    
-                    // 4. Sla de naam op in het browsergeheugen
-                    localStorage.setItem('ingelogdeMedewerker', volledigeNaam);
-                    
-                    // 5. Stuur door naar de checklist-pagina
-                    window.location.href = "../index.html"; // Ga één map omhoog
-                
-                } else {
-                    // Help! De gebruiker kon inloggen, maar heeft geen profiel
-                    // Dit gebeurt als je stap 5-10 van de 'Nieuwe Werkwijze' hebt overgeslagen.
-                    throw new Error("Login gelukt, maar geen profiel-data gevonden. Neem contact op met de beheerder.");
-                }
-            })
-            .catch((error) => {
-                // Er ging iets mis.
-                console.error("Login Fout:", error);
-                
-                let bericht;
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                    case 'auth/wrong-password':
-                    case 'auth/invalid-credential':
-                        bericht = "Verkeerd e-mailadres of wachtwoord.";
-                        break;
-                    default:
-                        bericht = error.message;
-                }
-                
-                toonStatus(bericht, "error");
-                loginButton.disabled = false;
-                loginButton.textContent = "Inloggen";
-            });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            toonStatus(error.message, "error");
+            loginButton.disabled = false;
+            loginButton.textContent = "Inloggen";
+        });
     });
 
-    // Helper functie om statusberichten te tonen
     function toonStatus(bericht, type) {
-        statusDiv.className = type; // "error" of "loading"
+        statusDiv.className = type;
         statusDiv.textContent = bericht;
         statusDiv.style.display = 'block';
     }

@@ -13,20 +13,27 @@
 
     <div class="login-container">
         <form id="login-form">
-            </form>
-    </div>
+            <h1>Inloggen</h1>
+            
+            <div id="login-status"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore-compat.js"></script>
+            <div class="input-veld">
+                <label for="username">Gebruikersnaam</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="input-veld">
+                <label for="pincode">Pincode</label>
+                <input type="password" id="pincode" name="pincode" required maxlength="4">
+            </div>
+            
+            <button type="submit" id="login-button">Inloggen</button>
+        </form>
+    </div>
 
     <script>
       if ('serviceWorker' in navigator) {
-        // Pad is nu '../service-worker.js' (gaat 1 map omhoog)
-        navigator.serviceWorker.register('../service-worker.js')
-          .then(function(registration) {
-            console.log('Service Worker geregistreerd (loginpagina)');
-          });
+        navigator.serviceWorker.register('../service-worker.js');
       }
     </script>
     

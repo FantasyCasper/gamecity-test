@@ -1,25 +1,25 @@
 /* ===============================
-   SERVICE WORKER (Offline Brein)
+   SERVICE WORKER (GOOGLE SCRIPT VERSIE)
    =============================== */
 
-const CACHE_NAAM = 'checklist-app-cache-v1';
+const CACHE_NAAM = 'checklist-app-cache-v1-googlesheet'; // Nieuwe naam om update te forceren
 
-// Alle bestanden die we in het geheugen willen opslaan
+// Alle paden zijn nu relatief
 const urlsToCache = [
-  '/', // De 'root'
+  '.', // De 'root' van waar de app start
   'index.html',
   'style.css',
   'script.js',
   'manifest.json',
   'icons/icon-192x192.png',
   'icons/icon-512x512.png',
-  'login/', // De login-map
+  'login/', 
   'login/index.html',
   'login/login.css',
   'login/login.js'
 ];
 
-// 1. Installatie: Open de cache en voeg alle bestanden toe
+// 1. Installatie
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAAM)
@@ -30,7 +30,7 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// 2. Activering: Ruim oude caches op (als die er zijn)
+// 2. Activering (Ruimt oude caches op)
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -45,8 +45,14 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// 3. Ophalen (Fetch): Probeer eerst het netwerk, als dat faalt, pak uit de cache
+// 3. Ophalen (Fetch) - Netwerk eerst, dan cache
 self.addEventListener('fetch', function(event) {
+  // We willen NOOIT de Google Script API call cachen
+  if (event.request.url.includes('script.google.com')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then(function(response) {
