@@ -38,7 +38,7 @@ const CHECKLIST_DATA = {
     if (!ingelogdeMedewerker) {
         // ... (terugsturen, dit blijft hetzelfde) ...
         alert("Je bent niet ingelogd. Je wordt nu teruggestuurd naar de inlogpagina.");
-        window.location.href = "login/"; 
+        window.location.href = "login/index.html"; 
         return; 
     } 
     
@@ -73,7 +73,7 @@ function koppelListeners() {
         logoutButton.addEventListener('click', function() {
             if (confirm('Weet je zeker dat je wilt uitloggen?')) {
                 localStorage.removeItem('ingelogdeMedewerker');
-                window.location.href = 'login/';
+                window.location.href = 'login/index.html';
             }
         });
     }

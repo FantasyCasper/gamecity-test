@@ -3,32 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Logboek</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">
-        <a href="index.html" id="back-button">&laquo; Terug naar de app</a>
+        <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
+        <h1>Admin Panel</h1>
         
-        <h1>Admin Panel: Logboek</h1>
+        <div class="tab-nav">
+            <button class="tab-link active" data-tab="tab-logs">Logboek</button>
+            <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
+        </div>
         
         <div id="status-message">Laden...</div>
-        
-        <table id="log-table">
-            <thead>
-                <tr>
-                    <th>Tijdstip</th>
-                    <th>Medewerker</th>
-                    <th>Activiteit</th>
-                    <th>Lijst</th>
-                    <th>Voltooid</th>
-                    <th>Gemist</th>
-                </tr>
-            </thead>
-            <tbody id="log-body">
-                </tbody>
-        </table>
+
+        <div id="tab-logs" class="tab-content active">
+            <h2>Logboek Overzicht</h2>
+            <table id="log-table">
+                <thead>
+                    <tr>
+                        <th>Tijdstip</th>
+                        <th>Medewerker</th>
+                        <th>Activiteit</th>
+                        <th>Lijst</th>
+                        <th>Voltooid</th>
+                        <th>Gemist</th>
+                    </tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+
+        <div id="tab-users" class="tab-content">
+            <h2>Nieuwe Gebruiker Toevoegen</h2>
+            <form id="add-user-form">
+                <div class="form-grid">
+                    <div class="form-veld">
+                        <label for="new-username">Gebruikersnaam (inlog)</label>
+                        <input type="text" id="new-username" required>
+                    </div>
+                    <div class="form-veld">
+                        <label for="new-fullname">Volledige Naam</label>
+                        <input type="text" id="new-fullname" required>
+                    </div>
+                    <div class="form-veld">
+                        <label for="new-pincode">Pincode (4 cijfers)</label>
+                        <input type="password" id="new-pincode" required maxlength="4">
+                    </div>
+                    <div class="form-veld">
+                        <label for="new-role">Rol</label>
+                        <select id="new-role">
+                            <option value="medewerker" selected>Medewerker</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="add-user-button">Gebruiker Toevoegen</button>
+            </form>
+
+            <h2 class="user-list-header">Bestaande Gebruikers</h2>
+            <table id="user-table">
+                <thead>
+                    <tr>
+                        <th>Gebruikersnaam</th>
+                        <th>Volledige Naam</th>
+                        <th>Rol</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody id="user-body"></tbody>
+            </table>
+        </div>
     </div>
     
     <script src="admin.js"></script>

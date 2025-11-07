@@ -1,7 +1,17 @@
-/* Stijlen specifiek voor het admin panel */
+/* ===============================
+   VOLLEDIGE ADMIN.CSS
+   =============================== */
 
 body {
-    padding-top: 60px; /* Ruimte voor de 'terug' knop */
+    padding-top: 60px;
+}
+
+/* Container breder maken (zoals je wilde) */
+.container {
+    max-width: 1200px;
+}
+@media (min-width: 1400px) {
+    .container { max-width: 90%; }
 }
 
 #back-button {
@@ -23,57 +33,159 @@ body {
     background-color: #777;
 }
 
-/* Stijlen voor de log-tabel */
-#log-table {
+h2 {
+    margin-top: 30px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+.user-list-header {
+    margin-top: 40px;
+}
+
+/* --- Tab Navigatie --- */
+.tab-nav {
+    display: flex;
+    border-bottom: 2px solid #555;
+}
+.tab-link {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+}
+.tab-link.active {
+    color: #fff;
+    border-bottom-color: #007bff;
+}
+.tab-link:hover {
+    background-color: #2a2a2a;
+}
+.tab-content {
+    display: none; /* Standaard verborgen */
+}
+.tab-content.active {
+    display: block; /* Toon actieve tab */
+}
+
+/* --- Tabel Stijlen (voor beide tabellen) --- */
+#log-table, #user-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
-
-#log-table thead {
-    background-color: #333; /* Donkere header */
+#log-table thead, #user-table thead {
+    background-color: #333;
 }
-
-#log-table th, #log-table td {
+#log-table th, #log-table td,
+#user-table th, #user-table td {
     padding: 12px;
     border-bottom: 1px solid #444;
     text-align: left;
     color: #e0e0e0;
     font-size: 0.9em;
+    vertical-align: middle;
 }
-
-#log-table th {
+#log-table th, #user-table th {
     font-size: 1em;
     font-weight: bold;
 }
+#log-table tbody tr:hover, #user-table tbody tr:hover {
+    background-color: #2a2a2a;
+}
 
-#log-table tbody tr:hover {
-    background-color: #2a2a2a; /* Iets lichtere rij bij hover */
+/* --- Gebruiker Toevoegen Formulier --- */
+#add-user-form {
+    padding: 20px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+.form-veld label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+.form-veld input[type="text"],
+.form-veld input[type="password"],
+.form-veld select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+#add-user-button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+#add-user-button:hover {
+    background-color: #218838;
+}
+
+/* Delete Knop */
+.delete-btn {
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.delete-btn:hover {
+    background-color: #c82333;
+}
+.delete-btn:disabled {
+    background-color: #555;
 }
 
 /* Responsive tabel: op telefoons wordt het een lijst */
 @media (max-width: 720px) {
-    #log-table thead {
-        display: none; /* Verberg de headers */
+    #log-table thead, #user-table thead {
+        display: none; 
     }
-    #log-table tr {
+    #log-table tr, #user-table tr {
         display: block;
         border: 1px solid #555;
         margin-bottom: 15px;
     }
-    #log-table td {
+    #log-table td, #user-table td {
         display: block;
-        text-align: right; /* Waarden rechts */
+        text-align: right;
         border-bottom: 1px dotted #444;
     }
-    #log-table td:last-child {
+    #log-table td:last-child, #user-table td:last-child {
         border-bottom: none;
     }
-    /* Voeg de 'header' toe met CSS */
-    #log-table td:before {
-        content: attr(data-label); /* Dit pakt de 'data-label' die we met JS toevoegen */
+    #log-table td:before, #user-table td:before {
+        content: attr(data-label);
         float: left;
         font-weight: bold;
         color: #fff;
+    }
+    /* Centreer delete knop op mobiel */
+    #user-table td[data-label="Actie"] {
+        text-align: center;
+    }
+    #user-table td[data-label="Actie"]::before {
+        display: none; /* Geen label nodig voor de knop */
     }
 }
