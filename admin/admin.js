@@ -1,22 +1,41 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET ALLES)
+   VOLLEDIGE ADMIN.JS (MET LIJST-BOUWER)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxn6pIIH_HHDVgTMvaE_YRfCi89LoMDwMMtEg0O0JtxrTuHpUEPH0_RXz9gDqpFEDzZkA/exec";
 
+// ##################################################################
+// #                        BELANGRIJKE STAP                        #
+// # PLAK HIER JE GOOGLE WEB APP URL                                #
+// ##################################################################
+const WEB_APP_URL = "HIER_JE_WEB_APP_URL_PLAKKEN"; 
+
+// Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
-let HUIDIGE_CHECKLIST_CONFIG = {};
+let HUIDIGE_CHECKLIST_CONFIG = {}; 
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function () {
+(function() {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd."); window.location.href = "../index.html"; return;
+        alert("Toegang geweigerd.");
+        window.location.href = "../index.html"; 
+        return; 
     }
-    fetchLogData(); fetchUsers(); fetchChecklistConfig();
-    setupTabNavigation(); setupUserForm(); setupUserDeleteListener(); setupChecklistEditor();
-})();
+    
+    // Haal alle data op bij het laden
+    fetchLogData();
+    fetchUsers();
+    fetchChecklistConfig(); 
+    
+    // Koppel de listeners
+    setupTabNavigation();
+    setupUserForm();
+    setupUserDeleteListener();
+    setupChecklistEditor(); // <-- Deze is nu veel complexer
 
-// --- DEEL 2: TAB NAVIGATIE ---
+})(); 
+
+
+// --- DEEL 2: TAB NAVIGATIE (Ongewijzigd) ---
 function setupTabNavigation() {
     document.querySelectorAll('.tab-link').forEach(button => {
         button.addEventListener('click', () => {
@@ -29,8 +48,9 @@ function setupTabNavigation() {
     });
 }
 
-// --- DEEL 3: LOGBOEK FUNCTIES ---
-function fetchLogData() {
+
+// --- DEEL 3: LOGBOEK FUNCTIES (Ongewijzigd) ---
+function fetchLogData() { 
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = 'loading';
     callApi("GET_LOGS").then(result => {
         statusDiv.style.display = 'none'; renderLogs(result.data);
@@ -47,10 +67,10 @@ function renderLogs(logs) {
     logBody.innerHTML = html;
 }
 
-// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
-function fetchUsers() {
+// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES (Ongewijzigd) ---
+function fetchUsers() { 
     callApi("GET_USERS").then(result => { renderUsers(result.data); })
-        .catch(error => handleError(error, "Fout bij laden gebruikers: "));
+    .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 function renderUsers(users) {
     const userBody = document.getElementById('user-body');
@@ -74,7 +94,7 @@ function setupUserForm() {
             role: document.getElementById('new-role').value
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
-            alert(result.message); form.reset(); fetchUsers();
+            alert(result.message); form.reset(); fetchUsers(); 
         }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
             button.disabled = false; button.textContent = "Gebruiker Toevoegen";
         });
@@ -95,54 +115,115 @@ function setupUserDeleteListener() {
     });
 }
 
-// --- DEEL 5: CHECKLIST FUNCTIES ---
+// --- DEEL 5: BIJGEWERKTE CHECKLIST FUNCTIES ---
+
 function fetchChecklistConfig() {
     callApi("GET_CHECKLIST_CONFIG")
         .then(result => {
-            // Sla de config op. We hebben de datalist niet meer nodig.
             HUIDIGE_CHECKLIST_CONFIG = result.data;
             console.log("Checklist configuratie geladen.");
         })
         .catch(error => handleError(error, "Fout bij laden checklists: "));
 }
-// VERVANG DE OUDE FUNCTIE MET DEZE:
-function setupChecklistEditor() {
-    const activiteitSelect = document.getElementById('cl-activiteit'); // Dit is nu een <select>
-    const openenText = document.getElementById('cl-openen');
-    const sluitenText = document.getElementById('cl-sluiten');
-    const saveButton = document.getElementById('checklist-save-button');
 
-    // Als de gebruiker een activiteit KIEST, vul de velden
+// Nieuwe helper-functie om een <li> te bouwen
+function createTaakLi(taak) {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = taak;
+    const button = document.createElement('button');
+    button.className = 'delete-task-btn';
+    button.textContent = 'X';
+    li.appendChild(span);
+    li.appendChild(button);
+    return li;
+}
+
+// Nieuwe helper-functie om een lijst (openen/sluiten) te vullen
+function renderTaskList(listId, takenArray) {
+    const ul = document.getElementById(listId);
+    ul.innerHTML = ''; // Maak leeg
+    takenArray.forEach(taak => {
+        ul.appendChild(createTaakLi(taak));
+    });
+}
+
+// Deze functie is nu veel groter
+function setupChecklistEditor() {
+    const activiteitSelect = document.getElementById('cl-activiteit');
+    const saveButton = document.getElementById('checklist-save-button');
+    
+    // 1. Koppel de 'Kies activiteit' dropdown
     activiteitSelect.addEventListener('change', () => {
         const activiteit = activiteitSelect.value;
-
+        const openenList = document.getElementById('cl-openen-list');
+        const sluitenList = document.getElementById('cl-sluiten-list');
+        
         if (activiteit && HUIDIGE_CHECKLIST_CONFIG[activiteit]) {
-            // Bestaande activiteit: vul taken in
+            // Bestaande activiteit: vul de lijsten
             const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
-            openenText.value = config.openen.join('\n');
-            sluitenText.value = config.sluiten.join('\n');
+            renderTaskList('cl-openen-list', config.openen);
+            renderTaskList('cl-sluiten-list', config.sluiten);
         } else if (activiteit) {
-            // Een van de 4 opties, maar nog geen data in de sheet.
-            openenText.value = '';
-            sluitenText.value = '';
+            // Een van de 4 opties, maar nog geen data. Maak leeg.
+            openenList.innerHTML = '';
+            sluitenList.innerHTML = '';
         } else {
             // "-- Selecteer --" gekozen
-            openenText.value = '';
-            sluitenText.value = '';
+            openenList.innerHTML = '';
+            sluitenList.innerHTML = '';
         }
     });
 
-    // Opslaan knop
+    // 2. Koppel de '+' (Taak Toevoegen) knoppen
+    document.querySelectorAll('.add-task-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetListId = button.dataset.targetList;
+            const sourceInputId = button.dataset.sourceInput;
+            
+            const input = document.getElementById(sourceInputId);
+            const list = document.getElementById(targetListId);
+            const taakText = input.value.trim();
+            
+            if (taakText) {
+                list.appendChild(createTaakLi(taakText));
+                input.value = ''; // Maak input leeg
+                input.focus(); // Plaats cursor terug
+            }
+        });
+        
+        // Sta ook toevoegen met 'Enter' toe
+        const input = document.getElementById(button.dataset.sourceInput);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Voorkom dat het formulier submit
+                button.click(); // Simuleer een klik op de '+' knop
+            }
+        });
+    });
+
+    // 3. Koppel de 'X' (Verwijder Taak) knoppen (met event delegation)
+    document.querySelectorAll('.task-list').forEach(list => {
+        list.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-task-btn')) {
+                e.target.parentElement.remove(); // Verwijder de <li>
+            }
+        });
+    });
+
+    // 4. Koppel de 'Opslaan' knop
     saveButton.addEventListener('click', () => {
-        const activiteit = activiteitSelect.value; // Haal de waarde op uit de select
+        const activiteit = activiteitSelect.value;
         if (!activiteit) {
             alert("Selecteer eerst een activiteit.");
             return;
         }
-
-        // Lees de textareas en split op newline, filter lege regels
-        const takenOpenen = openenText.value.split('\n').filter(Boolean);
-        const takenSluiten = sluitenText.value.split('\n').filter(Boolean);
+        
+        // Lees de taken uit de <li>'s in de <ul>
+        const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span'))
+                                 .map(span => span.textContent);
+        const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span'))
+                                  .map(span => span.textContent);
 
         saveButton.disabled = true;
         saveButton.textContent = "Opslaan...";
@@ -165,17 +246,18 @@ function setupChecklistEditor() {
     });
 }
 
-// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
+
+// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING (Ongewijzigd) ---
 async function callApi(type, extraData = {}) {
     const payload = { type: type, rol: ingelogdeRol, ...extraData };
-    const response = await fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
+    const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; }
+    if (result.status === "success") { return result; } 
     else { throw new Error(result.message); }
 }
 function handleError(error, prefix = "Fout: ") {
