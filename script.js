@@ -11,37 +11,14 @@ const CHECKLIST_DATA = {
         openen: ["Baan lichten aan", "Karts controleren", "Helmen desinfecteren", "Pitdeur openen"],
         sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
     },
-    // ========================
-    //  HIER IS JE UPDATE
-    // ========================
     "Lasergame": {
         openen: [
-            "Lichten aan",
-            "Blacklights aan",
-            "Rookmachines aan",
-            "Computer aan",
-            "Printer aan",
-            "Versterker aan",
-            "Pakken uit pluggen",
-            "Ronde in de Arena lopen"
+            "Lichten aan","Blacklights aan","Rookmachines aan","Computer aan","Printer aan","Versterker aan","Pakken uit pluggen","Ronde in de Arena lopen"
         ],
         sluiten: [
-            "Lasermaxx afsluiten (via exit)",
-            "Computer uit",
-            "Versterker uit",
-            "Ventilator/Verwarming opruimen",
-            "Printer uit - papier bijvullen",
-            "Pakken inpluggen",
-            "Ruimte controleren op defecten en rommel",
-            "Ronde in de Arena lopen met stoffer en blik",
-            "Luchtverfrissers controleren",
-            "Rookmachines bijvullen",
-            "Prullenbak legen"
+            "Lasermaxx afsluiten (via exit)","Computer uit","Versterker uit","Ventilator/Verwarming opruimen","Printer uit - papier bijvullen","Pakken inpluggen","Ruimte controleren op defecten en rommel","Ronde in de Arena lopen met stoffer en blik","Luchtverfrissers controleren","Rookmachines bijvullen","Prullenbak legen"
         ]
     },
-    // ========================
-    //  EINDE UPDATE
-    // ========================
     "Prison Island": {
         openen: ["Alle cellen resetten", "Systeem opstarten", "Controleer schermen"],
         sluiten: ["Systeem afsluiten", "Verlichting uit", "Deuren controleren"]
