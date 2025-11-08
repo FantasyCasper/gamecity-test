@@ -8,13 +8,13 @@ const statusDiv = document.getElementById('status-message');
 let HUIDIGE_CHECKLIST_CONFIG = {};
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function() {
+(function () {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd."); window.location.href = "../index.html"; return; 
+        alert("Toegang geweigerd."); window.location.href = "../index.html"; return;
     }
-    fetchLogData(); fetchUsers(); fetchChecklistConfig(); 
+    fetchLogData(); fetchUsers(); fetchChecklistConfig();
     setupTabNavigation(); setupUserForm(); setupUserDeleteListener(); setupChecklistEditor();
-})(); 
+})();
 
 // --- DEEL 2: TAB NAVIGATIE ---
 function setupTabNavigation() {
@@ -50,7 +50,7 @@ function renderLogs(logs) {
 // --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
 function fetchUsers() {
     callApi("GET_USERS").then(result => { renderUsers(result.data); })
-    .catch(error => handleError(error, "Fout bij laden gebruikers: "));
+        .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 function renderUsers(users) {
     const userBody = document.getElementById('user-body');
@@ -74,7 +74,7 @@ function setupUserForm() {
             role: document.getElementById('new-role').value
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
-            alert(result.message); form.reset(); fetchUsers(); 
+            alert(result.message); form.reset(); fetchUsers();
         }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
             button.disabled = false; button.textContent = "Gebruiker Toevoegen";
         });
@@ -128,7 +128,7 @@ function setupChecklistEditor() {
         const takenOpenen = openenText.value.split('\n').filter(Boolean);
         const takenSluiten = sluitenText.value.split('\n').filter(Boolean);
         saveButton.disabled = true; saveButton.textContent = "Opslaan...";
-        
+
         callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "openen", taken: takenOpenen })
             .then(result => {
                 return callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "sluiten", taken: takenSluiten });
@@ -147,14 +147,14 @@ function setupChecklistEditor() {
 // --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
 async function callApi(type, extraData = {}) {
     const payload = { type: type, rol: ingelogdeRol, ...extraData };
-    const response = await fetch(WEB_APP_URL, {
+    const response = await fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; } 
+    if (result.status === "success") { return result; }
     else { throw new Error(result.message); }
 }
 function handleError(error, prefix = "Fout: ") {

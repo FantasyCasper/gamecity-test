@@ -8,54 +8,54 @@ let ingelogdeNaam = "";
 let ingelogdeRol = "";
 
 // --- DEEL 1: DE "BEWAKER" ---
-(function() {
+(function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
     if (!ingelogdeNaam || !ingelogdeRol) {
-        alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
-    } 
+        alert("Je bent niet ingelogd."); window.location.href = "login/"; return;
+    }
     document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-link').forEach(link => link.classList.add('zichtbaar'));
     }
     koppelListeners();
     laadChecklistConfiguratie();
-})(); 
+})();
 
 // --- DEEL 2: FUNCTIES ---
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
-    fetch(WEB_APP_URL, {
+    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST',
         body: JSON.stringify({ type: "GET_CHECKLIST_CONFIG" }), // Dit is nu een publieke call
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-            console.log("Checklists succesvol geladen.");
-            CHECKLIST_DATA = result.data;
-            const activiteitSelect = document.getElementById('activiteit-select');
-            while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-            for (const activiteit in CHECKLIST_DATA) {
-                activiteitSelect.add(new Option(activiteit, activiteit));
-            }
-        } else { throw new Error(result.message); }
-    })
-    .catch(error => {
-        alert("KON CHECKLISTS NIET LADEN. " + error.message);
-    });
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === "success") {
+                console.log("Checklists succesvol geladen.");
+                CHECKLIST_DATA = result.data;
+                const activiteitSelect = document.getElementById('activiteit-select');
+                while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
+                for (const activiteit in CHECKLIST_DATA) {
+                    activiteitSelect.add(new Option(activiteit, activiteit));
+                }
+            } else { throw new Error(result.message); }
+        })
+        .catch(error => {
+            alert("KON CHECKLISTS NIET LADEN. " + error.message);
+        });
 }
 function koppelListeners() {
-    document.getElementById('logout-button').addEventListener('click', function() {
+    document.getElementById('logout-button').addEventListener('click', function () {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
             localStorage.clear(); window.location.href = 'login/';
         }
     });
     document.getElementById('activiteit-select').addEventListener('change', (e) => updateChecklists(e.target.value));
     document.querySelectorAll(".collapsible").forEach(coll => {
-        coll.addEventListener("click", function() {
+        coll.addEventListener("click", function () {
             this.classList.toggle("active");
             var content = this.parentElement.querySelector('.content');
             content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
@@ -93,25 +93,25 @@ function verstuurData(lijstNaam) {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
     var dataPayload = { type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit };
-    
-    fetch(WEB_APP_URL, {
+
+    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST',
         body: JSON.stringify(dataPayload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     })
-    .then(response => response.json())
-    .then(data => {
-        if(data.status === "success") {
-            toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
-            resetCheckboxes(listId);
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
+                resetCheckboxes(listId);
+                knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+            } else { throw new Error(data.message); }
+        })
+        .catch(error => {
+            toonStatus(error.message || "Failed to fetch", "error");
             knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-        } else { throw new Error(data.message); }
-    })
-    .catch(error => {
-        toonStatus(error.message || "Failed to fetch", "error");
-        knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    });
+        });
 }
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
