@@ -6,7 +6,7 @@
 // #                        BELANGRIJKE STAP                        #
 // # PLAK HIER JE GOOGLE WEB APP URL                                #
 // ##################################################################
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxn6pIIH_HHDVgTMvaE_YRfCi89LoMDwMMtEg0O0JtxrTuHpUEPH0_RXz9gDqpFEDzZkA/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyuq7nCyeUXVDV44T2YhZFKbXvXU84SsJfvIyybgswcxVgXuTatRtFoDXTdxkVJtbot8g/exec";
 
 // Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
