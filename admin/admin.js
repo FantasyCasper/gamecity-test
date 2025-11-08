@@ -1,7 +1,7 @@
 /* ===============================
    VOLLEDIGE ADMIN.JS (MET ALLES)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tSrtNqwiQrpvFW0v6KFI0y0t8gomgbV-C2AzRYdKlE0es7k7z9U72jb7HArTxQHatw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztvvvBcOjxZF6DZPLh9uO1tSoeWlpI1QRwg3PKzJCrzfswipCBNGUEsWyc3oacIQ4KLQ/exec";
 
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
