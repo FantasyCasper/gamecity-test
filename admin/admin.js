@@ -1,37 +1,22 @@
-// ##################################################################
-// #                        BELANGRIJKE STAP                        #
-// # PLAK HIER JE GOOGLE WEB APP URL                                #
-// ##################################################################
+/* ===============================
+   VOLLEDIGE ADMIN.JS (MET ALLES)
+   =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tSrtNqwiQrpvFW0v6KFI0y0t8gomgbV-C2AzRYdKlE0es7k7z9U72jb7HArTxQHatw/exec";
 
-// Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
-let HUIDIGE_CHECKLIST_CONFIG = {}; // Sla de config op
+let HUIDIGE_CHECKLIST_CONFIG = {};
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd.");
-        window.location.href = "../index.html";
-        return; 
+        alert("Toegang geweigerd."); window.location.href = "../index.html"; return; 
     }
-    
-    // Haal *alle* data op bij het laden
-    fetchLogData();
-    fetchUsers();
-    fetchChecklistConfig(); // <-- NIEUW
-    
-    // Koppel de listeners
-    setupTabNavigation();
-    setupUserForm();
-    setupUserDeleteListener();
-    setupChecklistEditor(); // <-- NIEUW
-
+    fetchLogData(); fetchUsers(); fetchChecklistConfig(); 
+    setupTabNavigation(); setupUserForm(); setupUserDeleteListener(); setupChecklistEditor();
 })(); 
 
-
-// --- DEEL 2: TAB NAVIGATIE (Ongewijzigd) ---
+// --- DEEL 2: TAB NAVIGATIE ---
 function setupTabNavigation() {
     document.querySelectorAll('.tab-link').forEach(button => {
         button.addEventListener('click', () => {
@@ -44,17 +29,14 @@ function setupTabNavigation() {
     });
 }
 
-
-// --- DEEL 3: LOGBOEK FUNCTIES (Ongewijzigd) ---
-function fetchLogData() { /* ... (code van vorige stap is identiek) ... */ 
-    statusDiv.textContent = "Logboek laden...";
-    statusDiv.className = 'loading';
+// --- DEEL 3: LOGBOEK FUNCTIES ---
+function fetchLogData() {
+    statusDiv.textContent = "Logboek laden..."; statusDiv.className = 'loading';
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = 'none';
-        renderLogs(result.data);
+        statusDiv.style.display = 'none'; renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
-function renderLogs(logs) { /* ... (code van vorige stap is identiek) ... */
+function renderLogs(logs) {
     const logBody = document.getElementById('log-body');
     if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="6">Nog geen logs gevonden.</td></tr>'; return; }
     let html = '';
@@ -65,13 +47,12 @@ function renderLogs(logs) { /* ... (code van vorige stap is identiek) ... */
     logBody.innerHTML = html;
 }
 
-// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES (Ongewijzigd) ---
-function fetchUsers() { /* ... (code van vorige stap is identiek) ... */
-    callApi("GET_USERS").then(result => {
-        renderUsers(result.data);
-    }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
+// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
+function fetchUsers() {
+    callApi("GET_USERS").then(result => { renderUsers(result.data); })
+    .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
-function renderUsers(users) { /* ... (code van vorige stap is identiek) ... */
+function renderUsers(users) {
     const userBody = document.getElementById('user-body');
     userBody.innerHTML = '';
     if (users.length === 0) { userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; return; }
@@ -81,7 +62,7 @@ function renderUsers(users) { /* ... (code van vorige stap is identiek) ... */
     });
     userBody.innerHTML = html;
 }
-function setupUserForm() { /* ... (code van vorige stap is identiek) ... */
+function setupUserForm() {
     const form = document.getElementById('add-user-form');
     const button = document.getElementById('add-user-button');
     form.addEventListener('submit', (e) => {
@@ -99,9 +80,8 @@ function setupUserForm() { /* ... (code van vorige stap is identiek) ... */
         });
     });
 }
-function setupUserDeleteListener() { /* ... (code van vorige stap is identiek) ... */
-    const userTable = document.getElementById('user-table');
-    userTable.addEventListener('click', (e) => {
+function setupUserDeleteListener() {
+    document.getElementById('user-table').addEventListener('click', (e) => {
         if (!e.target.classList.contains('delete-btn')) return;
         const button = e.target; const username = button.dataset.username;
         if (!confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) return;
@@ -115,86 +95,63 @@ function setupUserDeleteListener() { /* ... (code van vorige stap is identiek) .
     });
 }
 
-// --- DEEL 5: NIEUWE CHECKLIST FUNCTIES ---
-
+// --- DEEL 5: CHECKLIST FUNCTIES ---
 function fetchChecklistConfig() {
-    callApi("GET_CHECKLIST_CONFIG")
-        .then(result => {
-            HUIDIGE_CHECKLIST_CONFIG = result.data;
-            const dataList = document.getElementById('activiteiten-lijst');
-            dataList.innerHTML = '';
-            // Vul de datalist (voor autocomplete)
-            for (const activiteit in HUIDIGE_CHECKLIST_CONFIG) {
-                dataList.innerHTML += `<option value="${activiteit}">`;
-            }
-        })
-        .catch(error => handleError(error, "Fout bij laden checklists: "));
+    callApi("GET_CHECKLIST_CONFIG").then(result => {
+        HUIDIGE_CHECKLIST_CONFIG = result.data;
+        const dataList = document.getElementById('activiteiten-lijst');
+        dataList.innerHTML = '';
+        for (const activiteit in HUIDIGE_CHECKLIST_CONFIG) {
+            dataList.innerHTML += `<option value="${activiteit}">`;
+        }
+    }).catch(error => handleError(error, "Fout bij laden checklists: "));
 }
-
 function setupChecklistEditor() {
     const activiteitInput = document.getElementById('cl-activiteit');
     const openenText = document.getElementById('cl-openen');
     const sluitenText = document.getElementById('cl-sluiten');
     const saveButton = document.getElementById('checklist-save-button');
 
-    // Als de gebruiker een activiteit kiest (of typt), vul de velden
     activiteitInput.addEventListener('change', () => {
         const activiteit = activiteitInput.value;
         const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
-        
         if (config) {
-            // Bestaande activiteit: vul taken in
             openenText.value = config.openen.join('\n');
             sluitenText.value = config.sluiten.join('\n');
         } else {
-            // Nieuwe activiteit: maak velden leeg
-            openenText.value = '';
-            sluitenText.value = '';
+            openenText.value = ''; sluitenText.value = '';
         }
     });
-
-    // Opslaan knop
     saveButton.addEventListener('click', () => {
         const activiteit = document.getElementById('cl-activiteit').value;
-        if (!activiteit) {
-            alert("Vul een activiteit-naam in.");
-            return;
-        }
-        
-        // Lees de textareas en split op newline, filter lege regels
+        if (!activiteit) { alert("Vul een activiteit-naam in."); return; }
         const takenOpenen = openenText.value.split('\n').filter(Boolean);
         const takenSluiten = sluitenText.value.split('\n').filter(Boolean);
-
-        saveButton.disabled = true;
-        saveButton.textContent = "Opslaan...";
-
-        // We moeten twee aparte API calls doen, na elkaar
+        saveButton.disabled = true; saveButton.textContent = "Opslaan...";
+        
         callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "openen", taken: takenOpenen })
             .then(result => {
-                // Eerste call (openen) gelukt. Doe nu de tweede (sluiten).
                 return callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "sluiten", taken: takenSluiten });
             })
             .then(result => {
-                // Beide gelukt!
                 alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
                 fetchChecklistConfig(); // Ververs de config
             })
             .catch(error => handleError(error, "Fout bij opslaan checklist: "))
             .finally(() => {
-                saveButton.disabled = false;
-                saveButton.textContent = "Checklist Opslaan";
+                saveButton.disabled = false; saveButton.textContent = "Checklist Opslaan";
             });
     });
 }
 
-
-// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING (Ongewijzigd) ---
+// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
 async function callApi(type, extraData = {}) {
     const payload = { type: type, rol: ingelogdeRol, ...extraData };
     const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: 'cors'
     });
     const result = await response.json();
     if (result.status === "success") { return result; } 
@@ -204,5 +161,5 @@ function handleError(error, prefix = "Fout: ") {
     console.error(prefix, error);
     statusDiv.style.display = 'block';
     statusDiv.className = 'error';
-    statusDiv.textContent = prefix + error.message;
+    statusDiv.textContent = prefix + (error.message || "Failed to fetch");
 }

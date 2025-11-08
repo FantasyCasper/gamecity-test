@@ -1,45 +1,14 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Activiteitencentrum</title>
-    
-    <link rel="stylesheet" href="login.css">
-    <link rel="manifest" href="../manifest.json">
-    
-    <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
-    
-   
-</head>
-<body>
-
-    <div class="login-container">
-        <form id="login-form">
-            <h1>Inloggen</h1>
-            
-            <div id="login-status"></div>
-
-            <div class="input-veld">
-                <label for="username">Gebruikersnaam</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            
-            <div class="input-veld">
-                <label for="pincode">Pincode</label>
-                <input type="password" id="pincode" name="pincode" required maxlength="4">
-            </div>
-            
-            <button type="submit" id="login-button">Inloggen</button>
-        </form>
-    </div>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('../service-worker.js');
-      }
-    </script>
-    
+<!DOCTYPE html><html lang="nl"><head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Activiteitencentrum</title><link rel="stylesheet" href="login.css">
+    <link rel="manifest" href="../manifest.json"><link rel="icon" type="image/png" href="../icons/icon-192x192.png">
+</head><body>
+    <div class="login-container"><form id="login-form">
+        <h1>Inloggen</h1><div id="login-status"></div>
+        <div class="input-veld"><label for="username">Gebruikersnaam</label><input type="text" id="username" name="username" required></div>
+        <div class="input-veld"><label for="pincode">Pincode</label><input type="password" id="pincode" name="pincode" required maxlength="4"></div>
+        <button type="submit" id="login-button">Inloggen</button>
+    </form></div>
+    <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('../service-worker.js'); }</script>
     <script src="login.js"></script>
-</body>
-</html>
+</body></html>
