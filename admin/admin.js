@@ -1,39 +1,19 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET LIJST-BOUWER)
+   ADMIN.JS (STABIELE 2-TAB VERSIE)
    =============================== */
-
-// ##################################################################
-// #                        BELANGRIJKE STAP                        #
-// # PLAK HIER JE GLOEDNIEUWE GOOGLE WEB APP URL UIT STAP 2         #
-// ##################################################################
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; 
 
-// Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
-let HUIDIGE_CHECKLIST_CONFIG = {}; 
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd.");
-        window.location.href = "../index.html"; 
-        return; 
+        alert("Toegang geweigerd."); window.location.href = "../index.html"; return; 
     }
-    
-    // Haal alle data op bij het laden
-    fetchLogData();
-    fetchUsers();
-    fetchChecklistConfig(); 
-    
-    // Koppel de listeners
-    setupTabNavigation();
-    setupUserForm();
-    setupUserDeleteListener();
-    setupChecklistEditor();
-
+    fetchLogData(); fetchUsers(); 
+    setupTabNavigation(); setupUserForm(); setupUserDeleteListener();
 })(); 
-
 
 // --- DEEL 2: TAB NAVIGATIE ---
 function setupTabNavigation() {
@@ -47,7 +27,6 @@ function setupTabNavigation() {
         });
     });
 }
-
 
 // --- DEEL 3: LOGBOEK FUNCTIES ---
 function fetchLogData() { 
@@ -115,118 +94,9 @@ function setupUserDeleteListener() {
     });
 }
 
-// --- DEEL 5: CHECKLIST FUNCTIES (Simplificatie) ---
-function fetchChecklistConfig() {
-    callApi("GET_CHECKLIST_CONFIG").then(result => {
-        HUIDIGE_CHECKLIST_CONFIG = result.data;
-        // Vul de dropdown (ook al is het nu een vaste lijst, dit is toekomstbestendig)
-        const select = document.getElementById('cl-activiteit');
-        // Als je het liever niet dynamisch vult, kun je deze 'for' loop verwijderen
-        for (const activiteit in HUIDIGE_CHECKLIST_CONFIG) {
-            if (!select.querySelector(`option[value="${activiteit}"]`)) {
-                select.add(new Option(activiteit, activiteit));
-            }
-        }
-    }).catch(error => handleError(error, "Fout bij laden checklists: "));
-}
-
-// Nieuwe helper-functie om een <li> te bouwen
-function createTaakLi(taak) {
-    const li = document.createElement('li');
-    const span = document.createElement('span');
-    span.textContent = taak;
-    const button = document.createElement('button');
-    button.className = 'delete-task-btn';
-    button.textContent = 'X';
-    li.appendChild(span);
-    li.appendChild(button);
-    return li;
-}
-function renderTaskList(listId, takenArray) {
-    const ul = document.getElementById(listId);
-    ul.innerHTML = ''; // Maak leeg
-    takenArray.forEach(taak => {
-        ul.appendChild(createTaakLi(taak));
-    });
-}
-
-function setupChecklistEditor() {
-    const activiteitSelect = document.getElementById('cl-activiteit');
-    const openenText = document.getElementById('cl-openen-list'); // UL
-    const sluitenText = document.getElementById('cl-sluiten-list'); // UL
-    const saveButton = document.getElementById('checklist-save-button');
-
-    // 1. Koppel de 'Kies activiteit' dropdown
-    activiteitSelect.addEventListener('change', () => {
-        const activiteit = activiteitSelect.value;
-        if (activiteit && HUIDIGE_CHECKLIST_CONFIG[activiteit]) {
-            const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
-            renderTaskList('cl-openen-list', config.openen);
-            renderTaskList('cl-sluiten-list', config.sluiten);
-        } else {
-            openenText.innerHTML = ''; sluitenText.innerHTML = '';
-        }
-    });
-
-    // 2. Koppel de '+' (Taak Toevoegen) knoppen
-    document.querySelectorAll('.add-task-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const targetListId = button.dataset.targetList;
-            const sourceInputId = button.dataset.sourceInput;
-            const input = document.getElementById(sourceInputId);
-            const list = document.getElementById(targetListId);
-            const taakText = input.value.trim();
-            if (taakText) {
-                list.appendChild(createTaakLi(taakText));
-                input.value = ''; input.focus(); 
-            }
-        });
-        const input = document.getElementById(button.dataset.sourceInput);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); button.click(); }
-        });
-    });
-
-    // 3. Koppel de 'X' (Verwijder Taak) knoppen
-    document.querySelectorAll('.task-list').forEach(list => {
-        list.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-task-btn')) {
-                e.target.parentElement.remove();
-            }
-        });
-    });
-
-    // 4. Koppel de 'Opslaan' knop
-    saveButton.addEventListener('click', () => {
-        const activiteit = activiteitSelect.value;
-        if (!activiteit) { alert("Selecteer eerst een activiteit."); return; }
-        
-        const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span')).map(span => span.textContent);
-        const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span')).map(span => span.textContent);
-
-        saveButton.disabled = true; saveButton.textContent = "Opslaan...";
-
-        callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "openen", taken: takenOpenen })
-            .then(result => {
-                return callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "sluiten", taken: takenSluiten });
-            })
-            .then(result => {
-                alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
-                fetchChecklistConfig(); // Ververs de config
-            })
-            .catch(error => handleError(error, "Fout bij opslaan checklist: "))
-            .finally(() => {
-                saveButton.disabled = false; saveButton.textContent = "Checklist Opslaan";
-            });
-    });
-}
-
-
-// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
+// --- DEEL 5: ALGEMENE API & FOUTAFHANDELING ---
 async function callApi(type, extraData = {}) {
-    // VOEG DE CACHE-BUSTER TOE AAN DE URL
-    const url = WEB_APP_URL + "?v=" + new Date().getTime();
-    
+    const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
     const payload = { type: type, rol: ingelogdeRol, ...extraData };
     const response = await fetch(url, {
         method: 'POST',

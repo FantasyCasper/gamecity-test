@@ -1,9 +1,31 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET CACHE-BUSTER)
+   VOLLEDIGE SCRIPT.JS (STABIELE VERSIE)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; // <-- CRUCIAAL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; 
 
-let CHECKLIST_DATA = {};
+// ==============================================================
+//   CHECKLIST DATA (TERUG NAAR HARD-CODED)
+// ==============================================================
+const CHECKLIST_DATA = {
+    "Baan": {
+        openen: ["Baan lichten aan", "Karts controleren", "Helmen desinfecteren", "Pitdeur openen"],
+        sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
+    },
+    "Lasergame": {
+        openen: ["Arena lichten en geluid aan", "Pakken opstarten (test 1)", "Rookmachine controleren/vullen"],
+        sluiten: ["Alle pakken uitschakelen", "Arena lichten uit", "Rookmachine uit"]
+    },
+    "Prison Island": {
+        openen: ["Alle cellen resetten", "Systeem opstarten", "Controleer schermen"],
+        sluiten: ["Systeem afsluiten", "Verlichting uit", "Deuren controleren"]
+    },
+    "Minigolf": {
+        openen: ["Ballen en clubs klaarzetten", "Verlichting banen aan", "Scorekaarten aanvullen"],
+        sluiten: ["Ballen en clubs innemen/opruimen", "Verlichting uit", "Afval controleren"]
+    }
+};
+// ==============================================================
+
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
 
@@ -18,35 +40,20 @@ let ingelogdeRol = "";
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-link').forEach(link => link.classList.add('zichtbaar'));
     }
+    
+    // Vul de dropdown direct
+    const activiteitSelect = document.getElementById('activiteit-select');
+    for (const activiteit in CHECKLIST_DATA) {
+        activiteitSelect.add(new Option(activiteit, activiteit));
+    }
+    
     koppelListeners();
-    laadChecklistConfiguratie();
+    // laadChecklistConfiguratie() is NIET MEER NODIG
+
 })(); 
 
 // --- DEEL 2: FUNCTIES ---
-function laadChecklistConfiguratie() {
-    console.log("Checklists ophalen...");
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // <-- CACHE-BUSTER
-        method: 'POST',
-        body: JSON.stringify({ type: "GET_CHECKLIST_CONFIG" }),
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        mode: 'cors'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-            console.log("Checklists succesvol geladen.");
-            CHECKLIST_DATA = result.data;
-            const activiteitSelect = document.getElementById('activiteit-select');
-            while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-            for (const activiteit in CHECKLIST_DATA) {
-                activiteitSelect.add(new Option(activiteit, activiteit));
-            }
-        } else { throw new Error(result.message); }
-    })
-    .catch(error => {
-        alert("KON CHECKLISTS NIET LADEN. " + error.message);
-    });
-}
+
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -92,9 +99,9 @@ function verstuurData(lijstNaam) {
     document.querySelectorAll("#" + listId + " li").forEach(li => {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
-    var dataPayload = { type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit, rol: ingelogdeRol };
+    var dataPayload = { type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit };
     
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // <-- CACHE-BUSTER
+    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // Cache-buster
         method: 'POST',
         body: JSON.stringify(dataPayload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },

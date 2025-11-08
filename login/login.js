@@ -1,7 +1,7 @@
 /* ===============================
-   LOGIN LOGICA (MET CACHE-BUSTER)
+   LOGIN LOGICA (STABIELE VERSIE)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; // <-- CRUCIAAL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; 
 
 document.addEventListener("DOMContentLoaded", function() {
     const loginForm = document.getElementById("login-form");
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
         loginButton.disabled = true; loginButton.textContent = "Bezig..."; toonStatus("Inloggen...", "loading");
         const payload = { type: "LOGIN", username: username.toLowerCase(), pincode: pincode };
 
-        fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // <-- CACHE-BUSTER
+        fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // Cache-buster
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { "Content-Type": "text/plain;charset=utf-8" },
