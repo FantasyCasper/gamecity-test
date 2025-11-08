@@ -97,49 +97,70 @@ function setupUserDeleteListener() {
 
 // --- DEEL 5: CHECKLIST FUNCTIES ---
 function fetchChecklistConfig() {
-    callApi("GET_CHECKLIST_CONFIG").then(result => {
-        HUIDIGE_CHECKLIST_CONFIG = result.data;
-        const dataList = document.getElementById('activiteiten-lijst');
-        dataList.innerHTML = '';
-        for (const activiteit in HUIDIGE_CHECKLIST_CONFIG) {
-            dataList.innerHTML += `<option value="${activiteit}">`;
-        }
-    }).catch(error => handleError(error, "Fout bij laden checklists: "));
+    callApi("GET_CHECKLIST_CONFIG")
+        .then(result => {
+            // Sla de config op. We hebben de datalist niet meer nodig.
+            HUIDIGE_CHECKLIST_CONFIG = result.data;
+            console.log("Checklist configuratie geladen.");
+        })
+        .catch(error => handleError(error, "Fout bij laden checklists: "));
 }
+// VERVANG DE OUDE FUNCTIE MET DEZE:
 function setupChecklistEditor() {
-    const activiteitInput = document.getElementById('cl-activiteit');
+    const activiteitSelect = document.getElementById('cl-activiteit'); // Dit is nu een <select>
     const openenText = document.getElementById('cl-openen');
     const sluitenText = document.getElementById('cl-sluiten');
     const saveButton = document.getElementById('checklist-save-button');
 
-    activiteitInput.addEventListener('change', () => {
-        const activiteit = activiteitInput.value;
-        const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
-        if (config) {
+    // Als de gebruiker een activiteit KIEST, vul de velden
+    activiteitSelect.addEventListener('change', () => {
+        const activiteit = activiteitSelect.value;
+
+        if (activiteit && HUIDIGE_CHECKLIST_CONFIG[activiteit]) {
+            // Bestaande activiteit: vul taken in
+            const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
             openenText.value = config.openen.join('\n');
             sluitenText.value = config.sluiten.join('\n');
+        } else if (activiteit) {
+            // Een van de 4 opties, maar nog geen data in de sheet.
+            openenText.value = '';
+            sluitenText.value = '';
         } else {
-            openenText.value = ''; sluitenText.value = '';
+            // "-- Selecteer --" gekozen
+            openenText.value = '';
+            sluitenText.value = '';
         }
     });
+
+    // Opslaan knop
     saveButton.addEventListener('click', () => {
-        const activiteit = document.getElementById('cl-activiteit').value;
-        if (!activiteit) { alert("Vul een activiteit-naam in."); return; }
+        const activiteit = activiteitSelect.value; // Haal de waarde op uit de select
+        if (!activiteit) {
+            alert("Selecteer eerst een activiteit.");
+            return;
+        }
+
+        // Lees de textareas en split op newline, filter lege regels
         const takenOpenen = openenText.value.split('\n').filter(Boolean);
         const takenSluiten = sluitenText.value.split('\n').filter(Boolean);
-        saveButton.disabled = true; saveButton.textContent = "Opslaan...";
 
+        saveButton.disabled = true;
+        saveButton.textContent = "Opslaan...";
+
+        // Twee aparte API calls, net als voorheen
         callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "openen", taken: takenOpenen })
             .then(result => {
                 return callApi("SET_CHECKLIST_CONFIG", { activiteit: activiteit, type: "sluiten", taken: takenSluiten });
             })
             .then(result => {
                 alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
-                fetchChecklistConfig(); // Ververs de config
+                // Herlaad de config op de achtergrond
+                fetchChecklistConfig(); 
             })
             .catch(error => handleError(error, "Fout bij opslaan checklist: "))
             .finally(() => {
-                saveButton.disabled = false; saveButton.textContent = "Checklist Opslaan";
+                saveButton.disabled = false;
+                saveButton.textContent = "Checklist Opslaan";
             });
     });
 }
