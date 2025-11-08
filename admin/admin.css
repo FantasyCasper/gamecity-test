@@ -189,3 +189,39 @@ h2 {
         display: none; /* Geen label nodig voor de knop */
     }
 }
+
+/* --- Stijlen voor Checklist Beheer Tab --- */
+#checklist-editor p {
+    margin-bottom: 20px;
+    font-style: italic;
+    color: #aaa;
+}
+#checklist-editor textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    font-family: monospace;
+    line-height: 1.5;
+}
+#checklist-save-button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+#checklist-save-button:hover {
+    background-color: #0056b3;
+}
+#checklist-save-button:disabled {
+    background-color: #555;
+}
