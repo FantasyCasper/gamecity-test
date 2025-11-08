@@ -1,7 +1,7 @@
 /* ===============================
    LOGIN LOGICA (GOOGLE SCRIPT VERSIE)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztvvvBcOjxZF6DZPLh9uO1tSoeWlpI1QRwg3PKzJCrzfswipCBNGUEsWyc3oacIQ4KLQ/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxn6pIIH_HHDVgTMvaE_YRfCi89LoMDwMMtEg0O0JtxrTuHpUEPH0_RXz9gDqpFEDzZkA/exec";
 
 document.addEventListener("DOMContentLoaded", function() {
     const loginForm = document.getElementById("login-form");
