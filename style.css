@@ -1,7 +1,8 @@
 /* ===============================
-   VOLLEDIGE CSS (style.css)
+   VOLLEDIGE CSS (OPGESCHOOND)
    =============================== */
 
+/* --- 1. ALGEMENE STIJLEN --- */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
     background-color: #1a1a1a;
@@ -15,160 +16,56 @@ body {
     margin: 0 auto;
 }
 
-h1 {
-    text-align: center;
+/* --- 2. HOOFDNAVIGATIE & UITLOGGEN --- */
+
+/* De navigatiebalk zelf */
+.main-nav {
+    display: flex;
+    flex-wrap: wrap; /* Tabs netjes onder elkaar op mobiel */
     background-color: #2a2a2a;
-    color: white;
-    padding: 20px;
-    margin: 0 0 20px 0;
-    border-radius: 8px;
-    font-size: 1.5em;
-}
-
-.collapsible {
-    background-color: #333333;
-    color: #e0e0e0;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-/* Pijltjes Fix (met directe symbolen) */
-.collapsible:after {
-    content: '▼';
-    font-size: 0.8em;
-    color: #e0e0e0;
-    float: right;
-}
-
-.collapsible.active:after {
-    content: "▲";
-}
-
-.content {
-    padding: 0 18px;
-    max-height: 0;
+    border-radius: 8px 8px 0 0; /* Alleen bovenkant afgerond */
     overflow: hidden;
-    transition: max-height 0.2s ease-out;
 }
 
-ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 10px 0;
-}
-
-li {
-    padding: 12px 5px;
-    border-bottom: 1px solid #333;
-    display: flex;
-    align-items: center;
-}
-
-li:last-child {
-    border-bottom: none;
-}
-
-input[type="checkbox"] {
-    transform: scale(1.5);
-    margin-right: 15px;
+/* Knoppen en links in de navigatiebalk */
+.main-tab-link {
+    padding: 14px 18px;
     cursor: pointer;
-}
-
-label {
-    font-size: 1em;
-    flex-grow: 1;
-    cursor: pointer;
-    color: #e0e0e0;
-}
-
-input[type="checkbox"]:checked+label {
-    text-decoration: line-through;
-    color: #888;
-}
-
-.submit-button {
-    display: block;
-    width: 90%;
-    margin: 20px auto;
-    padding: 15px;
-    background-color: #28a745;
-    color: white;
+    background: none;
     border: none;
-    border-radius: 5px;
+    border-bottom: 4px solid transparent;
+    color: #aaa;
     font-size: 1em;
     font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+.main-tab-link:hover {
+    background-color: #333;
+    color: #fff;
+}
+.main-tab-link.active {
+    color: #fff;
+    border-bottom-color: #007bff; /* Blauwe actieve rand */
 }
 
-.submit-button:hover {
-    background-color: #218838;
-}
-
-.submit-button:disabled {
-    background-color: #555;
-    cursor: not-allowed;
-}
-
-#status-message {
-    text-align: center;
-    padding: 10px;
-    margin: 10px auto;
-    border-radius: 5px;
+/* De Admin tabs zijn standaard verborgen */
+.admin-tab {
     display: none;
-    font-weight: bold;
+    background-color: #1a1a1a;
+}
+#admin-user-link { /* Specifieke link voor Google Sheet */
+    background-color: #1e2d3b;
+}
+.admin-tab.zichtbaar {
+    display: inline-block;
 }
 
-#status-message.success {
-    background-color: #28a745;
-    color: white;
-}
-
-#status-message.error {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* ===============================
-   BIJGEWERKTE STIJLEN (USER INFO)
-   =============================== */
-
-.user-info {
-    background-color: #2a2a2a;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* NIEUW: De wrapper voor tekst en knop */
-.user-header {
-    display: flex;
-    justify-content: space-between;
-    /* Duwt ze uit elkaar */
-    align-items: center;
-    gap: 15px;
-}
-
-/* BIJGEWERKT: Tekst links uitgelijnd */
-#medewerker-naam-display {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2ecc71;
-    text-align: left;
-    /* Was 'center' */
-}
-
-/* BIJGEWERKT: Knop is niet meer 'fixed' */
+/* De 'Uitloggen' knop (zweeft rechtsboven) */
 #logout-button {
+    position: fixed;
+    top: 15px;
+    right: 15px;
     padding: 8px 12px;
     background-color: #dc3545;
     color: white;
@@ -177,14 +74,55 @@ input[type="checkbox"]:checked+label {
     cursor: pointer;
     font-size: 0.9em;
     font-weight: bold;
-    flex-shrink: 0;
-    /* Voorkomt dat knop krimpt */
+    z-index: 1000; /* Zorgt dat hij bovenop blijft */
 }
-
 #logout-button:hover {
     background-color: #c82333;
 }
 
+/* --- 3. ALGEMENE INHOUD (Tabbladen) --- */
+.tab-content {
+    display: none; /* Alle inhoud is standaard verborgen */
+    background-color: #1a1a1a;
+    padding-top: 20px;
+}
+.tab-content.active {
+    display: block; /* Toon alleen de actieve inhoud */
+}
+
+/* H1/H2 stijlen voor de 'Algemeen' pagina */
+#tab-algemeen h1,
+#tab-algemeen h2 {
+    color: #fff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+#tab-algemeen p,
+#tab-algemeen li {
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+/* --- 4. TABBLAD: CHECKLISTS --- */
+
+/* De 'user-info' box binnen het checklist tabblad */
+.user-info {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 0; /* Overbodig geworden, maar kan geen kwaad */
+}
+
+#medewerker-naam-display {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #2ecc71;
+    text-align: left;
+}
 
 .info-veld {
     display: flex;
@@ -216,223 +154,125 @@ input[type="checkbox"]:checked+label {
     background-size: 10px;
 }
 
+/* De inklapbare checklist-secties */
+.collapsible {
+    background-color: #333333;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.collapsible:after {
+    content: '▼';
+    font-size: 0.8em;
+    color: #e0e0e0;
+    float: right;
+}
+.collapsible.active:after {
+    content: "▲";
+}
+.content {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+}
+li {
+    padding: 12px 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+}
+li:last-child {
+    border-bottom: none;
+}
+input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 15px;
+    cursor: pointer;
+}
+label {
+    font-size: 1em;
+    flex-grow: 1;
+    cursor: pointer;
+    color: #e0e0e0;
+}
+input[type="checkbox"]:checked+label {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* 'Verzenden' knop voor checklists */
+.submit-button {
+    display: block;
+    width: 90%;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #28a4a5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.submit-button:hover {
+    background-color: #218838;
+}
+.submit-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
 /* Standaard verborgen checklists */
 .checklist-section {
     display: none;
 }
-
 .container.checklists-zichtbaar .checklist-section {
     display: block;
 }
 
-
-/* ===============================
-   RESPONSIVE STIJLEN (TELEFOON)
-   =============================== */
-
-@media (max-width: 720px) {
-
-    body {
-        padding: 10px;
-    }
-
-    .container {
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    h1 {
-        font-size: 1.3em;
-        padding: 15px;
-    }
-
-    .user-info {
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-
-    /* BIJGEWERKT: Op mobiel stapelen we de tekst en knop */
-    .user-header {
-        flex-direction: column;
-        /* Stapelen */
-        align-items: stretch;
-        /* Knop volledige breedte */
-    }
-
-    #medewerker-naam-display {
-        text-align: center;
-        /* Tekst centreren op mobiel */
-        margin-bottom: 10px;
-        /* Ruimte tussen tekst en knop */
-    }
-
-    .collapsible {
-        padding: 15px;
-    }
-
-    .content {
-        padding: 0 15px;
-    }
-
-    .submit-button {
-        padding: 15px;
-        font-size: 1em;
-    }
-
-    /* De oude #logout-button stijl is hier niet meer nodig */
-}
-
-/* ===============================
-   ADMIN KNOP STIJLEN
-   =============================== */
-
-#admin-button {
-    display: none;
-    /* STANDAARD VERBORGEN */
-
-    /* Stijlen om het op een knop te laten lijken */
-    background-color: #007bff;
-    /* Een mooie blauwe kleur */
-    color: white !important;
-    text-decoration: none;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 5px;
+/* Statusberichten (Fout/Succes) */
+#status-message, #defect-status-message {
     text-align: center;
-    font-weight: bold;
-    font-size: 1em;
-    transition: background-color 0.2s;
-}
-
-#admin-button:hover {
-    background-color: #0056b3;
-}
-
-/* Deze class wordt door JS toegevoegd om de knop te tonen */
-#admin-button.zichtbaar {
-    display: block;
-}
-
-/* ===============================
-   NIEUWE STIJLEN (Hoofd Navigatie)
-   =============================== */
-
-/* De navigatiebalk zelf */
-.main-nav {
-    display: flex;
-    flex-wrap: wrap;
-    /* Zorgt dat tabs op mobiel netjes onder elkaar gaan */
-    background-color: #2a2a2a;
-    border-radius: 8px 8px 0 0;
-    /* Afgeronde hoeken (alleen boven) */
-    overflow: hidden;
-    /* Zorgt dat de radius werkt */
-}
-
-/* De knoppen en links in de navigatiebalk */
-.main-tab-link {
-    padding: 14px 18px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    border-bottom: 4px solid transparent;
-    /* Onderste rand */
-    color: #aaa;
-    font-size: 1em;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.main-tab-link:hover {
-    background-color: #333;
-    color: #fff;
-}
-
-/* De stijl voor de ACTIEVE tab */
-.main-tab-link.active {
-    color: #fff;
-    border-bottom-color: #007bff;
-    /* Blauwe actieve rand */
-}
-
-/* De Admin tabs zijn standaard verborgen */
-.admin-tab {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
     display: none;
-    background-color: #1a1a1a;
-    /* Geef admin tabs een iets donkerdere look */
+    font-weight: bold;
+}
+#status-message.success, #defect-status-message.success {
+    background-color: #28a745;
+    color: white;
+}
+#status-message.error, #defect-status-message.error {
+    background-color: #dc3545;
+    color: white;
+}
+#defect-status-message {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* Admin-link voor Google Sheet */
-#admin-user-link {
-    background-color: #1e2d3b;
-    /* Iets meer blauw */
-}
-
-/* Toon de admin-tabs als de class 'zichtbaar' is toegevoegd */
-.admin-tab.zichtbaar {
-    display: inline-block;
-}
-
-/* De 'inhoud' van de tabbladen */
-.tab-content {
-    display: none;
-    /* Alle inhoud is standaard verborgen */
-    background-color: #1a1a1a;
-    /* Maak de achtergrond donker (was body) */
-    padding-top: 20px;
-}
-
-.tab-content.active {
-    display: block;
-    /* Toon alleen de actieve inhoud */
-}
-
-/* Fix: De 'user-info' box hoeft geen 'margin-top' meer te hebben
-   omdat hij nu in de tab-content zit */
-.user-info {
-    margin-top: 0;
-}
-
-/* Stijl voor de algemene info pagina */
-#tab-algemeen h1,
-#tab-algemeen h2 {
-    color: #fff;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-}
-
-#tab-algemeen p,
-#tab-algemeen li {
-    color: #e0e0e0;
-    line-height: 1.6;
-}
-
-/* ===============================
-   NIEUWE STIJLEN (Defecten Tab)
-   =============================== */
-
-/* We gebruiken een grid voor het formulier */
+/* --- 5. TABBLAD: DEFECTEN MELDEN --- */
 .form-grid-defect {
     display: grid;
-    grid-template-columns: 1fr;
-    /* 1 kolom op mobiel */
+    grid-template-columns: 1fr; /* 1 kolom op mobiel */
     gap: 15px;
     max-width: 600px;
-    /* Maak het formulier niet te breed */
 }
-
-/* Op grotere schermen, zet het kartnummer *naast* de omschrijving */
-@media (min-width: 720px) {
-    .form-grid-defect {
-        grid-template-columns: 200px 1fr;
-        /* Vaste breedte voor dropdown, rest voor textarea */
-        align-items: start;
-    }
-}
-
-/* Stijl voor het grote tekstvak (textarea) */
 #defect-form textarea {
     width: 100%;
     padding: 10px;
@@ -446,41 +286,12 @@ input[type="checkbox"]:checked+label {
     resize: vertical;
     min-height: 120px;
 }
-
-/* De 'Meld Defect' knop */
 #defect-submit-button {
     margin-top: 15px;
     max-width: 600px;
-    /* Zorg dat knop even breed is als formulier */
 }
 
-/* Statusbalk specifiek voor defecten */
-#defect-status-message {
-    text-align: center;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: none;
-    /* Standaard verborgen */
-    font-weight: bold;
-    max-width: 600px;
-}
-
-#defect-status-message.success {
-    background-color: #28a745;
-    color: white;
-}
-
-#defect-status-message.error {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* ===============================
-   NIEUWE STIJLEN (Kart Dashboard)
-   =============================== */
-
-/* Stat Boxen */
+/* --- 6. TABBLAD: KART DASHBOARD (Onderdeel van Defecten) --- */
 .stat-box-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -504,19 +315,14 @@ input[type="checkbox"]:checked+label {
     color: #fff;
     margin-bottom: 5px;
 }
-/* Kleuren voor de stats */
 #stat-karts-problemen { color: #e74c3c; } /* Rood */
 #stat-werkende-karts { color: #2ecc71; } /* Groen */
 
-
-/* Scheidingslijn */
 .section-divider {
     border: none;
     border-top: 1px solid #333;
     margin: 30px 0;
 }
-
-/* Filterbalk */
 .filter-bar {
     margin-bottom: 20px;
     background-color: #2a2a2a;
@@ -536,24 +342,22 @@ input[type="checkbox"]:checked+label {
     font-size: 0.9em;
 }
 
-/* Grid voor de defect-kaarten */
+/* Defect-kaarten */
 .problem-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
 }
-
-/* De defect-kaart zelf */
 .defect-card {
     background-color: #2a2a2a;
     border-radius: 8px;
-    border-left: 5px solid #e74c3c; /* Rode rand (Openstaand) */
+    border-left: 5px solid #e74c3c; /* Openstaand */
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
 .defect-card.status-opgelost {
-    border-left-color: #2ecc71; /* Groene rand (Opgelost) */
+    border-left-color: #2ecc71; /* Opgelost */
     opacity: 0.6;
 }
 .defect-card h3 {
@@ -573,12 +377,10 @@ input[type="checkbox"]:checked+label {
     color: #e0e0e0;
     margin-bottom: 15px;
     line-height: 1.5;
-    flex-grow: 1; /* Zorgt dat knop onderaan blijft */
+    flex-grow: 1; 
 }
-
-/* 'Opgelost' knop voor managers */
 .manager-btn {
-    display: none; /* Standaard verborgen voor medewerkers */
+    display: none; /* Standaard verborgen */
     background-color: #28a745;
     color: white;
     border: none;
@@ -590,7 +392,54 @@ input[type="checkbox"]:checked+label {
 .manager-btn:hover {
     background-color: #218838;
 }
-/* Toon knop als container de manager-class heeft */
 .container.is-manager .manager-btn {
     display: block;
+}
+
+/* --- 7. RESPONSIVE STIJLEN (Telefoon) --- */
+@media (max-width: 720px) {
+    body {
+        padding: 10px;
+        /* Maak ruimte voor de 'vaste' uitlogknop */
+        padding-top: 60px; 
+    }
+    .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Zorg dat de titel (in Algemeen tab) kleiner is */
+    #tab-algemeen h1 {
+        font-size: 1.3em;
+        padding: 15px;
+    }
+
+    .user-info {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .collapsible {
+        padding: 15px;
+    }
+    .content {
+        padding: 0 15px;
+    }
+    .submit-button {
+        padding: 15px;
+        font-size: 1em;
+    }
+    
+    /* Uitlogknop op mobiel */
+    #logout-button {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+    }
+
+    /* Defecten formulier op mobiel */
+    .form-grid-defect {
+        grid-template-columns: 1fr;
+    }
 }
