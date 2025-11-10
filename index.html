@@ -16,54 +16,70 @@
         <div class="main-nav">
             <button class="main-tab-link active" data-tab="tab-algemeen">Algemeen</button>
             <button class="main-tab-link" data-tab="tab-checklists">Checklists</button>
+        
+            <button class="main-tab-link" data-tab="tab-defecten">Defecten</button>
             
-            <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Logboek</a>
+            <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
+        <div id="tab-algemeen" class="tab-content active">
+            <h1>Activiteitencentrum Dashboard</h1>
+            <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
+            <p>Dit is de algemene informatiepagina. Je kunt hier belangrijke mededelingen, roosters of andere informatie plaatsen.</p>
+            <p>Om te beginnen:</p>
+            <ul>
+                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
+                <li>Meld eventuele defecten aan de karts via het "Defecten" tabblad.</li>
+            </ul>
+        </div>
+
         <div id="tab-checklists" class="tab-content">
-            
             <div class="user-info">
                 <div id="medewerker-naam-display">Laden...</div>
                 <div class="info-veld">
                     <label for="activiteit-select">Kies activiteit:</label>
                     <select id="activiteit-select">
                         <option value="">-- Selecteer een activiteit --</option>
-                        </select>
+                    </select>
                 </div>
             </div>
-
             <div id="status-message"></div>
-
             <div class="checklist-section" id="sectie-openen">
                 <button class="collapsible">Checklist Openen</button>
                 <div class="content">
                     <ul id="lijst-openen"></ul>
-                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">
-                        Openen Voltooid & Verzenden
-                    </button>
+                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button>
                 </div>
             </div>
-
             <div class="checklist-section" id="sectie-sluiten">
                 <button class="collapsible">Checklist Sluiten</button>
                 <div class="content">
                     <ul id="lijst-sluiten"></ul>
-                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">
-                        Sluiten Voltooid & Verzenden
-                    </button>
+                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button>
                 </div>
             </div>
         </div>
-
-        <div id="tab-algemeen" class="tab-content active">
-            <h1>Activiteitencentrum Dashboard</h1>
+        
+        <div id="tab-defecten" class="tab-content">
+            <h1>Defect Melden (Kartbaan)</h1>
+            <p>Selecteer het kartnummer en omschrijf het defect zo duidelijk mogelijk.</p>
             
-            <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
+            <div id="defect-status-message"></div>
             
-            <p>Dit is de algemene informatiepagina. Je kunt hier belangrijke mededelingen, roosters of andere informatie plaatsen.</p>
-            <p>Om te beginnen:</p>
-            <ul>
-                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
-            </ul>
+            <form id="defect-form">
+                <div class="form-grid-defect">
+                    <div class="info-veld">
+                        <label for="kart-select">Kies Kart Nummer (1-40):</label>
+                        <select id="kart-select" required>
+                            <option value="">-- Selecteer Kart --</option>
+                            </select>
+                    </div>
+                    <div class="info-veld">
+                        <label for="defect-omschrijving">Omschrijving Defect:</label>
+                        <textarea id="defect-omschrijving" rows="6" placeholder="Bijv. 'Stuur staat scheef naar links', 'Remt niet goed'..." required></textarea>
+                    </div>
+                </div>
+                <button type="submit" id="defect-submit-button" class="submit-button">Meld Defect</button>
+            </form>
         </div>
         
     </div> <script>

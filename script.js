@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET TABS)
+   VOLLEDIGE SCRIPT.JS (MET DEFECTEN-MODULE)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
@@ -37,18 +37,18 @@ let ingelogdeRol = "";
         alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
     } 
     
-    // Vul de namen in (op beide tabbladen)
+    // Vul namen in (op beide tabbladen)
     document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
-    // Toon de admin-tabbladen als de gebruiker een manager is
+    // Toon admin tabs
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-tab').forEach(link => {
             link.classList.add('zichtbaar');
         });
     }
     
-    // Vul de dropdown
+    // Vul checklist dropdown
     const activiteitSelect = document.getElementById('activiteit-select');
     for (const activiteit in CHECKLIST_DATA) {
         activiteitSelect.add(new Option(activiteit, activiteit));
@@ -56,14 +56,19 @@ let ingelogdeRol = "";
     
     // Koppel alle event listeners
     koppelListeners();
-    setupMainTabs(); // <-- NIEUWE FUNCTIEAANROEP
+    setupMainTabs();
+    
+    // --- NIEUWE FUNCTIEAANROEPEN ---
+    vulKartDropdown();
+    setupDefectForm();
+    // --- EINDE NIEUW ---
 
 })(); 
 
 // --- DEEL 2: FUNCTIES ---
 
 /**
- * NIEUWE FUNCTIE om de hoofd-tabs te laten werken
+ * Functie om de hoofd-tabs te laten werken
  */
 function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
@@ -83,6 +88,83 @@ function setupMainTabs() {
     });
 }
 
+// ========================
+//  NIEUWE FUNCTIES
+// ========================
+
+/**
+ * Vult de dropdown met karts 1-40
+ */
+function vulKartDropdown() {
+    const kartSelect = document.getElementById('kart-select');
+    if (!kartSelect) return; // Zorg dat de code niet crasht
+    
+    for (let i = 1; i <= 40; i++) {
+        kartSelect.add(new Option(`Kart ${i}`, i));
+    }
+}
+
+/**
+ * Koppelt de 'submit' logica aan het defectenformulier
+ */
+function setupDefectForm() {
+    const defectForm = document.getElementById('defect-form');
+    if (!defectForm) return; // Stop als het formulier niet bestaat
+    
+    const defectButton = document.getElementById('defect-submit-button');
+    
+    defectForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const kartNummer = document.getElementById('kart-select').value;
+        const omschrijving = document.getElementById('defect-omschrijving').value.trim();
+        
+        if (kartNummer === "" || omschrijving === "") {
+            toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error");
+            return;
+        }
+        
+        defectButton.disabled = true;
+        defectButton.textContent = "Bezig met melden...";
+        
+        const payload = {
+            type: "LOG_DEFECT",
+            medewerker: ingelogdeNaam, // We weten wie is ingelogd
+            kartNummer: kartNummer,
+            defect: omschrijving
+        };
+        
+        fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            mode: 'cors'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                toonDefectStatus("Defect succesvol gemeld!", "success");
+                defectForm.reset(); // Maak formulier leeg
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            toonDefectStatus(error.message || "Melden mislukt", "error");
+        })
+        .finally(() => {
+            defectButton.disabled = false;
+            defectButton.textContent = "Meld Defect";
+        });
+    });
+}
+// ========================
+//  EINDE NIEUWE FUNCTIES
+// ========================
+
+
+// --- Bestaande Functies (Checklists) ---
+
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -91,7 +173,6 @@ function koppelListeners() {
     });
     document.getElementById('activiteit-select').addEventListener('change', (e) => updateChecklists(e.target.value));
     
-    // Koppel de inklap-knoppen
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.addEventListener("click", function() {
             this.classList.toggle("active");
@@ -107,7 +188,6 @@ function updateChecklists(activiteit) {
     const sluitLijstUL = document.getElementById('lijst-sluiten');
     openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';
     
-    // Sluit de checklists bij het wisselen
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.classList.remove("active");
         coll.parentElement.querySelector('.content').style.maxHeight = null;
@@ -153,7 +233,8 @@ function verstuurData(lijstNaam) {
     })
     .catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
-        knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+        knop.disabled = false;
+        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
 
@@ -162,7 +243,16 @@ function resetCheckboxes(listId) {
 }
 
 function toonStatus(bericht, type) {
+    // Deze functie is voor de checklist-tab
     var statusDiv = document.getElementById('status-message');
+    statusDiv.textContent = bericht; statusDiv.className = type;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+
+function toonDefectStatus(bericht, type) {
+    // Deze nieuwe, aparte functie is voor de defecten-tab
+    var statusDiv = document.getElementById('defect-status-message');
     statusDiv.textContent = bericht; statusDiv.className = type;
     statusDiv.style.display = 'block';
     setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
