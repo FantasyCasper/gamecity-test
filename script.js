@@ -21,7 +21,6 @@ let alleDefecten = []; // Sla alle defecten op in het geheugen
     } 
     
     // Vul namen in
-    document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
     // Toon admin tabs EN manager knoppen
