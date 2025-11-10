@@ -372,3 +372,63 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         padding: 6px 10px;
     }
 }
+
+/* ===============================
+   8. MOBIEL DROPDOWN MENU
+   =============================== */
+
+/* Het hamburger-menu-icoon (standaard verborgen op desktop) */
+#mobile-menu-toggle {
+    display: none; /* Verborgen op desktop */
+    background-color: #2a2a2a;
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 14px 18px;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    width: 100%;
+    border-bottom: 4px solid #007bff; /* Blauwe lijn, net als actieve tab */
+}
+
+/* Stijlen voor mobiele schermen (720px of smaller) */
+@media (max-width: 720px) {
+    
+    /* Toon de hamburger-knop */
+    #mobile-menu-toggle {
+        display: block;
+    }
+
+    /* De navigatiebalk stapelt nu verticaal */
+    .main-nav {
+        flex-direction: column; 
+        border-radius: 8px; /* Maak alle hoeken rond */
+    }
+    
+    /* Verberg alle tab-links op mobiel (ze zitten in de dropdown) */
+    .main-tab-link {
+        display: none;
+    }
+
+    /* Toon de links als het menu open is */
+    .main-nav.is-open .main-tab-link {
+        display: block;
+        width: 100%;
+        box-sizing: border-box; /* Zorg dat padding klopt */
+        border-bottom: 1px solid #444; /* Lijn tussen items */
+    }
+    
+    /* Zorg dat de 'actieve' blauwe rand niet toont in de dropdown */
+    .main-tab-link.active {
+        border-bottom-color: transparent;
+    }
+    
+    /* De admin knoppen ook in de dropdown */
+    .admin-tab.zichtbaar {
+        display: none; /* Verberg standaard */
+    }
+    .main-nav.is-open .admin-tab.zichtbaar {
+        display: block; /* Toon in de dropdown */
+    }
+}
