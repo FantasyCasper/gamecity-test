@@ -278,3 +278,87 @@ input[type="checkbox"]:checked + label {
 #admin-button.zichtbaar {
     display: block;
 }
+
+/* ===============================
+   NIEUWE STIJLEN (Hoofd Navigatie)
+   =============================== */
+
+/* De navigatiebalk zelf */
+.main-nav {
+    display: flex;
+    flex-wrap: wrap; /* Zorgt dat tabs op mobiel netjes onder elkaar gaan */
+    background-color: #2a2a2a;
+    border-radius: 8px 8px 0 0; /* Afgeronde hoeken (alleen boven) */
+    overflow: hidden; /* Zorgt dat de radius werkt */
+}
+
+/* De knoppen en links in de navigatiebalk */
+.main-tab-link {
+    padding: 14px 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-bottom: 4px solid transparent; /* Onderste rand */
+    color: #aaa;
+    font-size: 1em;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.main-tab-link:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+/* De stijl voor de ACTIEVE tab */
+.main-tab-link.active {
+    color: #fff;
+    border-bottom-color: #007bff; /* Blauwe actieve rand */
+}
+
+/* De Admin tabs zijn standaard verborgen */
+.admin-tab {
+    display: none;
+    background-color: #1a1a1a; /* Geef admin tabs een iets donkerdere look */
+}
+
+/* Admin-link voor Google Sheet */
+#admin-user-link {
+    background-color: #1e2d3b; /* Iets meer blauw */
+}
+
+/* Toon de admin-tabs als de class 'zichtbaar' is toegevoegd */
+.admin-tab.zichtbaar {
+    display: inline-block;
+}
+
+/* De 'inhoud' van de tabbladen */
+.tab-content {
+    display: none; /* Alle inhoud is standaard verborgen */
+    background-color: #1a1a1a; /* Maak de achtergrond donker (was body) */
+    padding-top: 20px;
+}
+
+.tab-content.active {
+    display: block; /* Toon alleen de actieve inhoud */
+}
+
+/* Fix: De 'user-info' box hoeft geen 'margin-top' meer te hebben
+   omdat hij nu in de tab-content zit */
+.user-info {
+    margin-top: 0;
+}
+
+/* Stijl voor de algemene info pagina */
+#tab-algemeen h1, 
+#tab-algemeen h2 {
+    color: #fff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+#tab-algemeen p, 
+#tab-algemeen li {
+    color: #e0e0e0;
+    line-height: 1.6;
+}

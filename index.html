@@ -1,29 +1,76 @@
-<!DOCTYPE html><html lang="nl"><head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checklists Activiteitencentrum</title><link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icons/icon-192x192.png">
-</head><body>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklists Activiteitencentrum</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+</head>
+<body>
+
     <button id="logout-button">Uitloggen</button>
+
     <div class="container">
-        <h1>Checklists Activiteitencentrum</h1>
-        <div class="user-info">
-            <div id="medewerker-naam-display">Laden...</div>
-            <a href="admin/admin.html" id="admin-button" class="admin-link">Open Admin Panel</a>
-            <div class="info-veld">
-                <label for="activiteit-select">Kies activiteit:</label>
-                <select id="activiteit-select"><option value="">-- Selecteer een activiteit --</option></select>
+        <div class="main-nav">
+            <button class="main-tab-link active" data-tab="tab-checklists">Checklists</button>
+            <button class="main-tab-link" data-tab="tab-algemeen">Algemeen</button>
+            
+            <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Logboek</a>
+        </div>
+        <div id="tab-checklists" class="tab-content active">
+            <div class="user-info">
+                <div id="medewerker-naam-display">Laden...</div>
+                <div class="info-veld">
+                    <label for="activiteit-select">Kies activiteit:</label>
+                    <select id="activiteit-select">
+                        <option value="">-- Selecteer een activiteit --</option>
+                        </select>
+                </div>
+            </div>
+
+            <div id="status-message"></div>
+
+            <div class="checklist-section" id="sectie-openen">
+                <button class="collapsible">Checklist Openen</button>
+                <div class="content">
+                    <ul id="lijst-openen"></ul>
+                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">
+                        Openen Voltooid & Verzenden
+                    </button>
+                </div>
+            </div>
+
+            <div class="checklist-section" id="sectie-sluiten">
+                <button class="collapsible">Checklist Sluiten</button>
+                <div class="content">
+                    <ul id="lijst-sluiten"></ul>
+                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">
+                        Sluiten Voltooid & Verzenden
+                    </button>
+                </div>
             </div>
         </div>
-        <div id="status-message"></div>
-        <div class="checklist-section" id="sectie-openen">
-            <button class="collapsible">Checklist Openen</button>
-            <div class="content"><ul id="lijst-openen"></ul><button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button></div>
+
+        <div id="tab-algemeen" class="tab-content">
+            <h1>Activiteitencentrum Dashboard</h1>
+            
+            <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
+            
+            <p>Dit is de algemene informatiepagina. Je kunt hier belangrijke mededelingen, roosters of andere informatie plaatsen.</p>
+            <p>Om te beginnen:</p>
+            <ul>
+                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
+                <li>Managers kunnen op de "Admin" tabbladen klikken voor beheer.</li>
+            </ul>
         </div>
-        <div class="checklist-section" id="sectie-sluiten">
-            <button class="collapsible">Checklist Sluiten</button>
-            <div class="content"><ul id="lijst-sluiten"></ul><button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button></div>
-        </div>
-    </div>
-    <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }</script>
+        
+    </div> <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    </script>
     <script src="script.js"></script>
-</body></html>
+</body>
+</html>
