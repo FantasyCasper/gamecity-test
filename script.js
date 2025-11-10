@@ -35,7 +35,7 @@ let alleDefecten = [];
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
-    setupMobileMenu(); // <-- NIEUWE FUNCTIEAANROEP
+    setupMobileMenu(); // <-- DEZE FUNCTIE DOET HET WERK
     vulKartMeldDropdown(); 
     setupDefectForm();
     laadDefectenDashboard(); 
@@ -46,7 +46,7 @@ let alleDefecten = [];
 // --- DEEL 2: FUNCTIES ---
 
 /**
- * NIEUWE FUNCTIE: Koppel de 'hamburger' menu-knop
+ * Functie om de 'hamburger' menu-knop te koppelen
  */
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
@@ -207,7 +207,7 @@ function markeerDefectOpgelost(rowId, buttonEl) {
     });
 }
 
-// --- CHECKLIST FUNCTIES (Ongewijzigd) ---
+// --- CHECKLIST FUNCTIES ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -268,7 +268,7 @@ function verstuurData(lijstNaam) {
     }).catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
         knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+        knop.textContent = lijstNaam.replace("Checklist ", "") + " VoltoIid & Verzenden";
     });
 }
 function resetCheckboxes(listId) {

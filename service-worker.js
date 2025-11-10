@@ -1,11 +1,11 @@
 /* ===============================
-   SERVICE WORKER (BIJGEWERKT)
+   SERVICE WORKER (CACHE BUSTER V3)
    =============================== */
 
-// STAP 1: DE NAAM IS VERANDERD (bv. v1 -> v2)
-const CACHE_NAAM = 'checklist-app-cache-v2';
+// De naam is veranderd naar v3
+const CACHE_NAAM = 'checklist-app-cache-v3';
 
-// STAP 2: DE LIJST IS BIJGEWERKT MET DE ADMIN-BESTANDEN
+// De lijst met AL je bestanden
 const urlsToCache = [
   '.',
   'index.html',
@@ -18,8 +18,6 @@ const urlsToCache = [
   'login/index.html',
   'login/login.css',
   'login/login.js',
-  
-  // -- NIEUWE REGELS --
   'admin/admin.html',
   'admin/admin.css',
   'admin/admin.js'
@@ -36,14 +34,12 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// 2. Activering (Ruimt oude caches op met een ANDERE naam)
+// 2. Activering (Ruimt oude caches op)
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cacheName) {
-          // Verwijder alle caches die beginnen met 'checklist-app-cache-'
-          // maar NIET de allernieuwste zijn
           return cacheName.startsWith('checklist-app-cache-') && 
                  cacheName !== CACHE_NAAM;
         }).map(function(cacheName) {
@@ -58,16 +54,14 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   // We willen NOOIT de Google Script API call cachen
   if (event.request.url.includes('script.google.com')) {
-    // Probeer het netwerk, en doe niets als het faalt (de 'catch' in de app vangt dit op)
     return event.respondWith(fetch(event.request));
   }
   
   // Voor alle andere bestanden (HTML, CSS, JS)
   event.respondWith(
-    // Probeer eerst het netwerk (altijd de nieuwste versie)
     fetch(event.request)
       .then(function(response) {
-        // Netwerk gelukt? Goed zo. Update de cache met de nieuwe versie.
+        // Netwerk gelukt? Update de cache met de nieuwe versie.
         return caches.open(CACHE_NAAM).then(function(cache) {
           cache.put(event.request, response.clone());
           return response;
