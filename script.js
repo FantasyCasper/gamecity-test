@@ -1,18 +1,36 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET MOBIEL MENU)
+   VOLLEDIGE SCRIPT.JS (STABIELE VERSIE)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 // ==============================================================
-//   CHECKLIST DATA (Hard-coded)
+//   CHECKLIST DATA (TERUG NAAR HARD-CODED)
 // ==============================================================
-const CHECKLIST_DATA = { /* ... (Je checklist data) ... */ };
+const CHECKLIST_DATA = {
+    "Baan": {
+        openen: ["Baan lichten aan", "Karts controleren", "Helmen desinfecteren", "Pitdeur openen"],
+        sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
+    },
+    "Lasergame": {
+        openen: ["Lichten aan", "Blacklights aan", "Rookmachines aan", "Computer aan", "Printer aan", "Versterker aan", "Pakken uit pluggen", "Ronde in de Arena lopen"],
+        sluiten: ["Lasermaxx afsluiten (via exit)", "Computer uit", "Versterker uit", "Ventilator/Verwarming opruimen", "Printer uit - papier bijvullen", "Pakken inpluggen", "Ruimte controleren op defecten en rommel", "Ronde in de Arena lopen met stoffer en blik", "Luchtverfrissers controleren", "Rookmachines bijvullen", "Prullenbak legen"]
+    },
+    "Prison Island": {
+        openen: ["lichten aan", "Briefings TV aan", "Computer aan", "Printer aan", "Rondje door de hal + cellen controleren"],
+        sluiten: ["Lichten uit", "Computer + Printer + Scherm uit", "Printer bijvullen", "Briefings TV uit", "Cellen + briefingsruimte controleren op defecten/rommel", "Alle brievenbusjes naar beneden", "Bureau netjes achterlaten", "De hal met stoffer en blik vegen", "Prullenback checken, is die vol dan vervangen."]
+    },
+    "Minigolf": {
+        openen: ["Ballen en clubs klaarzetten", "Verlichting banen aan", "Scorekaarten aanvullen"],
+        sluiten: ["Ballen en clubs innemen/opruimen", "Verlichting uit", "Afval controleren"]
+    }
+};
+// ==============================================================
 
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
 let alleDefecten = []; 
 
-// --- DEEL 1: DE "BEWAKER" (BIJGEWERKT) ---
+// --- DEEL 1: DE "BEWAKER" (De functie die alles start) ---
 (function() {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
@@ -20,13 +38,16 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
     } 
     
+    // Vul namen in (op beide tabbladen)
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
+    // Toon admin tabs EN manager knoppen
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         document.querySelector('.container').classList.add('is-manager'); 
     }
     
+    // HIER WORDT DE DROPDOWN GEVULD
     const activiteitSelect = document.getElementById('activiteit-select');
     for (const activiteit in CHECKLIST_DATA) {
         activiteitSelect.add(new Option(activiteit, activiteit));
@@ -35,7 +56,7 @@ let alleDefecten = [];
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
-    setupMobileMenu(); // <-- DEZE FUNCTIE DOET HET WERK
+    setupMobileMenu(); 
     vulKartMeldDropdown(); 
     setupDefectForm();
     laadDefectenDashboard(); 
@@ -45,9 +66,6 @@ let alleDefecten = [];
 
 // --- DEEL 2: FUNCTIES ---
 
-/**
- * Functie om de 'hamburger' menu-knop te koppelen
- */
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.querySelector('.main-nav');
@@ -57,10 +75,9 @@ function setupMobileMenu() {
             mainNav.classList.toggle('is-open');
         });
         
-        // Zorg dat het menu sluit als je op een tab klikt
         document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
             button.addEventListener('click', () => {
-                if (window.innerWidth <= 720) { // Alleen op mobiel
+                if (window.innerWidth <= 720) { 
                     mainNav.classList.remove('is-open');
                 }
             });
@@ -81,7 +98,6 @@ function setupMainTabs() {
 }
 
 // --- DEEL 3: DEFECTEN-DASHBOARD FUNCTIES ---
-// (Deze zijn ongewijzigd)
 
 function vulKartMeldDropdown() {
     const kartSelect = document.getElementById('new-defect-kart');
@@ -268,7 +284,7 @@ function verstuurData(lijstNaam) {
     }).catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
         knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " VoltoIid & Verzenden";
+        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
 function resetCheckboxes(listId) {

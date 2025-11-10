@@ -1,9 +1,9 @@
 /* ===============================
-   SERVICE WORKER (CACHE BUSTER V3)
+   SERVICE WORKER (CACHE BUSTER V4)
    =============================== */
 
-// De naam is veranderd naar v3
-const CACHE_NAAM = 'checklist-app-cache-v3';
+// De naam is veranderd naar v4
+const CACHE_NAAM = 'checklist-app-cache-v4';
 
 // De lijst met AL je bestanden
 const urlsToCache = [
@@ -18,6 +18,8 @@ const urlsToCache = [
   'login/index.html',
   'login/login.css',
   'login/login.js',
+  
+  // -- Admin bestanden --
   'admin/admin.html',
   'admin/admin.css',
   'admin/admin.js'
@@ -29,7 +31,11 @@ self.addEventListener('install', function(event) {
     caches.open(CACHE_NAAM)
       .then(function(cache) {
         console.log('Cache geopend en bestanden worden toegevoegd');
-        return cache.addAll(urlsToCache);
+        // forceer de browser om de nieuwste versie te pakken
+        const updateCache = urlsToCache.map(url => {
+            return cache.add(new Request(url, { cache: 'reload' }));
+        });
+        return Promise.all(updateCache);
       })
   );
 });
@@ -59,6 +65,7 @@ self.addEventListener('fetch', function(event) {
   
   // Voor alle andere bestanden (HTML, CSS, JS)
   event.respondWith(
+    // Probeer eerst het netwerk (altijd de nieuwste versie)
     fetch(event.request)
       .then(function(response) {
         // Netwerk gelukt? Update de cache met de nieuwe versie.
