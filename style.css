@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE CSS (MET MOBIEL MENU FIX)
+   VOLLEDIGE CSS (OPGESCHOOND)
    =============================== */
 
 /* --- 1. ALGEMENE STIJLEN --- */
@@ -51,14 +51,16 @@ body {
     border-bottom-color: #007bff; 
 }
 
-/* De Admin tabs zijn standaard verborgen */
+/* De Admin tabs */
 .admin-tab {
-    display: none;
-    background-color: #333;
-    color: #fff;
+    display: none; /* Standaard verborgen */
+    background-color: #1a1a1a;
+}
+#admin-user-link { /* Specifieke link voor Google Sheet */
+    background-color: #1e2d3b;
 }
 .admin-tab.zichtbaar {
-    display: inline-block;
+    display: inline-block; /* Getoond voor managers */
 }
 
 /* De 'Uitloggen' knop (zweeft rechtsboven) */
@@ -82,7 +84,7 @@ body {
 
 /* Het hamburger-menu-icoon (standaard verborgen op desktop) */
 #mobile-menu-toggle {
-    display: none; /* <-- DEZE REGEL VERBERGT HET OP DESKTOP */
+    display: none; 
     background-color: #2a2a2a;
     color: #fff;
     font-size: 1.2em;
@@ -92,7 +94,7 @@ body {
     border: none;
     text-align: left;
     width: 100%;
-    border-bottom: 4px solid #007bff; /* Blauwe lijn, net als actieve tab */
+    border-bottom: 4px solid #007bff;
 }
 
 
@@ -105,17 +107,34 @@ body {
 .tab-content.active {
     display: block; 
 }
+
+/* Centreren van 'Algemeen' tabblad (jouw laatste verzoek) */
+#tab-algemeen {
+    text-align: center;
+}
 #tab-algemeen h1,
 #tab-algemeen h2 {
     color: #fff;
     border-bottom: 1px solid #444;
     padding-bottom: 10px;
+    display: inline-block; /* Zorgt dat onderlijn stopt na tekst */
 }
-#tab-algemeen p,
-#tab-algemeen li {
+#tab-algemeen p {
     color: #e0e0e0;
     line-height: 1.6;
 }
+#tab-algemeen ul {
+    display: inline-block; 
+    text-align: left;      
+    margin-top: 15px;
+}
+#tab-algemeen li {
+    color: #e0e0e0;
+    line-height: 1.6;
+    padding: 0; /* Reset <li> stijl */
+    border: none; /* Reset <li> stijl */
+}
+
 
 /* --- 4. TABBLAD: CHECKLISTS --- */
 .user-info {
@@ -170,12 +189,31 @@ body {
 .collapsible:after { content: '▼'; font-size: 0.8em; color: #e0e0e0; float: right; }
 .collapsible.active:after { content: "▲"; }
 .content { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; }
-ul { list-style-type: none; padding: 0; margin: 10px 0; }
-li { padding: 12px 5px; border-bottom: 1px solid #333; display: flex; align-items: center; }
-li:last-child { border-bottom: none; }
+
+/* Stijlen voor <ul> en <li> in checklists */
+#tab-checklists ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+}
+#tab-checklists li {
+    padding: 12px 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+}
+#tab-checklists li:last-child {
+    border-bottom: none;
+}
 input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
-label { font-size: 1em; flex-grow: 1; cursor: pointer; color: #e0e0e0; }
+#tab-checklists label { 
+    font-size: 1em; 
+    flex-grow: 1; 
+    cursor: pointer; 
+    color: #e0e0e0; 
+}
 input[type="checkbox"]:checked+label { text-decoration: line-through; color: #888; }
+
 .submit-button {
     display: block;
     width: 90%;
@@ -194,27 +232,6 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 .submit-button:disabled { background-color: #555; cursor: not-allowed; }
 .checklist-section { display: none; }
 .container.checklists-zichtbaar .checklist-section { display: block; }
-.status-bericht {
-    text-align: center;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: none;
-    font-weight: bold;
-}
-#status-message.success, #status-message-defect.success {
-    background-color: #28a745;
-    color: white;
-}
-#status-message.error, #status-message-defect.error {
-    background-color: #dc3545;
-    color: white;
-}
-#status-message-defect {
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
 /* --- 5. TABBLAD: KART DASHBOARD (DEFECTEN) --- */
 #tab-kart-dashboard h1 {
@@ -223,6 +240,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     margin: 0 0 20px 0;
     padding: 0;
     background: none;
+    border: none; /* Verwijder border van h1 */
 }
 .stat-box-grid {
     display: grid;
@@ -249,6 +267,11 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 }
 #stat-karts-problemen { color: #e74c3c; } 
 #stat-werkende-karts { color: #2ecc71; }
+.section-divider {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 30px 0;
+}
 .form-bar {
     padding: 10px; 
     margin-bottom: 20px;
@@ -332,7 +355,30 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 .manager-btn:hover { background-color: #218838; }
 .container.is-manager .manager-btn { display: block; }
 
-/* --- 6. RESPONSIVE STIJLEN (Telefoon) --- */
+/* --- 6. ALGEMENE STATUSBERICHTEN --- */
+.status-bericht {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    display: none;
+    font-weight: bold;
+}
+#status-message.success, #status-message-defect.success {
+    background-color: #28a745;
+    color: white;
+}
+#status-message.error, #status-message-defect.error {
+    background-color: #dc3545;
+    color: white;
+}
+#status-message-defect {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- 7. RESPONSIVE STIJLEN (Telefoon) --- */
 @media (max-width: 720px) {
     body {
         padding: 10px;
@@ -374,22 +420,17 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         padding: 6px 10px;
     }
 
-    /* --- 7. MOBIEL DROPDOWN MENU --- */
-    
-    /* Toon de hamburger-knop */
+    /* Mobiel Dropdown Menu */
     #mobile-menu-toggle {
         display: block;
     }
-    /* De navigatiebalk stapelt nu verticaal */
     .main-nav {
         flex-direction: column; 
         border-radius: 8px;
     }
-    /* Verberg alle tab-links op mobiel (ze zitten in de dropdown) */
     .main-tab-link {
         display: none;
     }
-    /* Toon de links als het menu open is */
     .main-nav.is-open .main-tab-link {
         display: block;
         width: 100%;
@@ -399,33 +440,10 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     .main-tab-link.active {
         border-bottom-color: transparent;
     }
-    /* De admin knoppen ook in de dropdown */
     .admin-tab.zichtbaar {
         display: none; 
     }
     .main-nav.is-open .admin-tab.zichtbaar {
         display: block; 
     }
-}
-
-/* ===============================
-   AANPASSING: Algemeen Tab Centreren
-   =============================== */
-
-/* Centreer alle tekst-elementen in het 'Algemeen' tabblad */
-#tab-algemeen {
-    text-align: center;
-}
-
-/* Zorgt dat de <ul> (lijst) ook netjes gecentreerd staat */
-#tab-algemeen ul {
-    display: inline-block; /* Centreer de lijst-container */
-    text-align: left;      /* Hou de tekst *in* de lijst links */
-    margin-top: 15px;
-}
-
-/* Zorgt dat de onderlijnen van de titels niet de volle breedte pakken */
-#tab-algemeen h1,
-#tab-algemeen h2 {
-    display: inline-block; /* Lijn stopt na de tekst */
 }
