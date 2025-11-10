@@ -191,7 +191,7 @@ function setupKartFilter() {
     
     wisButton.addEventListener('click', () => {
         kartFilter.value = 'alle';
-        statusFilter.value = 'open'; // Reset naar 'Open'
+        statusFilter.value = 'alle'; // Reset naar 'Open'
         pasFiltersToe();
     });
 }
