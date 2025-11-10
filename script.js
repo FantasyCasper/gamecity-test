@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (Filter opgeschoond)
+   VOLLEDIGE SCRIPT.JS (Dropdown Bugfix)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
@@ -12,7 +12,7 @@ let ingelogdeNaam = "";
 let ingelogdeRol = "";
 let alleDefecten = []; // Sla alle defecten op in het geheugen
 
-// --- DEEL 1: DE "BEWAKER" (BIJGEWERKT) ---
+// --- DEEL 1: DE "BEWAKER" ---
 (function() {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
@@ -39,10 +39,10 @@ let alleDefecten = []; // Sla alle defecten op in het geheugen
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
-    vulKartMeldDropdown(); // <-- Hernoemd
+    vulKartMeldDropdown(); // <-- Roept de gerepareerde functie aan
     setupDefectForm();
     laadDefectenDashboard(); 
-    setupKartFilter(); // <-- Aangepast
+    setupKartFilter();
 
 })(); 
 
@@ -63,10 +63,12 @@ function setupMainTabs() {
 // --- DEEL 3: DEFECTEN-DASHBOARD FUNCTIES ---
 
 /**
- * AANGEPAST: Vult nu alleen de 'Meld Defect' dropdown
+ * GEREPAREERD: Vult nu alleen de 'Meld Defect' dropdown
  */
 function vulKartMeldDropdown() {
     const kartSelect = document.getElementById('new-defect-kart');
+    
+    // HIER IS DE FIX: De check naar 'filter-kart' is verwijderd.
     if (!kartSelect) return; 
     
     for (let i = 1; i <= 40; i++) {
@@ -75,7 +77,7 @@ function vulKartMeldDropdown() {
 }
 
 /**
- * AANGEPAST: Koppelt aan het nieuwe #new-defect-form
+ * Koppelt aan het nieuwe #new-defect-form
  */
 function setupDefectForm() {
     const defectForm = document.getElementById('new-defect-form'); 
@@ -267,7 +269,7 @@ function markeerDefectOpgelost(rowId, buttonEl) {
 }
 
 
-// --- CHECKLIST FUNCTIES (Ongewijzigd) ---
+// --- CHECKLIST FUNCTIES ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
