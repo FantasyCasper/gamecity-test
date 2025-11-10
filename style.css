@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE CSS (Layout-fix)
+   VOLLEDIGE CSS (MET MOBIEL MENU FIX)
    =============================== */
 
 /* --- 1. ALGEMENE STIJLEN --- */
@@ -16,13 +16,17 @@ body {
 }
 
 /* --- 2. HOOFDNAVIGATIE & UITLOGGEN --- */
+
+/* De navigatiebalk zelf */
 .main-nav {
     display: flex;
     flex-wrap: wrap; 
     background-color: #2a2a2a;
-    border-radius: 8px 8px 0 0;
+    border-radius: 8px 8px 0 0; 
     overflow: hidden;
 }
+
+/* Knoppen en links in de navigatiebalk */
 .main-tab-link {
     padding: 14px 18px;
     cursor: pointer;
@@ -33,7 +37,7 @@ body {
     font-size: 1em;
     font-weight: bold;
     text-decoration: none;
-    display: inline-block;
+    display: inline-block; /* Zichtbaar op desktop */
 }
 .main-tab-link:hover {
     background-color: #333;
@@ -43,6 +47,8 @@ body {
     color: #fff;
     border-bottom-color: #007bff; 
 }
+
+/* De Admin tabs zijn standaard verborgen */
 .admin-tab {
     display: none;
     background-color: #1a1a1a;
@@ -50,6 +56,8 @@ body {
 .admin-tab.zichtbaar {
     display: inline-block;
 }
+
+/* De 'Uitloggen' knop (zweeft rechtsboven) */
 #logout-button {
     position: fixed;
     top: 15px;
@@ -62,11 +70,27 @@ body {
     cursor: pointer;
     font-size: 0.9em;
     font-weight: bold;
-    z-index: 1000;
+    z-index: 1000; 
 }
 #logout-button:hover {
     background-color: #c82333;
 }
+
+/* Het hamburger-menu-icoon (standaard verborgen op desktop) */
+#mobile-menu-toggle {
+    display: none; /* <-- DEZE REGEL VERBERGT HET OP DESKTOP */
+    background-color: #2a2a2a;
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 14px 18px;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    width: 100%;
+    border-bottom: 4px solid #007bff; /* Blauwe lijn, net als actieve tab */
+}
+
 
 /* --- 3. ALGEMENE INHOUD (Tabbladen) --- */
 .tab-content {
@@ -166,9 +190,29 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 .submit-button:disabled { background-color: #555; cursor: not-allowed; }
 .checklist-section { display: none; }
 .container.checklists-zichtbaar .checklist-section { display: block; }
+.status-bericht {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    display: none;
+    font-weight: bold;
+}
+#status-message.success, #status-message-defect.success {
+    background-color: #28a745;
+    color: white;
+}
+#status-message.error, #status-message-defect.error {
+    background-color: #dc3545;
+    color: white;
+}
+#status-message-defect {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-/* --- 5. TABBLAD: KART DASHBOARD --- */
-
+/* --- 5. TABBLAD: KART DASHBOARD (DEFECTEN) --- */
 #tab-kart-dashboard h1 {
     text-align: left;
     font-size: 1.8em;
@@ -201,12 +245,6 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 }
 #stat-karts-problemen { color: #e74c3c; } 
 #stat-werkende-karts { color: #2ecc71; }
-
-/* =================================
-   HIER ZITTEN DE AANPASSINGEN
-   ================================= */
-
-/* De nieuwe toolbars */
 .form-bar {
     padding: 10px; 
     margin-bottom: 20px;
@@ -221,8 +259,6 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     margin-left: 5px;
     font-size: 0.9em;
 }
-
-/* Inputs en Selects in de toolbars */
 .form-bar input[type="text"],
 .form-bar select {
     padding: 10px 12px;
@@ -231,19 +267,15 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     color: #e0e0e0;
     border-radius: 5px;
     font-size: 0.9em;
-    min-width: 150px; /* Geef ze een basisbreedte */
-    box-sizing: border-box; /* Belangrijk voor padding */
+    min-width: 150px; 
+    box-sizing: border-box; 
 }
-
-/* Probleem omschrijving: GROEIT mee */
 .form-bar input#new-defect-problem {
-    flex-grow: 1; /* Pakt alle beschikbare ruimte */
-    min-width: 200px; /* Minimale breedte voor mobiel */
+    flex-grow: 1; 
+    min-width: 200px; 
 }
-
-/* Knoppen in de toolbar */
 .form-bar button {
-    flex-shrink: 0; /* Voorkom krimpen */
+    flex-shrink: 0; 
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
@@ -262,20 +294,11 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     color: white;
 }
 #filter-wissen-btn:hover { background-color: #218838; }
-
-/* =================================
-   EINDE AANPASSINGEN
-   ================================= */
-
-
-/* Grid voor de defect-kaarten */
 .problem-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
 }
-
-/* De defect-kaart zelf */
 .defect-card {
     background-color: #2a2a2a;
     border-radius: 8px;
@@ -305,28 +328,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 .manager-btn:hover { background-color: #218838; }
 .container.is-manager .manager-btn { display: block; }
 
-/* --- 6. ALGEMENE STATUSBERICHTEN --- */
-.status-bericht {
-    text-align: center;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: none;
-    font-weight: bold;
-}
-#status-message.success, #status-message-defect.success {
-    background-color: #28a745;
-    color: white;
-}
-#status-message.error, #status-message-defect.error {
-    background-color: #dc3545;
-    color: white;
-}
-/* Oude ID is niet meer nodig, maar kan geen kwaad */
-#defect-status-message { display: none; }
-
-
-/* --- 7. RESPONSIVE STIJLEN (Telefoon) --- */
+/* --- 6. RESPONSIVE STIJLEN (Telefoon) --- */
 @media (max-width: 720px) {
     body {
         padding: 10px;
@@ -345,8 +347,6 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         padding: 15px;
         margin-bottom: 15px;
     }
-    
-    /* Toolbar op mobiel */
     .form-bar {
         flex-direction: column;
         align-items: stretch; 
@@ -361,74 +361,45 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         text-align: center;
         margin-bottom: 5px;
     }
-
     .collapsible { padding: 15px; }
     .content { padding: 0 15px; }
     .submit-button { padding: 15px; font-size: 1em; }
-    
     #logout-button {
         top: 10px;
         right: 10px;
         padding: 6px 10px;
     }
-}
 
-/* ===============================
-   8. MOBIEL DROPDOWN MENU
-   =============================== */
-
-/* Het hamburger-menu-icoon (standaard verborgen op desktop) */
-#mobile-menu-toggle {
-    display: none; /* Verborgen op desktop */
-    background-color: #2a2a2a;
-    color: #fff;
-    font-size: 1.2em;
-    font-weight: bold;
-    padding: 14px 18px;
-    cursor: pointer;
-    border: none;
-    text-align: left;
-    width: 100%;
-    border-bottom: 4px solid #007bff; /* Blauwe lijn, net als actieve tab */
-}
-
-/* Stijlen voor mobiele schermen (720px of smaller) */
-@media (max-width: 720px) {
+    /* --- 7. MOBIEL DROPDOWN MENU --- */
     
     /* Toon de hamburger-knop */
     #mobile-menu-toggle {
         display: block;
     }
-
     /* De navigatiebalk stapelt nu verticaal */
     .main-nav {
         flex-direction: column; 
-        border-radius: 8px; /* Maak alle hoeken rond */
+        border-radius: 8px;
     }
-    
     /* Verberg alle tab-links op mobiel (ze zitten in de dropdown) */
     .main-tab-link {
         display: none;
     }
-
     /* Toon de links als het menu open is */
     .main-nav.is-open .main-tab-link {
         display: block;
         width: 100%;
-        box-sizing: border-box; /* Zorg dat padding klopt */
-        border-bottom: 1px solid #444; /* Lijn tussen items */
+        box-sizing: border-box;
+        border-bottom: 1px solid #444;
     }
-    
-    /* Zorg dat de 'actieve' blauwe rand niet toont in de dropdown */
     .main-tab-link.active {
         border-bottom-color: transparent;
     }
-    
     /* De admin knoppen ook in de dropdown */
     .admin-tab.zichtbaar {
-        display: none; /* Verberg standaard */
+        display: none; 
     }
     .main-nav.is-open .admin-tab.zichtbaar {
-        display: block; /* Toon in de dropdown */
+        display: block; 
     }
 }
