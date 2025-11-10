@@ -190,3 +190,63 @@ h2 {
         display: none;
     }
 }
+
+/* ===============================
+   FIX VOOR DEFECTEN-FORMULIER LAYOUT
+   =============================== */
+
+/* We gebruiken een grid voor het formulier */
+.form-grid-defect {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 kolom op mobiel */
+    gap: 15px;
+    max-width: 600px; /* Maak het formulier niet te breed */
+}
+
+/* Op grotere schermen, zet het kartnummer *naast* de omschrijving */
+@media (min-width: 720px) {
+    .form-grid-defect {
+        grid-template-columns: 200px 1fr; /* Vaste breedte voor dropdown, rest voor textarea */
+        align-items: start;
+    }
+}
+
+/* Stijl voor het grote tekstvak (textarea) */
+#defect-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* De 'Meld Defect' knop */
+#defect-submit-button {
+    margin-top: 15px;
+    max-width: 600px; /* Zorg dat knop even breed is als formulier */
+}
+
+/* Statusbalk specifiek voor defecten */
+#defect-status-message {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    display: none; /* Standaard verborgen */
+    font-weight: bold;
+    max-width: 600px;
+}
+#defect-status-message.success { 
+    background-color: #28a745; 
+    color: white; 
+}
+#defect-status-message.error { 
+    background-color: #dc3545; 
+    color: white; 
+}

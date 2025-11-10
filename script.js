@@ -4,7 +4,7 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 // ==============================================================
-//   CHECKLIST DATA (Hard-coded, zoals je wilde)
+//   CHECKLIST DATA (Hard-coded)
 // ==============================================================
 const CHECKLIST_DATA = {
     "Baan": {
@@ -58,64 +58,45 @@ let ingelogdeRol = "";
     koppelListeners();
     setupMainTabs();
     
-    // --- NIEUWE FUNCTIEAANROEPEN ---
+    // --- DEZE FUNCTIES VULLEN DE KART-LIJST ---
     vulKartDropdown();
     setupDefectForm();
-    // --- EINDE NIEUW ---
+    // --- EINDE ---
 
 })(); 
 
 // --- DEEL 2: FUNCTIES ---
 
-/**
- * Functie om de hoofd-tabs te laten werken
- */
 function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', () => {
-            // Verberg alle inhoud
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            // Maak alle knoppen inactief
             document.querySelectorAll('.main-tab-link').forEach(link => link.classList.remove('active'));
-            
-            // Toon de juiste tab-inhoud
             const tabId = button.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
-            
-            // Maak de geklikte knop actief
             button.classList.add('active');
         });
     });
 }
 
-// ========================
-//  NIEUWE FUNCTIES
-// ========================
+// --- DEFECTEN FUNCTIES ---
 
-/**
- * Vult de dropdown met karts 1-40
- */
 function vulKartDropdown() {
     const kartSelect = document.getElementById('kart-select');
-    if (!kartSelect) return; // Zorg dat de code niet crasht
+    if (!kartSelect) return; 
     
     for (let i = 1; i <= 40; i++) {
         kartSelect.add(new Option(`Kart ${i}`, i));
     }
 }
 
-/**
- * Koppelt de 'submit' logica aan het defectenformulier
- */
 function setupDefectForm() {
     const defectForm = document.getElementById('defect-form');
-    if (!defectForm) return; // Stop als het formulier niet bestaat
-    
+    if (!defectForm) return;
     const defectButton = document.getElementById('defect-submit-button');
     
     defectForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const kartNummer = document.getElementById('kart-select').value;
         const omschrijving = document.getElementById('defect-omschrijving').value.trim();
         
@@ -129,7 +110,7 @@ function setupDefectForm() {
         
         const payload = {
             type: "LOG_DEFECT",
-            medewerker: ingelogdeNaam, // We weten wie is ingelogd
+            medewerker: ingelogdeNaam, 
             kartNummer: kartNummer,
             defect: omschrijving
         };
@@ -144,7 +125,7 @@ function setupDefectForm() {
         .then(data => {
             if (data.status === "success") {
                 toonDefectStatus("Defect succesvol gemeld!", "success");
-                defectForm.reset(); // Maak formulier leeg
+                defectForm.reset(); 
             } else {
                 throw new Error(data.message);
             }
@@ -158,12 +139,10 @@ function setupDefectForm() {
         });
     });
 }
-// ========================
-//  EINDE NIEUWE FUNCTIES
-// ========================
+// --- EINDE DEFECTEN FUNCTIES ---
 
 
-// --- Bestaande Functies (Checklists) ---
+// --- CHECKLIST FUNCTIES ---
 
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
@@ -217,7 +196,7 @@ function verstuurData(lijstNaam) {
     });
     var dataPayload = { type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit };
     
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // Cache-buster
+    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { 
         method: 'POST',
         body: JSON.stringify(dataPayload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -243,7 +222,6 @@ function resetCheckboxes(listId) {
 }
 
 function toonStatus(bericht, type) {
-    // Deze functie is voor de checklist-tab
     var statusDiv = document.getElementById('status-message');
     statusDiv.textContent = bericht; statusDiv.className = type;
     statusDiv.style.display = 'block';
@@ -251,7 +229,6 @@ function toonStatus(bericht, type) {
 }
 
 function toonDefectStatus(bericht, type) {
-    // Deze nieuwe, aparte functie is voor de defecten-tab
     var statusDiv = document.getElementById('defect-status-message');
     statusDiv.textContent = bericht; statusDiv.className = type;
     statusDiv.style.display = 'block';
