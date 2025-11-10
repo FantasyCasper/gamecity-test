@@ -100,12 +100,6 @@ body {
     gap: 15px;
     margin-top: 0;
 }
-#medewerker-naam-display {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2ecc71;
-    text-align: left;
-}
 .info-veld {
     display: flex;
     flex-direction: column;

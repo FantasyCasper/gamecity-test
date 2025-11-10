@@ -1,7 +1,7 @@
 {
-  "name": "Checklists Activiteitencentrum",
+  "name": "Gamecity testsite",
   "short_name": "Checklists",
-  "description": "Checklist app voor het openen en sluiten van activiteiten.",
+  "description": "Testpagina voor het makkelijk maken van Gamecity.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#1a1a1a",
