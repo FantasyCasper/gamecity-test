@@ -1,10 +1,10 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET TABS)
+   VOLLEDIGE SCRIPT.JS (STABIELE VERSIE)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec"; 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 // ==============================================================
-//   CHECKLIST DATA (Hard-coded, zoals je wilde)
+//   CHECKLIST DATA (LASERGAME IS NU BIJGEWERKT)
 // ==============================================================
 const CHECKLIST_DATA = {
     "Baan": {
@@ -12,12 +12,20 @@ const CHECKLIST_DATA = {
         sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
     },
     "Lasergame": {
-        openen: ["Lichten aan", "Blacklights aan", "Rookmachines aan", "Computer aan", "Printer aan", "Versterker aan", "Pakken uit pluggen", "Ronde in de Arena lopen"],
-        sluiten: ["Lasermaxx afsluiten (via exit)", "Computer uit", "Versterker uit", "Ventilator/Verwarming opruimen", "Printer uit - papier bijvullen", "Pakken inpluggen", "Ruimte controleren op defecten en rommel", "Ronde in de Arena lopen met stoffer en blik", "Luchtverfrissers controleren", "Rookmachines bijvullen", "Prullenbak legen"]
+        openen: [
+            "Lichten aan", "Blacklights aan", "Rookmachines aan", "Computer aan", "Printer aan", "Versterker aan", "Pakken uit pluggen", "Ronde in de Arena lopen"
+        ],
+        sluiten: [
+            "Lasermaxx afsluiten (via exit)", "Computer uit", "Versterker uit", "Ventilator/Verwarming opruimen", "Printer uit - papier bijvullen", "Pakken inpluggen", "Ruimte controleren op defecten en rommel", "Ronde in de Arena lopen met stoffer en blik", "Luchtverfrissers controleren", "Rookmachines bijvullen", "Prullenbak legen"
+        ]
     },
     "Prison Island": {
-        openen: ["lichten aan", "Briefings TV aan", "Computer aan", "Printer aan", "Rondje door de hal + cellen controleren"],
-        sluiten: ["Lichten uit", "Computer + Printer + Scherm uit", "Printer bijvullen", "Briefings TV uit", "Cellen + briefingsruimte controleren op defecten/rommel", "Alle brievenbusjes naar beneden", "Bureau netjes achterlaten", "De hal met stoffer en blik vegen", "Prullenback checken, is die vol dan vervangen."]
+        openen: [
+            "lichten aan","Briefings TV aan","Computer aan","Printer aan","Rondje door de hal + cellen controleren"
+        ],
+        sluiten: [
+            "Lichten uit","Computer + Printer + Scherm uit","Printer bijvullen","Briefings TV uit","Cellen + briefingsruimte controleren op defecten/rommel","Alle brievenbusjes naar beneden","Bureau netjes achterlaten","De hal met stoffer en blik vegen","Prullenback checken, is die vol dan vervangen."
+        ]
     },
     "Minigolf": {
         openen: ["Ballen en clubs klaarzetten", "Verlichting banen aan", "Scorekaarten aanvullen"],
@@ -29,90 +37,53 @@ const CHECKLIST_DATA = {
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
 
-// --- DEEL 1: DE "BEWAKER" (BIJGEWERKT) ---
-(function() {
+// --- DEEL 1: DE "BEWAKER" ---
+(function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
     if (!ingelogdeNaam || !ingelogdeRol) {
-        alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
-    } 
-    
-    // Vul de namen in (op beide tabbladen)
-    document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
-    document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
-
-    // Toon de admin-tabbladen als de gebruiker een manager is
-    if (ingelogdeRol === 'manager') {
-        document.querySelectorAll('.admin-tab').forEach(link => {
-            link.classList.add('zichtbaar');
-        });
+        alert("Je bent niet ingelogd."); window.location.href = "login/"; return;
     }
-    
-    // Vul de dropdown
+    document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
+    if (ingelogdeRol === 'manager') {
+        document.querySelectorAll('.admin-link').forEach(link => link.classList.add('zichtbaar'));
+    }
+
+    // Vul de dropdown direct
     const activiteitSelect = document.getElementById('activiteit-select');
     for (const activiteit in CHECKLIST_DATA) {
         activiteitSelect.add(new Option(activiteit, activiteit));
     }
-    
-    // Koppel alle event listeners
-    koppelListeners();
-    setupMainTabs(); // <-- NIEUWE FUNCTIEAANROEP
 
-})(); 
+    koppelListeners();
+})();
 
 // --- DEEL 2: FUNCTIES ---
 
-/**
- * NIEUWE FUNCTIE om de hoofd-tabs te laten werken
- */
-function setupMainTabs() {
-    document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
-        button.addEventListener('click', () => {
-            // Verberg alle inhoud
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            // Maak alle knoppen inactief
-            document.querySelectorAll('.main-tab-link').forEach(link => link.classList.remove('active'));
-            
-            // Toon de juiste tab-inhoud
-            const tabId = button.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-            
-            // Maak de geklikte knop actief
-            button.classList.add('active');
-        });
-    });
-}
-
 function koppelListeners() {
-    document.getElementById('logout-button').addEventListener('click', function() {
+    document.getElementById('logout-button').addEventListener('click', function () {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
             localStorage.clear(); window.location.href = 'login/';
         }
     });
     document.getElementById('activiteit-select').addEventListener('change', (e) => updateChecklists(e.target.value));
-    
-    // Koppel de inklap-knoppen
     document.querySelectorAll(".collapsible").forEach(coll => {
-        coll.addEventListener("click", function() {
+        coll.addEventListener("click", function () {
             this.classList.toggle("active");
             var content = this.parentElement.querySelector('.content');
             content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
         });
     });
 }
-
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
     openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';
-    
-    // Sluit de checklists bij het wisselen
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.classList.remove("active");
         coll.parentElement.querySelector('.content').style.maxHeight = null;
     });
-    
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
         data.openen.forEach((item, i) => { openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; });
@@ -122,7 +93,6 @@ function updateChecklists(activiteit) {
         container.classList.remove('checklists-zichtbaar');
     }
 }
-
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
@@ -136,31 +106,29 @@ function verstuurData(lijstNaam) {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
     var dataPayload = { type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit };
-    
+
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { // Cache-buster
         method: 'POST',
         body: JSON.stringify(dataPayload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     })
-    .then(response => response.json())
-    .then(data => {
-        if(data.status === "success") {
-            toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
-            resetCheckboxes(listId);
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
+                resetCheckboxes(listId);
+                knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+            } else { throw new Error(data.message); }
+        })
+        .catch(error => {
+            toonStatus(error.message || "Failed to fetch", "error");
             knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-        } else { throw new Error(data.message); }
-    })
-    .catch(error => {
-        toonStatus(error.message || "Failed to fetch", "error");
-        knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    });
+        });
 }
-
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
-
 function toonStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message');
     statusDiv.textContent = bericht; statusDiv.className = type;
