@@ -1,7 +1,3 @@
-/* ===============================
-   VOLLEDIGE ADMIN.JS (OPGESCHOOND)
-   =============================== */
-
 // ##################################################################
 // #                        BELANGRIJKE STAP                        #
 // # PLAK HIER JE GOOGLE WEB APP URL                                #
@@ -11,12 +7,11 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwF
 // Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
-// HUIDIGE_CHECKLIST_CONFIG is niet meer nodig
 
 // --- DEEL 1: BEWAKER & INIT (OPGESCHOOND) ---
 (function() {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd.");
+        alert("Toegang geweigerd. Je moet ingelogd zijn als manager.");
         window.location.href = "../index.html"; 
         return; 
     }
@@ -30,12 +25,11 @@ const statusDiv = document.getElementById('status-message');
     setupTabNavigation();
     setupUserForm();
     setupUserDeleteListener();
-    // setupChecklistEditor() is verwijderd
 
 })(); 
 
 
-// --- DEEL 2: TAB NAVIGATIE (Ongewijzigd) ---
+// --- DEEL 2: TAB NAVIGATIE ---
 function setupTabNavigation() {
     document.querySelectorAll('.tab-link').forEach(button => {
         button.addEventListener('click', () => {
@@ -49,7 +43,7 @@ function setupTabNavigation() {
 }
 
 
-// --- DEEL 3: LOGBOEK FUNCTIES (Ongewijzigd) ---
+// --- DEEL 3: LOGBOEK FUNCTIES ---
 function fetchLogData() { 
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = 'loading';
     callApi("GET_LOGS").then(result => {
@@ -67,7 +61,7 @@ function renderLogs(logs) {
     logBody.innerHTML = html;
 }
 
-// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES (Ongewijzigd) ---
+// --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
 function fetchUsers() { 
     callApi("GET_USERS").then(result => { renderUsers(result.data); })
     .catch(error => handleError(error, "Fout bij laden gebruikers: "));
@@ -115,10 +109,7 @@ function setupUserDeleteListener() {
     });
 }
 
-// --- DEEL 5: CHECKLIST FUNCTIES (IS NU VOLLEDIG VERWIJDERD) ---
-
-
-// --- DEEL 6: DEFECTEN FUNCTIES (Heeft nu nummer 5) ---
+// --- DEEL 5: DEFECTEN FUNCTIES ---
 function fetchDefects() {
     callApi("GET_DEFECTS")
         .then(result => {
@@ -149,7 +140,7 @@ function renderDefects(defects) {
 }
 
 
-// --- DEEL 7: ALGEMENE API & FOUTAFHANDELING (Heeft nu nummer 6) ---
+// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
 async function callApi(type, extraData = {}) {
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
     const payload = { type: type, rol: ingelogdeRol, ...extraData };

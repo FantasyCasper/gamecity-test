@@ -16,19 +16,17 @@
         <div class="main-nav">
             <button class="main-tab-link active" data-tab="tab-algemeen">Algemeen</button>
             <button class="main-tab-link" data-tab="tab-checklists">Checklists</button>
-        
-            <button class="main-tab-link" data-tab="tab-defecten">Defecten</button>
-            
+            <button class="main-tab-link" data-tab="tab-kart-dashboard">Kart Dashboard</button>
             <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
+
         <div id="tab-algemeen" class="tab-content active">
             <h1>Activiteitencentrum Dashboard</h1>
             <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
-            <p>Dit is de algemene informatiepagina. Je kunt hier belangrijke mededelingen, roosters of andere informatie plaatsen.</p>
-            <p>Om te beginnen:</p>
+            <p>Dit is de algemene informatiepagina.</p>
             <ul>
                 <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
-                <li>Meld eventuele defecten aan de karts via het "Defecten" tabblad.</li>
+                <li>Meld defecten of bekijk de status via het "Kart Dashboard".</li>
             </ul>
         </div>
 
@@ -43,50 +41,58 @@
                 </div>
             </div>
             <div id="status-message"></div>
-            <div class="checklist-section" id="sectie-openen">
-                <button class="collapsible">Checklist Openen</button>
-                <div class="content">
-                    <ul id="lijst-openen"></ul>
-                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button>
-                </div>
             </div>
-            <div class="checklist-section" id="sectie-sluiten">
-                <button class="collapsible">Checklist Sluiten</button>
-                <div class="content">
-                    <ul id="lijst-sluiten"></ul>
-                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button>
-                </div>
-            </div>
-        </div>
         
-        <div id="tab-defecten" class="tab-content">
-            <h1>Defect Melden (Kartbaan)</h1>
-            <p>Selecteer het kartnummer en omschrijf het defect zo duidelijk mogelijk.</p>
+        <div id="tab-kart-dashboard" class="tab-content">
+            <h1>Kart Dashboard</h1>
+
+            <div class="stat-box-grid">
+                <div class="stat-box"><span id="stat-totaal-karts">40</span>Totaal Karts</div>
+                <div class="stat-box"><span id="stat-karts-problemen">0</span>Karts met Problemen</div>
+                <div class="stat-box"><span id="stat-werkende-karts">0</span>Werkende Karts</div>
+            </div>
+
+            <hr class="section-divider">
             
+            <h2>Defect Melden</h2>
             <div id="defect-status-message"></div>
-            
             <form id="defect-form">
                 <div class="form-grid-defect">
                     <div class="info-veld">
                         <label for="kart-select">Kies Kart Nummer (1-40):</label>
                         <select id="kart-select" required>
                             <option value="">-- Selecteer Kart --</option>
-                            </select>
+                        </select>
                     </div>
                     <div class="info-veld">
                         <label for="defect-omschrijving">Omschrijving Defect:</label>
-                        <textarea id="defect-omschrijving" rows="6" placeholder="Bijv. 'Stuur staat scheef naar links', 'Remt niet goed'..." required></textarea>
+                        <textarea id="defect-omschrijving" rows="4" placeholder="Bijv. 'Stuur staat scheef naar links'..." required></textarea>
                     </div>
                 </div>
                 <button type="submit" id="defect-submit-button" class="submit-button">Meld Defect</button>
             </form>
+            
+            <hr class="section-divider">
+
+            <h2>Openstaande Defecten</h2>
+            <div class="filter-bar">
+                <label for="kart-filter">Filter op Kart:</label>
+                <select id="kart-filter">
+                    <option value="alle">Alle Karts</option>
+                    </select>
+            </div>
+            
+            <div id="defect-card-container" class="problem-card-grid">
+                <p>Geen openstaande defecten gevonden.</p>
+            </div>
+
         </div>
         
-    </div> <script>
+    </div> <script src="script.js"></script>
+    <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
       }
     </script>
-    <script src="script.js"></script>
 </body>
 </html>

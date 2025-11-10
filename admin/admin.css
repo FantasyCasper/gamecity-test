@@ -6,7 +6,7 @@ body {
     padding-top: 60px;
 }
 
-/* Container breder maken */
+/* Container breder maken (zoals je wilde) */
 .container {
     max-width: 1200px;
 }
@@ -46,6 +46,7 @@ h2 {
 .tab-nav {
     display: flex;
     border-bottom: 2px solid #555;
+    flex-wrap: wrap; /* Tabs netjes onder elkaar op mobiel */
 }
 .tab-link {
     padding: 10px 20px;
@@ -71,7 +72,7 @@ h2 {
     display: block; /* Toon actieve tab */
 }
 
-/* --- Tabel Stijlen (Logboek, Gebruikers, Defecten) --- */
+/* --- Algemene Tabel Stijlen (voor alle 3 de tabellen) --- */
 #log-table, #user-table, #defect-table {
     width: 100%;
     border-collapse: collapse;
@@ -159,7 +160,7 @@ h2 {
 }
 
 
-/* Responsive tabel: op telefoons wordt het een lijst */
+/* Responsive tabellen: op telefoons wordt het een lijst */
 @media (max-width: 720px) {
     #log-table thead, #user-table thead, #defect-table thead {
         display: none; 
@@ -177,76 +178,18 @@ h2 {
     #log-table td:last-child, #user-table td:last-child, #defect-table td:last-child {
         border-bottom: none;
     }
+    /* Dit voegt de "header" toe aan elke cel */
     #log-table td:before, #user-table td:before, #defect-table td:before {
         content: attr(data-label);
         float: left;
         font-weight: bold;
         color: #fff;
     }
+    /* Speciale aanpassing voor de delete-knop */
     #user-table td[data-label="Actie"] {
         text-align: center;
     }
     #user-table td[data-label="Actie"]::before {
         display: none;
     }
-}
-
-/* ===============================
-   FIX VOOR DEFECTEN-FORMULIER LAYOUT
-   =============================== */
-
-/* We gebruiken een grid voor het formulier */
-.form-grid-defect {
-    display: grid;
-    grid-template-columns: 1fr; /* 1 kolom op mobiel */
-    gap: 15px;
-    max-width: 600px; /* Maak het formulier niet te breed */
-}
-
-/* Op grotere schermen, zet het kartnummer *naast* de omschrijving */
-@media (min-width: 720px) {
-    .form-grid-defect {
-        grid-template-columns: 200px 1fr; /* Vaste breedte voor dropdown, rest voor textarea */
-        align-items: start;
-    }
-}
-
-/* Stijl voor het grote tekstvak (textarea) */
-#defect-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #e0e0e0;
-    border-radius: 5px;
-    font-size: 1em;
-    box-sizing: border-box;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 120px;
-}
-
-/* De 'Meld Defect' knop */
-#defect-submit-button {
-    margin-top: 15px;
-    max-width: 600px; /* Zorg dat knop even breed is als formulier */
-}
-
-/* Statusbalk specifiek voor defecten */
-#defect-status-message {
-    text-align: center;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: none; /* Standaard verborgen */
-    font-weight: bold;
-    max-width: 600px;
-}
-#defect-status-message.success { 
-    background-color: #28a745; 
-    color: white; 
-}
-#defect-status-message.error { 
-    background-color: #dc3545; 
-    color: white; 
 }
