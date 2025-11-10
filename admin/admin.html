@@ -10,10 +10,13 @@
 </head>
 <body>
     <div class="container">
-        <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
         <h1>Admin Panel</h1>
         
         <div class="tab-nav">
+            <button id="mobile-menu-toggle">☰ Menu</button>
+            
+            <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
+            
             <button class="tab-link active" data-tab="tab-logs">Logboek</button>
             <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
             <button class="tab-link" data-tab="tab-defecten">Defecten</button> 
@@ -24,16 +27,7 @@
         <div id="tab-logs" class="tab-content active">
             <h2>Logboek Overzicht</h2>
             <table id="log-table">
-                <thead>
-                    <tr>
-                        <th>Tijdstip</th>
-                        <th>Medewerker</th>
-                        <th>Activiteit</th>
-                        <th>Lijst</th>
-                        <th>Voltooid</th>
-                        <th>Gemist</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Tijdstip</th><th>Medewerker</th><th>Activiteit</th><th>Lijst</th><th>Voltooid</th><th>Gemist</th></tr></thead>
                 <tbody id="log-body"></tbody>
             </table>
         </div>
@@ -51,14 +45,7 @@
             </form>
             <h2 class="user-list-header">Bestaande Gebruikers</h2>
             <table id="user-table">
-                <thead>
-                    <tr>
-                        <th>Gebruikersnaam</th>
-                        <th>Volledige Naam</th>
-                        <th>Rol</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Gebruikersnaam</th><th>Volledige Naam</th><th>Rol</th><th>Actie</th></tr></thead>
                 <tbody id="user-body"></tbody>
             </table>
         </div>

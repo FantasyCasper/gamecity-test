@@ -1,3 +1,7 @@
+/* ===============================
+   VOLLEDIGE ADMIN.JS (MET MOBIEL MENU)
+   =============================== */
+
 // ##################################################################
 // #                        BELANGRIJKE STAP                        #
 // # PLAK HIER JE GOOGLE WEB APP URL                                #
@@ -8,7 +12,7 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwF
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
 
-// --- DEEL 1: BEWAKER & INIT (OPGESCHOOND) ---
+// --- DEEL 1: BEWAKER & INIT (BIJGEWERKT) ---
 (function() {
     if (ingelogdeRol !== 'manager') {
         alert("Toegang geweigerd. Je moet ingelogd zijn als manager.");
@@ -16,20 +20,44 @@ const statusDiv = document.getElementById('status-message');
         return; 
     }
     
-    // Haal data op voor de tabbladen die we hebben
+    // Haal data op
     fetchLogData();
     fetchUsers();
     fetchDefects(); 
     
     // Koppel de listeners
     setupTabNavigation();
+    setupMobileMenu(); // <-- NIEUWE FUNCTIEAANROEP
     setupUserForm();
     setupUserDeleteListener();
 
 })(); 
 
+// --- DEEL 2: NAVIGATIE FUNCTIES ---
 
-// --- DEEL 2: TAB NAVIGATIE ---
+/**
+ * NIEUWE FUNCTIE: Koppel de 'hamburger' menu-knop
+ */
+function setupMobileMenu() {
+    const menuToggle = document.getElementById('mobile-menu-toggle');
+    const mainNav = document.querySelector('.tab-nav'); // Let op: class is .tab-nav
+    
+    if (menuToggle && mainNav) {
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('is-open');
+        });
+        
+        // Zorg dat het menu sluit als je op een tab klikt
+        document.querySelectorAll('.tab-link').forEach(button => {
+            button.addEventListener('click', () => {
+                if (window.innerWidth <= 720) { // Alleen op mobiel
+                    mainNav.classList.remove('is-open');
+                }
+            });
+        });
+    }
+}
+
 function setupTabNavigation() {
     document.querySelectorAll('.tab-link').forEach(button => {
         button.addEventListener('click', () => {

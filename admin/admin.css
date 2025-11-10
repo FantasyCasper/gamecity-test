@@ -1,12 +1,12 @@
 /* ===============================
-   VOLLEDIGE ADMIN.CSS (OPGESCHOOND)
+   VOLLEDIGE ADMIN.CSS (MET MOBIEL MENU)
    =============================== */
 
 body {
-    padding-top: 60px;
+    padding-top: 20px; /* Padding mag terug, knop is niet meer fixed */
 }
 
-/* Container breder maken (zoals je wilde) */
+/* Container breder maken */
 .container {
     max-width: 1200px;
 }
@@ -14,24 +14,82 @@ body {
     .container { max-width: 90%; }
 }
 
+/* ===============================
+   NIEUWE NAVIGATIE STIJLEN
+   =============================== */
+
+/* De 'Terug' knop (niet meer 'fixed') */
 #back-button {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    padding: 8px 12px;
-    background-color: #555;
+    /* position: fixed; is VERWIJDERD */
+    padding: 14px 18px;
+    background-color: #555; /* Donkere achtergrond */
     color: white;
     text-decoration: none;
     border: none;
-    border-radius: 5px;
+    border-bottom: 4px solid transparent;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: bold;
-    z-index: 1000;
 }
 #back-button:hover {
     background-color: #777;
 }
+
+/* De navigatiebalk zelf */
+.tab-nav {
+    display: flex;
+    border-bottom: 2px solid #555;
+    flex-wrap: wrap; /* Zorgt dat tabs op mobiel netjes onder elkaar gaan */
+    background-color: #2a2a2a;
+    border-radius: 8px 8px 0 0; /* Alleen bovenkant afgerond */
+    overflow: hidden;
+}
+
+/* Knoppen in de navigatiebalk */
+.tab-link {
+    padding: 14px 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+    display: inline-block;
+}
+.tab-link.active {
+    color: #fff;
+    border-bottom-color: #007bff;
+}
+.tab-link:hover {
+    background-color: #333;
+}
+.tab-content {
+    display: none; /* Standaard verborgen */
+}
+.tab-content.active {
+    display: block; /* Toon actieve tab */
+}
+
+/* Het hamburger-menu-icoon (standaard verborgen op desktop) */
+#mobile-menu-toggle {
+    display: none; /* Verborgen op desktop */
+    background-color: #2a2a2a;
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 14px 18px;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    width: 100%;
+    border-bottom: 4px solid #007bff; /* Blauwe lijn */
+}
+
+/* ===============================
+   REST VAN DE STIJLEN
+   =============================== */
 
 h2 {
     margin-top: 30px;
@@ -42,37 +100,7 @@ h2 {
     margin-top: 40px;
 }
 
-/* --- Tab Navigatie --- */
-.tab-nav {
-    display: flex;
-    border-bottom: 2px solid #555;
-    flex-wrap: wrap; /* Tabs netjes onder elkaar op mobiel */
-}
-.tab-link {
-    padding: 10px 20px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: #aaa;
-    font-size: 1.1em;
-    font-weight: bold;
-    border-bottom: 3px solid transparent;
-}
-.tab-link.active {
-    color: #fff;
-    border-bottom-color: #007bff;
-}
-.tab-link:hover {
-    background-color: #2a2a2a;
-}
-.tab-content {
-    display: none; /* Standaard verborgen */
-}
-.tab-content.active {
-    display: block; /* Toon actieve tab */
-}
-
-/* --- Algemene Tabel Stijlen (voor alle 3 de tabellen) --- */
+/* --- Algemene Tabel Stijlen --- */
 #log-table, #user-table, #defect-table {
     width: 100%;
     border-collapse: collapse;
@@ -162,6 +190,32 @@ h2 {
 
 /* Responsive tabellen: op telefoons wordt het een lijst */
 @media (max-width: 720px) {
+    /* Toon de hamburger-knop */
+    #mobile-menu-toggle {
+        display: block;
+    }
+    /* De navigatiebalk stapelt nu verticaal */
+    .tab-nav {
+        flex-direction: column; 
+        border-radius: 8px;
+    }
+    /* Verberg alle tab-links op mobiel (ze zitten in de dropdown) */
+    .tab-link, #back-button {
+        display: none;
+    }
+    /* Toon de links als het menu open is */
+    .tab-nav.is-open .tab-link,
+    .tab-nav.is-open #back-button {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom: 1px solid #444;
+    }
+    .tab-link.active {
+        border-bottom-color: transparent;
+    }
+
+    /* Tabel responsive regels */
     #log-table thead, #user-table thead, #defect-table thead {
         display: none; 
     }
@@ -178,14 +232,12 @@ h2 {
     #log-table td:last-child, #user-table td:last-child, #defect-table td:last-child {
         border-bottom: none;
     }
-    /* Dit voegt de "header" toe aan elke cel */
     #log-table td:before, #user-table td:before, #defect-table td:before {
         content: attr(data-label);
         float: left;
         font-weight: bold;
         color: #fff;
     }
-    /* Speciale aanpassing voor de delete-knop */
     #user-table td[data-label="Actie"] {
         text-align: center;
     }
