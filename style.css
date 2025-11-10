@@ -54,9 +54,7 @@ body {
     display: none;
     background-color: #1a1a1a;
 }
-#admin-user-link { /* Specifieke link voor Google Sheet */
-    background-color: #1e2d3b;
-}
+/* Toon de admin-tabs als de class 'zichtbaar' is toegevoegd */
 .admin-tab.zichtbaar {
     display: inline-block;
 }
@@ -114,7 +112,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 0; /* Overbodig geworden, maar kan geen kwaad */
+    margin-top: 0;
 }
 
 #medewerker-naam-display {
@@ -218,7 +216,7 @@ input[type="checkbox"]:checked+label {
     width: 90%;
     margin: 20px auto;
     padding: 15px;
-    background-color: #28a4a5;
+    background-color: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
@@ -262,36 +260,12 @@ input[type="checkbox"]:checked+label {
 }
 #defect-status-message {
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 10px auto; /* Aangepast van 10px 0 */
 }
 
-/* --- 5. TABBLAD: DEFECTEN MELDEN --- */
-.form-grid-defect {
-    display: grid;
-    grid-template-columns: 1fr; /* 1 kolom op mobiel */
-    gap: 15px;
-    max-width: 600px;
-}
-#defect-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #e0e0e0;
-    border-radius: 5px;
-    font-size: 1em;
-    box-sizing: border-box;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 120px;
-}
-#defect-submit-button {
-    margin-top: 15px;
-    max-width: 600px;
-}
+/* --- 5. TABBLAD: KART DASHBOARD (DEFECTEN) --- */
 
-/* --- 6. TABBLAD: KART DASHBOARD (Onderdeel van Defecten) --- */
+/* Stat Boxen */
 .stat-box-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -318,11 +292,43 @@ input[type="checkbox"]:checked+label {
 #stat-karts-problemen { color: #e74c3c; } /* Rood */
 #stat-werkende-karts { color: #2ecc71; } /* Groen */
 
+/* Scheidingslijn */
 .section-divider {
     border: none;
     border-top: 1px solid #333;
     margin: 30px 0;
 }
+
+/* Defecten Formulier */
+.form-grid-defect {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 kolom op mobiel */
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto; /* Centreer het formulier */
+}
+#defect-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+}
+#defect-submit-button {
+    margin-top: 15px;
+    max-width: 600px;
+    width: 100%; /* Maak knop volledige breedte */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Filterbalk */
 .filter-bar {
     margin-bottom: 20px;
     background-color: #2a2a2a;
@@ -396,12 +402,11 @@ input[type="checkbox"]:checked+label {
     display: block;
 }
 
-/* --- 7. RESPONSIVE STIJLEN (Telefoon) --- */
+/* --- 6. RESPONSIVE STIJLEN (Telefoon) --- */
 @media (max-width: 720px) {
     body {
         padding: 10px;
-        /* Maak ruimte voor de 'vaste' uitlogknop */
-        padding-top: 60px; 
+        padding-top: 60px; /* Ruimte voor de 'vaste' uitlogknop */
     }
     .container {
         max-width: 100%;
@@ -409,7 +414,6 @@ input[type="checkbox"]:checked+label {
         padding: 0;
     }
     
-    /* Zorg dat de titel (in Algemeen tab) kleiner is */
     #tab-algemeen h1 {
         font-size: 1.3em;
         padding: 15px;
@@ -431,15 +435,9 @@ input[type="checkbox"]:checked+label {
         font-size: 1em;
     }
     
-    /* Uitlogknop op mobiel */
     #logout-button {
         top: 10px;
         right: 10px;
         padding: 6px 10px;
-    }
-
-    /* Defecten formulier op mobiel */
-    .form-grid-defect {
-        grid-template-columns: 1fr;
     }
 }
