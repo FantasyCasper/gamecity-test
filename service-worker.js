@@ -1,12 +1,13 @@
 /* ===============================
-   SERVICE WORKER (GOOGLE SCRIPT VERSIE)
+   SERVICE WORKER (BIJGEWERKT)
    =============================== */
 
-const CACHE_NAAM = 'checklist-app-cache-v1-googlesheet'; // Nieuwe naam om update te forceren
+// STAP 1: DE NAAM IS VERANDERD (bv. v1 -> v2)
+const CACHE_NAAM = 'checklist-app-cache-v2';
 
-// Alle paden zijn nu relatief
+// STAP 2: DE LIJST IS BIJGEWERKT MET DE ADMIN-BESTANDEN
 const urlsToCache = [
-  '.', // De 'root' van waar de app start
+  '.',
   'index.html',
   'style.css',
   'script.js',
@@ -16,7 +17,12 @@ const urlsToCache = [
   'login/', 
   'login/index.html',
   'login/login.css',
-  'login/login.js'
+  'login/login.js',
+  
+  // -- NIEUWE REGELS --
+  'admin/admin.html',
+  'admin/admin.css',
+  'admin/admin.js'
 ];
 
 // 1. Installatie
@@ -30,13 +36,16 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// 2. Activering (Ruimt oude caches op)
+// 2. Activering (Ruimt oude caches op met een ANDERE naam)
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cacheName) {
-          return cacheName.startsWith('checklist-app-cache-') && cacheName !== CACHE_NAAM;
+          // Verwijder alle caches die beginnen met 'checklist-app-cache-'
+          // maar NIET de allernieuwste zijn
+          return cacheName.startsWith('checklist-app-cache-') && 
+                 cacheName !== CACHE_NAAM;
         }).map(function(cacheName) {
           return caches.delete(cacheName);
         })
@@ -49,15 +58,20 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   // We willen NOOIT de Google Script API call cachen
   if (event.request.url.includes('script.google.com')) {
-    event.respondWith(fetch(event.request));
-    return;
+    // Probeer het netwerk, en doe niets als het faalt (de 'catch' in de app vangt dit op)
+    return event.respondWith(fetch(event.request));
   }
   
+  // Voor alle andere bestanden (HTML, CSS, JS)
   event.respondWith(
+    // Probeer eerst het netwerk (altijd de nieuwste versie)
     fetch(event.request)
       .then(function(response) {
-        // Netwerk gelukt? Goed zo.
-        return response;
+        // Netwerk gelukt? Goed zo. Update de cache met de nieuwe versie.
+        return caches.open(CACHE_NAAM).then(function(cache) {
+          cache.put(event.request, response.clone());
+          return response;
+        });
       })
       .catch(function() {
         // Netwerk faalt? (Offline?) Pak het bestand uit de cache.
