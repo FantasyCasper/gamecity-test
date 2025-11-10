@@ -407,3 +407,25 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         display: block; 
     }
 }
+
+/* ===============================
+   AANPASSING: Algemeen Tab Centreren
+   =============================== */
+
+/* Centreer alle tekst-elementen in het 'Algemeen' tabblad */
+#tab-algemeen {
+    text-align: center;
+}
+
+/* Zorgt dat de <ul> (lijst) ook netjes gecentreerd staat */
+#tab-algemeen ul {
+    display: inline-block; /* Centreer de lijst-container */
+    text-align: left;      /* Hou de tekst *in* de lijst links */
+    margin-top: 15px;
+}
+
+/* Zorgt dat de onderlijnen van de titels niet de volle breedte pakken */
+#tab-algemeen h1,
+#tab-algemeen h2 {
+    display: inline-block; /* Lijn stopt na de tekst */
+}
