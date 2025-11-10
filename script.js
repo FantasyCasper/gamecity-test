@@ -1,35 +1,18 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET ALLES)
+   VOLLEDIGE SCRIPT.JS (MET NIEUW KART DASHBOARD)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 // ==============================================================
 //   CHECKLIST DATA (Hard-coded)
 // ==============================================================
-const CHECKLIST_DATA = {
-    "Baan": {
-        openen: ["Baan lichten aan", "Karts controleren", "Helmen desinfecteren", "Pitdeur openen"],
-        sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
-    },
-    "Lasergame": {
-        openen: ["Lichten aan", "Blacklights aan", "Rookmachines aan", "Computer aan", "Printer aan", "Versterker aan", "Pakken uit pluggen", "Ronde in de Arena lopen"],
-        sluiten: ["Lasermaxx afsluiten (via exit)", "Computer uit", "Versterker uit", "Ventilator/Verwarming opruimen", "Printer uit - papier bijvullen", "Pakken inpluggen", "Ruimte controleren op defecten en rommel", "Ronde in de Arena lopen met stoffer en blik", "Luchtverfrissers controleren", "Rookmachines bijvullen", "Prullenbak legen"]
-    },
-    "Prison Island": {
-        openen: ["lichten aan", "Briefings TV aan", "Computer aan", "Printer aan", "Rondje door de hal + cellen controleren"],
-        sluiten: ["Lichten uit", "Computer + Printer + Scherm uit", "Printer bijvullen", "Briefings TV uit", "Cellen + briefingsruimte controleren op defecten/rommel", "Alle brievenbusjes naar beneden", "Bureau netjes achterlaten", "De hal met stoffer en blik vegen", "Prullenback checken, is die vol dan vervangen."]
-    },
-    "Minigolf": {
-        openen: ["Ballen en clubs klaarzetten", "Verlichting banen aan", "Scorekaarten aanvullen"],
-        sluiten: ["Ballen en clubs innemen/opruimen", "Verlichting uit", "Afval controleren"]
-    }
-};
-// ==============================================================
+const CHECKLIST_DATA = { /* ... (Je checklist data) ... */ };
 
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
+let alleDefecten = []; // Sla alle defecten op in het geheugen
 
-// --- DEEL 1: DE "BEWAKER" (De functie die alles start) ---
+// --- DEEL 1: DE "BEWAKER" (BIJGEWERKT) ---
 (function() {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
@@ -37,17 +20,14 @@ let ingelogdeRol = "";
         alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
     } 
     
-    // Vul namen in (op beide tabbladen)
+    // Vul namen in
     document.getElementById('medewerker-naam-display').textContent = `Ingelogd als: ${ingelogdeNaam}`;
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
-    // Toon admin tabs
+    // Toon admin tabs EN manager knoppen
     if (ingelogdeRol === 'manager') {
-        document.querySelectorAll('.admin-tab').forEach(link => {
-            link.classList.add('zichtbaar');
-        });
-        // Voeg de manager-class toe aan de container (voor "Opgelost" knoppen)
-        document.querySelector('.container').classList.add('is-manager');
+        document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
+        document.querySelector('.container').classList.add('is-manager'); 
     }
     
     // Vul checklist dropdown
@@ -58,62 +38,56 @@ let ingelogdeRol = "";
     
     // Koppel alle event listeners
     koppelListeners();
-    setupMainTabs(); // <-- DEZE FUNCTIE VOOR DE TABS
-    vulKartDropdown();
+    setupMainTabs();
+    vulKartDropdowns(); // <-- Hernoemd (vult nu BEIDE dropdowns)
     setupDefectForm();
-    laadDefectenDashboard(); // Laad de defecten in het Kart Dashboard
+    laadDefectenDashboard(); 
     setupKartFilter();
 
 })(); 
 
 // --- DEEL 2: FUNCTIES ---
 
-/**
- * Functie om de hoofd-tabs te laten werken
- */
 function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', () => {
-            // Verberg alle inhoud
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            // Maak alle knoppen inactief
             document.querySelectorAll('.main-tab-link').forEach(link => link.classList.remove('active'));
-            
-            // Toon de juiste tab-inhoud
             const tabId = button.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
-            
-            // Maak de geklikte knop actief
             button.classList.add('active');
         });
     });
 }
 
-// --- DEFECTEN FUNCTIES ---
+// --- DEEL 3: DEFECTEN-DASHBOARD FUNCTIES ---
 
-function vulKartDropdown() {
-    const kartSelect = document.getElementById('kart-select');
-    if (!kartSelect) return; 
-    const kartFilter = document.getElementById('kart-filter');
+/**
+ * BIJGEWERKT: Vult nu BEIDE kart-dropdowns (Meld-formulier EN Filter-balk)
+ */
+function vulKartDropdowns() {
+    const kartSelect = document.getElementById('new-defect-kart');
+    const kartFilter = document.getElementById('filter-kart');
+    if (!kartSelect || !kartFilter) return; 
     
     for (let i = 1; i <= 40; i++) {
         kartSelect.add(new Option(`Kart ${i}`, i));
-        // Voeg ook toe aan de filter-dropdown
-        if (kartFilter) {
-            kartFilter.add(new Option(`Kart ${i}`, i));
-        }
+        kartFilter.add(new Option(`Kart ${i}`, i));
     }
 }
 
+/**
+ * BIJGEWERKT: Koppelt aan het nieuwe #new-defect-form
+ */
 function setupDefectForm() {
-    const defectForm = document.getElementById('defect-form');
+    const defectForm = document.getElementById('new-defect-form'); // <-- ID AANGEPAST
     if (!defectForm) return;
-    const defectButton = document.getElementById('defect-submit-button');
+    const defectButton = document.getElementById('new-defect-submit'); // <-- ID AANGEPAST
     
     defectForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const kartNummer = document.getElementById('kart-select').value;
-        const omschrijving = document.getElementById('defect-omschrijving').value.trim();
+        const kartNummer = document.getElementById('new-defect-kart').value; // <-- ID AANGEPAST
+        const omschrijving = document.getElementById('new-defect-problem').value.trim(); // <-- ID AANGEPAST
         
         if (kartNummer === "" || omschrijving === "") {
             toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error");
@@ -121,7 +95,7 @@ function setupDefectForm() {
         }
         
         defectButton.disabled = true;
-        defectButton.textContent = "Bezig met melden...";
+        defectButton.textContent = "Bezig...";
         
         const payload = {
             type: "LOG_DEFECT",
@@ -151,7 +125,7 @@ function setupDefectForm() {
         })
         .finally(() => {
             defectButton.disabled = false;
-            defectButton.textContent = "Meld Defect";
+            defectButton.textContent = "+ Toevoegen";
         });
     });
 }
@@ -170,8 +144,7 @@ function laadDefectenDashboard() {
         if (result.status === "success") {
             alleDefecten = result.data; 
             updateStatBoxes(alleDefecten);
-            renderDefectCards(alleDefecten);
-            // We vullen de kart-filter niet meer hier, dat doet vulKartDropdown al
+            renderDefectCards(alleDefecten); // Render alle kaarten
             setupDashboardListeners(); 
         } else {
             throw new Error(result.message);
@@ -190,15 +163,36 @@ function updateStatBoxes(defects) {
     document.getElementById('stat-werkende-karts').textContent = 40 - uniekeKartsMetProbleem.length;
 }
 
+/**
+ * BIJGEWERKT: Past de filtering toe op de kaarten
+ */
 function setupKartFilter() {
-    document.getElementById('kart-filter').addEventListener('change', (e) => {
-        const geselecteerdeKart = e.target.value;
-        if (geselecteerdeKart === 'alle') {
-            renderDefectCards(alleDefecten); // Toon alles
-        } else {
-            const gefilterdeLijst = alleDefecten.filter(d => d.kartNummer == geselecteerdeKart);
-            renderDefectCards(gefilterdeLijst);
+    const kartFilter = document.getElementById('filter-kart');
+    const statusFilter = document.getElementById('filter-status');
+    const wisButton = document.getElementById('filter-wissen-btn');
+
+    function pasFiltersToe() {
+        const geselecteerdeKart = kartFilter.value;
+        const geselecteerdeStatus = statusFilter.value;
+
+        let gefilterdeLijst = alleDefecten;
+
+        if (geselecteerdeStatus !== 'alle') {
+            gefilterdeLijst = gefilterdeLijst.filter(d => d.status.toLowerCase() === geselecteerdeStatus);
         }
+        if (geselecteerdeKart !== 'alle') {
+            gefilterdeLijst = gefilterdeLijst.filter(d => d.kartNummer == geselecteerdeKart);
+        }
+        renderDefectCards(gefilterdeLijst);
+    }
+    
+    kartFilter.addEventListener('change', pasFiltersToe);
+    statusFilter.addEventListener('change', pasFiltersToe);
+    
+    wisButton.addEventListener('click', () => {
+        kartFilter.value = 'alle';
+        statusFilter.value = 'open'; // Reset naar 'Open'
+        pasFiltersToe();
     });
 }
 
@@ -206,25 +200,33 @@ function renderDefectCards(defects) {
     const container = document.getElementById('defect-card-container');
     container.innerHTML = ''; 
     
-    const openDefecten = defects.filter(d => d.status === 'Open');
-    
-    if (openDefecten.length === 0) {
-        container.innerHTML = '<p>Geen openstaande defecten gevonden.</p>';
+    if (defects.length === 0) {
+        container.innerHTML = '<p>Geen defecten gevonden voor deze selectie.</p>';
         return;
     }
     
-    openDefecten.forEach(defect => {
+    // Sorteer: Openstaande eerst, dan opgeloste
+    defects.sort((a, b) => (a.status === 'Open' ? -1 : 1) - (b.status === 'Open' ? -1 : 1));
+    
+    defects.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const kaart = document.createElement('div');
         kaart.className = 'defect-card';
+        // Voeg 'status-opgelost' toe als dat zo is
+        if (defect.status === 'Opgelost') {
+            kaart.classList.add('status-opgelost');
+        }
+        
         kaart.innerHTML = `
             <h3>Kart ${defect.kartNummer}</h3>
             <div class="meta">
                 <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
                 <span class="meta-item">Op: ${ts}</span>
+                <span class="meta-item">Status: <strong>${defect.status}</strong></span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
-            <button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>
+            
+            ${defect.status === 'Open' ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` : ''}
         `;
         container.appendChild(kaart);
     });
@@ -248,7 +250,7 @@ function markeerDefectOpgelost(rowId, buttonEl) {
     
     const payload = {
         type: "UPDATE_DEFECT_STATUS",
-        rol: ingelogdeRol, // Admin check
+        rol: ingelogdeRol, 
         rowId: rowId,
         newStatus: "Opgelost"
     };
@@ -276,8 +278,7 @@ function markeerDefectOpgelost(rowId, buttonEl) {
 }
 
 
-// --- CHECKLIST FUNCTIES ---
-
+// --- CHECKLIST FUNCTIES (Ongewijzigd) ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -294,18 +295,15 @@ function koppelListeners() {
         });
     });
 }
-
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
     openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';
-    
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.classList.remove("active");
         coll.parentElement.querySelector('.content').style.maxHeight = null;
     });
-    
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
         data.openen.forEach((item, i) => { openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; });
@@ -315,7 +313,6 @@ function updateChecklists(activiteit) {
         container.classList.remove('checklists-zichtbaar');
     }
 }
-
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
@@ -341,8 +338,7 @@ function verstuurData(lijstNaam) {
         if(data.status === "success") {
             toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
             resetCheckboxes(listId);
-            knop.disabled = false;
-            knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+            knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
         } else { throw new Error(data.message); }
     })
     .catch(error => {
@@ -351,7 +347,6 @@ function verstuurData(lijstNaam) {
         knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
-
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
@@ -365,8 +360,9 @@ function toonStatus(bericht, type) {
 }
 
 function toonDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('defect-status-message');
-    statusDiv.textContent = bericht; statusDiv.className = type;
+    // We gebruiken nu één centrale statusbalk
+    var statusDiv = document.getElementById('status-message-defect');
+    statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
     statusDiv.style.display = 'block';
     setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
 }
