@@ -304,3 +304,59 @@ h2 {
         display: none; /* Geen label nodig voor de knop */
     }
 }
+
+/* ===============================
+   NIEUWE STIJLEN (Defecten Tabel)
+   =============================== */
+
+/* Zorg dat de algemene tabelstijlen ook voor de nieuwe tabel gelden */
+#defect-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+#defect-table thead {
+    background-color: #333;
+}
+#defect-table th, #defect-table td {
+    padding: 12px;
+    border-bottom: 1px solid #444;
+    text-align: left;
+    color: #e0e0e0;
+    font-size: 0.9em;
+    vertical-align: middle;
+}
+#defect-table th {
+    font-size: 1em;
+    font-weight: bold;
+}
+#defect-table tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
+/* Responsive regels voor de defecten-tabel */
+@media (max-width: 720px) {
+    #defect-table thead {
+        display: none; 
+    }
+    #defect-table tr {
+        display: block;
+        border: 1px solid #555;
+        margin-bottom: 15px;
+    }
+    #defect-table td {
+        display: block;
+        text-align: right;
+        border-bottom: 1px dotted #444;
+    }
+    #defect-table td:last-child {
+        border-bottom: none;
+    }
+    /* Voeg de 'header' toe met CSS */
+    #defect-table td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: #fff;
+    }
+}
