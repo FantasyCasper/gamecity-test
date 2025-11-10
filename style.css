@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE CSS (OPGESCHOOND & HERBOUWD)
+   VOLLEDIGE CSS (Layout-fix)
    =============================== */
 
 /* --- 1. ALGEMENE STIJLEN --- */
@@ -90,7 +90,6 @@ body {
 }
 
 /* --- 4. TABBLAD: CHECKLISTS --- */
-
 .user-info {
     background-color: #2a2a2a;
     padding: 20px;
@@ -176,16 +175,13 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 
 /* --- 5. TABBLAD: KART DASHBOARD --- */
 
-/* Titel (H1) voor het Kart Dashboard */
 #tab-kart-dashboard h1 {
-    text-align: left; /* Linksuitlijnen, niet centreren */
+    text-align: left;
     font-size: 1.8em;
     margin: 0 0 20px 0;
     padding: 0;
-    background: none; /* Geen box-stijl */
+    background: none;
 }
-
-/* Stat Boxen */
 .stat-box-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -209,19 +205,23 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     color: #fff;
     margin-bottom: 5px;
 }
-#stat-karts-problemen { color: #e74c3c; } /* Rood */
-#stat-werkende-karts { color: #2ecc71; } /* Groen */
+#stat-karts-problemen { color: #e74c3c; } 
+#stat-werkende-karts { color: #2ecc71; }
+
+/* =================================
+   HIER ZITTEN DE AANPASSINGEN
+   ================================= */
 
 /* De nieuwe toolbars */
 .form-bar {
-    padding: 10px; /* Minder padding dan .user-info */
+    padding: 10px; 
     margin-bottom: 20px;
     display: flex;
-    flex-wrap: wrap; /* Op mobiel onder elkaar */
+    flex-wrap: wrap; 
     align-items: center;
     gap: 10px;
 }
-.form-bar span { /* Voor de 'Filter:' tekst */
+.form-bar span { 
     font-weight: bold;
     color: #aaa;
     margin-left: 5px;
@@ -231,19 +231,22 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 /* Inputs en Selects in de toolbars */
 .form-bar input[type="text"],
 .form-bar select {
-    flex-grow: 1; /* Input pakt veel ruimte */
     padding: 10px 12px;
     border: 1px solid #555;
     background-color: #333;
     color: #e0e0e0;
     border-radius: 5px;
     font-size: 0.9em;
-    min-width: 120px;
+    min-width: 150px; /* Geef ze een basisbreedte */
+    box-sizing: border-box; /* Belangrijk voor padding */
 }
-/* Dropdowns in de toolbar (minder breed) */
-.form-bar select {
-    flex-grow: 0; /* Laat select niet meegroeien */
+
+/* Probleem omschrijving: GROEIT mee */
+.form-bar input#new-defect-problem {
+    flex-grow: 1; /* Pakt alle beschikbare ruimte */
+    min-width: 200px; /* Minimale breedte voor mobiel */
 }
+
 /* Knoppen in de toolbar */
 .form-bar button {
     flex-shrink: 0; /* Voorkom krimpen */
@@ -255,20 +258,20 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     transition: background-color 0.2s;
     font-size: 0.9em;
 }
-
-/* Toevoegen knop (Groen) */
 #new-defect-submit {
     background-color: #28a745;
     color: white;
 }
 #new-defect-submit:hover { background-color: #218838; }
-
-/* Wissen knop (Groen) */
 #filter-wissen-btn {
-    background-color: #28a745; /* Aangepast van geel naar groen */
+    background-color: #28a745; 
     color: white;
 }
 #filter-wissen-btn:hover { background-color: #218838; }
+
+/* =================================
+   EINDE AANPASSINGEN
+   ================================= */
 
 
 /* Grid voor de defect-kaarten */
@@ -282,36 +285,21 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 .defect-card {
     background-color: #2a2a2a;
     border-radius: 8px;
-    border-left: 5px solid #e74c3c; /* Openstaand */
+    border-left: 5px solid #e74c3c; 
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
 .defect-card.status-opgelost {
-    border-left-color: #2ecc71; /* Opgelost */
+    border-left-color: #2ecc71; 
     opacity: 0.6;
 }
-.defect-card h3 {
-    margin: 0 0 5px 0;
-    color: #fff;
-    font-size: 1.2em;
-}
-.defect-card .meta {
-    font-size: 0.8em;
-    color: #999;
-    margin-bottom: 15px;
-}
-.defect-card .meta-item {
-    display: block;
-}
-.defect-card .omschrijving {
-    color: #e0e0e0;
-    margin-bottom: 15px;
-    line-height: 1.5;
-    flex-grow: 1; 
-}
+.defect-card h3 { margin: 0 0 5px 0; color: #fff; font-size: 1.2em; }
+.defect-card .meta { font-size: 0.8em; color: #999; margin-bottom: 15px; }
+.defect-card .meta-item { display: block; }
+.defect-card .omschrijving { color: #e0e0e0; margin-bottom: 15px; line-height: 1.5; flex-grow: 1; }
 .manager-btn {
-    display: none; /* Standaard verborgen */
+    display: none; 
     background-color: #28a745;
     color: white;
     border: none;
@@ -320,12 +308,8 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     font-weight: bold;
     cursor: pointer;
 }
-.manager-btn:hover {
-    background-color: #218838;
-}
-.container.is-manager .manager-btn {
-    display: block;
-}
+.manager-btn:hover { background-color: #218838; }
+.container.is-manager .manager-btn { display: block; }
 
 /* --- 6. ALGEMENE STATUSBERICHTEN --- */
 .status-bericht {
@@ -344,7 +328,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     background-color: #dc3545;
     color: white;
 }
-/* Verberg de oude statusberichten (we gebruiken nu #status-message-defect) */
+/* Oude ID is niet meer nodig, maar kan geen kwaad */
 #defect-status-message { display: none; }
 
 
@@ -352,7 +336,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 @media (max-width: 720px) {
     body {
         padding: 10px;
-        padding-top: 60px; /* Ruimte voor de 'vaste' uitlogknop */
+        padding-top: 60px; 
     }
     .container {
         max-width: 100%;
@@ -368,16 +352,16 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         margin-bottom: 15px;
     }
     
-    /* Toolbar op mobiel: zorg dat knoppen/selects 100% breedte pakken */
+    /* Toolbar op mobiel */
     .form-bar {
         flex-direction: column;
-        align-items: stretch; /* Alles 100% breed */
+        align-items: stretch; 
     }
     .form-bar input[type="text"],
     .form-bar select,
     .form-bar button {
         width: 100%;
-        box-sizing: border-box; /* Zorg dat padding de breedte niet breekt */
+        box-sizing: border-box; 
     }
     .form-bar span {
         text-align: center;

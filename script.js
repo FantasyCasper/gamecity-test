@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET NIEUW KART DASHBOARD)
+   VOLLEDIGE SCRIPT.JS (Filter opgeschoond)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
@@ -39,10 +39,10 @@ let alleDefecten = []; // Sla alle defecten op in het geheugen
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
-    vulKartDropdowns(); // <-- Hernoemd (vult nu BEIDE dropdowns)
+    vulKartMeldDropdown(); // <-- Hernoemd
     setupDefectForm();
     laadDefectenDashboard(); 
-    setupKartFilter();
+    setupKartFilter(); // <-- Aangepast
 
 })(); 
 
@@ -63,31 +63,29 @@ function setupMainTabs() {
 // --- DEEL 3: DEFECTEN-DASHBOARD FUNCTIES ---
 
 /**
- * BIJGEWERKT: Vult nu BEIDE kart-dropdowns (Meld-formulier EN Filter-balk)
+ * AANGEPAST: Vult nu alleen de 'Meld Defect' dropdown
  */
-function vulKartDropdowns() {
+function vulKartMeldDropdown() {
     const kartSelect = document.getElementById('new-defect-kart');
-    const kartFilter = document.getElementById('filter-kart');
-    if (!kartSelect || !kartFilter) return; 
+    if (!kartSelect) return; 
     
     for (let i = 1; i <= 40; i++) {
         kartSelect.add(new Option(`Kart ${i}`, i));
-        kartFilter.add(new Option(`Kart ${i}`, i));
     }
 }
 
 /**
- * BIJGEWERKT: Koppelt aan het nieuwe #new-defect-form
+ * AANGEPAST: Koppelt aan het nieuwe #new-defect-form
  */
 function setupDefectForm() {
-    const defectForm = document.getElementById('new-defect-form'); // <-- ID AANGEPAST
+    const defectForm = document.getElementById('new-defect-form'); 
     if (!defectForm) return;
-    const defectButton = document.getElementById('new-defect-submit'); // <-- ID AANGEPAST
+    const defectButton = document.getElementById('new-defect-submit'); 
     
     defectForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const kartNummer = document.getElementById('new-defect-kart').value; // <-- ID AANGEPAST
-        const omschrijving = document.getElementById('new-defect-problem').value.trim(); // <-- ID AANGEPAST
+        const kartNummer = document.getElementById('new-defect-kart').value; 
+        const omschrijving = document.getElementById('new-defect-problem').value.trim(); 
         
         if (kartNummer === "" || omschrijving === "") {
             toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error");
@@ -144,7 +142,7 @@ function laadDefectenDashboard() {
         if (result.status === "success") {
             alleDefecten = result.data; 
             updateStatBoxes(alleDefecten);
-            renderDefectCards(alleDefecten); // Render alle kaarten
+            renderDefectCards(alleDefecten); // Render alle kaarten (initieel)
             setupDashboardListeners(); 
         } else {
             throw new Error(result.message);
@@ -164,34 +162,27 @@ function updateStatBoxes(defects) {
 }
 
 /**
- * BIJGEWERKT: Past de filtering toe op de kaarten
+ * AANGEPAST: Koppelt alleen de Status-filter
  */
 function setupKartFilter() {
-    const kartFilter = document.getElementById('filter-kart');
     const statusFilter = document.getElementById('filter-status');
     const wisButton = document.getElementById('filter-wissen-btn');
 
     function pasFiltersToe() {
-        const geselecteerdeKart = kartFilter.value;
         const geselecteerdeStatus = statusFilter.value;
-
         let gefilterdeLijst = alleDefecten;
 
         if (geselecteerdeStatus !== 'alle') {
             gefilterdeLijst = gefilterdeLijst.filter(d => d.status.toLowerCase() === geselecteerdeStatus);
         }
-        if (geselecteerdeKart !== 'alle') {
-            gefilterdeLijst = gefilterdeLijst.filter(d => d.kartNummer == geselecteerdeKart);
-        }
+        
         renderDefectCards(gefilterdeLijst);
     }
     
-    kartFilter.addEventListener('change', pasFiltersToe);
     statusFilter.addEventListener('change', pasFiltersToe);
     
     wisButton.addEventListener('click', () => {
-        kartFilter.value = 'alle';
-        statusFilter.value = 'alle'; // Reset naar 'Open'
+        statusFilter.value = 'open'; // Reset naar 'Open'
         pasFiltersToe();
     });
 }
@@ -212,7 +203,6 @@ function renderDefectCards(defects) {
         const ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const kaart = document.createElement('div');
         kaart.className = 'defect-card';
-        // Voeg 'status-opgelost' toe als dat zo is
         if (defect.status === 'Opgelost') {
             kaart.classList.add('status-opgelost');
         }
@@ -225,7 +215,6 @@ function renderDefectCards(defects) {
                 <span class="meta-item">Status: <strong>${defect.status}</strong></span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
-            
             ${defect.status === 'Open' ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` : ''}
         `;
         container.appendChild(kaart);
@@ -265,7 +254,7 @@ function markeerDefectOpgelost(rowId, buttonEl) {
     .then(result => {
         if (result.status === "success") {
             toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
-            laadDefectenDashboard(); // Ververs het hele dashboard
+            laadDefectenDashboard(); 
         } else {
             throw new Error(result.message);
         }
@@ -329,7 +318,7 @@ function verstuurData(lijstNaam) {
     
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { 
         method: 'POST',
-        body: JSON.stringify(dataPayload),
+        body: JSON.stringify(payload),
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     })
@@ -338,7 +327,8 @@ function verstuurData(lijstNaam) {
         if(data.status === "success") {
             toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
             resetCheckboxes(listId);
-            knop.disabled = false; knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+            knop.disabled = false;
+            knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
         } else { throw new Error(data.message); }
     })
     .catch(error => {
@@ -360,7 +350,6 @@ function toonStatus(bericht, type) {
 }
 
 function toonDefectStatus(bericht, type) {
-    // We gebruiken nu één centrale statusbalk
     var statusDiv = document.getElementById('status-message-defect');
     statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
     statusDiv.style.display = 'block';
