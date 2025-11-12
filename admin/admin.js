@@ -16,14 +16,14 @@ const statusDiv = document.getElementById('status-message');
     // Haal data op voor de 3 tabbladen
     fetchLogData();
     fetchUsers();
-    fetchAlgemeenDefects(); // <-- AANGEPAST
+    fetchAlgemeenDefects(); 
     
     // Koppel de listeners
     setupTabNavigation();
     setupMobileMenu(); 
     setupUserForm();
     setupUserDeleteListener();
-    setupAlgemeenDefectListeners(); // <-- NIEUW
+    setupAlgemeenDefectListeners(); 
 
 })(); 
 
@@ -45,8 +45,15 @@ function setupTabNavigation(){
             document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
             document.querySelectorAll(".tab-link").forEach(link => link.classList.remove("active"));
             const tabId = button.getAttribute("data-tab");
-            document.getElementById(tabId).classList.add("active");
-            button.classList.add("active");
+            
+            // HIER IS DE FIX VOOR DE FOUT
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) { // Controleer of het element bestaat
+                tabContent.classList.add("active");
+                button.classList.add("active");
+            } else {
+                console.error("Kon tab-inhoud niet vinden voor ID:", tabId);
+            }
         });
     });
 }

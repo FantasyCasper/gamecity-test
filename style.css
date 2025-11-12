@@ -11,7 +11,7 @@ body {
     color: #e0e0e0;
 }
 .container {
-    max-width: 700px; /* Standaard breedte voor de app */
+    max-width: 1200px; /* Standaard breedte voor de app */
     margin: 0 auto;
 }
 
