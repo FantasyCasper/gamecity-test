@@ -38,22 +38,18 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
     } 
     
-    // Vul namen in (op beide tabbladen)
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
-    // Toon admin tabs EN manager knoppen
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         document.querySelector('.container').classList.add('is-manager'); 
     }
     
-    // Vul checklist dropdown
     const activiteitSelect = document.getElementById('activiteit-select');
     for (const activiteit in CHECKLIST_DATA) {
         activiteitSelect.add(new Option(activiteit, activiteit));
     }
     
-    // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
     setupMobileMenu(); 
@@ -66,7 +62,7 @@ let alleDefecten = [];
 
 })(); 
 
-// --- DEEL 2: NAVIGATIE & SETUP ---
+// --- DEEL 2: FUNCTIES ---
 
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
@@ -78,7 +74,6 @@ function setupMobileMenu() {
         });
     }
 }
-
 function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', () => {
@@ -90,7 +85,6 @@ function setupMainTabs() {
         });
     });
 }
-
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -106,13 +100,33 @@ function koppelListeners() {
         });
     });
 }
+function toonStatus(bericht, type) {
+    var statusDiv = document.getElementById('status-message');
+    statusDiv.textContent = bericht; statusDiv.className = type;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function toonDefectStatus(bericht, type) {
+    var statusDiv = document.getElementById('status-message-defect');
+    statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function toonAlgemeenDefectStatus(bericht, type) {
+    var statusDiv = document.getElementById('algemeen-defect-status');
+    statusDiv.textContent = bericht;
+    statusDiv.className = `status-bericht ${type}`;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function resetCheckboxes(listId) {
+    document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
+}
 
 // --- DEEL 3: ALGEMEEN TAB FUNCTIES ---
-
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
     const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDDEN" }; 
-    
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
     })
@@ -125,16 +139,11 @@ function laadBijzonderhedenVanGisteren() {
             } else {
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
-                    const tdActiviteit = document.createElement('td');
-                    tdActiviteit.textContent = item.activiteit;
-                    const lijst = item.lijstnaam.replace("Checklist ", "");
-                    const tdLijst = document.createElement('td');
-                    tdLijst.textContent = lijst;
-                    const tdOpmerking = document.createElement('td');
-                    tdOpmerking.textContent = item.opmerking;
-                    tr.appendChild(tdActiviteit);
-                    tr.appendChild(tdLijst);
-                    tr.appendChild(tdOpmerking);
+                    tr.innerHTML = `
+                        <td>${item.activiteit}</td>
+                        <td>${item.lijstnaam.replace("Checklist ", "")}</td>
+                        <td>${item.opmerking}</td>
+                    `;
                     tabelBody.appendChild(tr);
                 });
             }
@@ -146,7 +155,6 @@ function laadBijzonderhedenVanGisteren() {
 }
 
 // --- DEEL 4: CHECKLIST TAB FUNCTIES ---
-
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
@@ -165,7 +173,6 @@ function updateChecklists(activiteit) {
         container.classList.remove('checklists-zichtbaar');
     }
 }
-
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
@@ -205,9 +212,6 @@ function verstuurData(lijstNaam) {
         knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
-function resetCheckboxes(listId) {
-    document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
-}
 
 // --- DEEL 5: KART DASHBOARD FUNCTIES ---
 function vulKartMeldDropdown() {
@@ -215,7 +219,7 @@ function vulKartMeldDropdown() {
     if (!kartSelect) return; 
     for (let i = 1; i <= 40; i++) { kartSelect.add(new Option(`Kart ${i}`, i)); }
 }
-function setupDefectForm() { // Dit is voor KART defecten
+function setupDefectForm() { // Kart defect
     const defectForm = document.getElementById('new-defect-form'); 
     if (!defectForm) return;
     const defectButton = document.getElementById('new-defect-submit'); 
@@ -386,25 +390,4 @@ function setupAlgemeenDefectForm() {
             button.textContent = "Meld Algemeen Defect";
         });
     });
-}
-
-// --- DEEL 7: STATUSBERICHT FUNCTIES ---
-function toonStatus(bericht, type) {
-    var statusDiv = document.getElementById('status-message');
-    statusDiv.textContent = bericht; statusDiv.className = type;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-}
-function toonDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('status-message-defect');
-    statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-}
-function toonAlgemeenDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('algemeen-defect-status');
-    statusDiv.textContent = bericht;
-    statusDiv.className = `status-bericht ${type}`;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
 }
