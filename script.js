@@ -1,7 +1,7 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET BIJZONDERHEDEN)
+   VOLLEDIGE SCRIPT.JS (MET ALLE FUNCTIES)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
+const WEB_APP_URL = "PLAK_HIER_JE_WEB_APP_URL"; // <-- CRUCIAAL
 
 // ==============================================================
 //   CHECKLIST DATA (Hard-coded)
@@ -38,22 +38,18 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
     } 
     
-    // Vul namen in (op beide tabbladen)
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
-    // Toon admin tabs EN manager knoppen
     if (ingelogdeRol === 'manager') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         document.querySelector('.container').classList.add('is-manager'); 
     }
     
-    // Vul checklist dropdown
     const activiteitSelect = document.getElementById('activiteit-select');
     for (const activiteit in CHECKLIST_DATA) {
         activiteitSelect.add(new Option(activiteit, activiteit));
     }
     
-    // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
     setupMobileMenu(); 
@@ -61,8 +57,6 @@ let alleDefecten = [];
     setupDefectForm();
     laadDefectenDashboard(); 
     setupKartFilter();
-    
-    // --- HIER WORDT DE FUNCTIE AANGEROEPEN ---
     laadBijzonderhedenVanGisteren();
 
 })(); 
@@ -71,23 +65,19 @@ let alleDefecten = [];
 
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
-    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDEN" }; 
+    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDDEN" }; 
     
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        mode: 'cors'
+        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
     })
     .then(response => response.json())
     .then(result => {
         if (result.status === "success") {
-            tabelBody.innerHTML = ''; // Leeg de 'Laden...'
+            tabelBody.innerHTML = ''; 
             if (result.data.length === 0) {
                 tabelBody.innerHTML = '<tr><td>Geen bijzonderheden gemeld gisteren.</td></tr>';
             } else {
                 result.data.forEach(opmerking => {
-                    // Maak een nieuwe tabelrij (tr) en cel (td)
                     const tr = document.createElement('tr');
                     const td = document.createElement('td');
                     td.textContent = opmerking;
@@ -95,15 +85,12 @@ function laadBijzonderhedenVanGisteren() {
                     tabelBody.appendChild(tr);
                 });
             }
-        } else {
-            throw new Error(result.message);
-        }
+        } else { throw new Error(result.message); }
     })
     .catch(error => {
         tabelBody.innerHTML = `<tr><td style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
     });
 }
-
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.querySelector('.main-nav');
@@ -252,6 +239,8 @@ function markeerDefectOpgelost(rowId, buttonEl) {
         buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
     });
 }
+
+// --- CHECKLIST FUNCTIES ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -285,29 +274,48 @@ function updateChecklists(activiteit) {
         container.classList.remove('checklists-zichtbaar');
     }
 }
+
+// ========================
+//  HIER ZIT DE BUGFIX
+// ========================
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
+    
     var listId, buttonId, bijzonderhedenId;
     if (lijstNaam === 'Checklist Openen') {
         listId = 'lijst-openen'; buttonId = 'btn-openen'; bijzonderhedenId = 'bijzonderheden-openen';
     } else {
         listId = 'lijst-sluiten'; buttonId = 'btn-sluiten'; bijzonderhedenId = 'bijzonderheden-sluiten';
     }
+    
     var knop = document.getElementById(buttonId);
     knop.disabled = true; knop.textContent = "Bezig...";
+    
     var bijzonderhedenText = document.getElementById(bijzonderhedenId).value.trim();
     var items = [];
     document.querySelectorAll("#" + listId + " li").forEach(li => {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
+    
+    // DEZE VARIABELE-NAAM IS NU CORRECT: 'dataPayload'
     var dataPayload = { 
-        type: "LOG_DATA", lijstNaam: lijstNaam, items: items, 
-        medewerker: ingelogdeNaam, activiteit: activiteit, bijzonderheden: bijzonderhedenText
+        type: "LOG_DATA", 
+        lijstNaam: lijstNaam, 
+        items: items, 
+        medewerker: ingelogdeNaam, 
+        activiteit: activiteit,
+        bijzonderheden: bijzonderhedenText
     };
+    
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { 
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    }).then(response => response.json())
+        method: 'POST', 
+        // EN HIJ WORDT HIER CORRECT GEBRUIKT: 'dataPayload'
+        body: JSON.stringify(dataPayload), 
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+        mode: 'cors'
+    })
+    .then(response => response.json())
     .then(data => {
         if(data.status === "success") {
             toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
@@ -316,12 +324,15 @@ function verstuurData(lijstNaam) {
             knop.disabled = false;
             knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
         } else { throw new Error(data.message); }
-    }).catch(error => {
+    })
+    .catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
         knop.disabled = false;
         knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
+// ========================
+
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
