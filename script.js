@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET ALLE FUNCTIES)
+   VOLLEDIGE SCRIPT.JS (MET BUGFIX)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
@@ -239,8 +239,6 @@ function markeerDefectOpgelost(rowId, buttonEl) {
         buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
     });
 }
-
-// --- CHECKLIST FUNCTIES ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -276,7 +274,7 @@ function updateChecklists(activiteit) {
 }
 
 // ========================
-//  HIER ZIT DE BUGFIX
+//  DEZE FUNCTIE IS GECORRIGEERD
 // ========================
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
