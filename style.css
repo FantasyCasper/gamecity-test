@@ -447,3 +447,27 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
         display: block; 
     }
 }
+
+/* --- Stijlen voor Bijzonderheden Tekstvak --- */
+.bijzonderheden-label {
+    display: block;
+    font-weight: bold;
+    color: #e0e0e0;
+    margin-top: 20px; /* Extra ruimte boven het veld */
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.bijzonderheden-text {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px; /* 3 rijen hoog */
+}
