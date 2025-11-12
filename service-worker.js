@@ -1,9 +1,9 @@
 /* ===============================
-   SERVICE WORKER (CACHE BUSTER V8)
+   SERVICE WORKER (CACHE BUSTER V9)
    =============================== */
 
-// De naam is veranderd naar v8
-const CACHE_NAAM = 'checklist-app-cache-v8';
+// De naam is veranderd naar v9
+const CACHE_NAAM = 'checklist-app-cache-v9';
 
 // De lijst met AL je bestanden
 const urlsToCache = [
@@ -30,7 +30,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAAM)
       .then(function(cache) {
-        console.log('Cache v8 geopend en bestanden worden toegevoegd');
+        console.log('Cache v9 geopend en bestanden worden toegevoegd');
         // forceer de browser om de nieuwste versie te pakken
         const updateCache = urlsToCache.map(url => {
             return cache.add(new Request(url, { cache: 'reload' }));
@@ -46,7 +46,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cacheName) {
-          // Verwijder alle caches die NIET v8 zijn
+          // Verwijder alle caches die NIET v9 zijn
           return cacheName.startsWith('checklist-app-cache-') && 
                  cacheName !== CACHE_NAAM;
         }).map(function(cacheName) {
