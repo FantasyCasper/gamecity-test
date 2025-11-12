@@ -600,7 +600,7 @@ input[type="checkbox"]:checked+label {
 }
 
 /* ===============================
-   AANPASSING: Bijzonderheden-blok
+   AANPASSING: Bijzonderheden-blok (nu een tabel)
    =============================== */
 
 #bijzonderheden-container {
@@ -608,8 +608,8 @@ input[type="checkbox"]:checked+label {
     border-radius: 8px;
     padding: 20px;
     margin-top: 25px;
-    border-left: 5px solid #007bff;
-    /* Blauwe accent-rand */
+    border-left: 5px solid #007bff; /* Blauwe accent-rand */
+    text-align: left; /* Zorg dat de <h3> links staat */
 }
 
 #bijzonderheden-container h3 {
@@ -617,23 +617,24 @@ input[type="checkbox"]:checked+label {
     color: #fff;
 }
 
-#bijzonderheden-lijst {
-    list-style-type: disc;
-    /* Gebruik normale opsommingstekens */
-    padding-left: 20px;
-    /* Zorg dat de bolletjes binnen de box vallen */
-    text-align: left;
-    /* Zorg dat tekst links uitgelijnd is */
-    margin-top: 0;
-    /* Reset de <ul>-stijl van 'Algemeen' */
+/* De tabel zelf */
+#bijzonderheden-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
 }
 
-#bijzonderheden-lijst li {
-    padding: 8px 0;
+#bijzonderheden-table td {
+    padding: 12px 10px;
     border-bottom: 1px solid #333;
+    color: #e0e0e0;
     line-height: 1.5;
 }
 
-#bijzonderheden-lijst li:last-child {
+#bijzonderheden-table tr:last-child td {
     border-bottom: none;
+}
+
+#bijzonderheden-table tr:hover {
+    background-color: #333;
 }

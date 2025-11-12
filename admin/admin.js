@@ -80,15 +80,29 @@ function fetchLogData() {
 }
 function renderLogs(logs) {
     const logBody = document.getElementById('log-body');
-    if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="6">Nog geen logs gevonden.</td></tr>'; return; }
+    if (logs.length === 0) { 
+        // Pas de colspan aan van 6 naar 7
+        logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; 
+        return; 
+    }
     let html = '';
     logs.forEach(log => {
         let ts = new Date(log.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
-        html += `<tr><td data-label="Tijdstip">${ts}</td><td data-label="Medewerker">${log.medewerker}</td><td data-label="Activiteit">${log.activiteit}</td><td data-label="Lijst">${log.lijstnaam}</td><td data-label="Voltooid">${log.voltooid}</td><td data-label="Gemist">${log.gemist}</td></tr>`;
+
+        html += `
+            <tr>
+                <td data-label="Tijdstip">${ts}</td>
+                <td data-label="Medewerker">${log.medewerker}</td>
+                <td data-label="Activiteit">${log.activiteit}</td>
+                <td data-label="Lijst">${log.lijstnaam}</td>
+                <td data-label="Voltooid">${log.voltooid}</td>
+                <td data-label="Gemist">${log.gemist}</td>
+                <td data-label="Bijzonderheden">${log.bijzonderheden || ''}</td>
+            </tr>
+        `;
     });
     logBody.innerHTML = html;
 }
-
 // --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
 function fetchUsers() { 
     callApi("GET_USERS").then(result => { renderUsers(result.data); })

@@ -70,8 +70,8 @@ let alleDefecten = [];
 // --- DEEL 2: FUNCTIES ---
 
 function laadBijzonderhedenVanGisteren() {
-    const lijstUL = document.getElementById('bijzonderheden-lijst');
-    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDEN" }; // Publieke call
+    const tabelBody = document.getElementById('bijzonderheden-body');
+    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDEN" }; 
     
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST',
@@ -82,14 +82,17 @@ function laadBijzonderhedenVanGisteren() {
     .then(response => response.json())
     .then(result => {
         if (result.status === "success") {
-            lijstUL.innerHTML = ''; // Leeg de 'Laden...'
+            tabelBody.innerHTML = ''; // Leeg de 'Laden...'
             if (result.data.length === 0) {
-                lijstUL.innerHTML = '<li>Geen bijzonderheden gemeld gisteren.</li>';
+                tabelBody.innerHTML = '<tr><td>Geen bijzonderheden gemeld gisteren.</td></tr>';
             } else {
                 result.data.forEach(opmerking => {
-                    const li = document.createElement('li');
-                    li.textContent = opmerking;
-                    lijstUL.appendChild(li);
+                    // Maak een nieuwe tabelrij (tr) en cel (td)
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.textContent = opmerking;
+                    tr.appendChild(td);
+                    tabelBody.appendChild(tr);
                 });
             }
         } else {
@@ -97,7 +100,7 @@ function laadBijzonderhedenVanGisteren() {
         }
     })
     .catch(error => {
-        lijstUL.innerHTML = `<li style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</li>`;
+        tabelBody.innerHTML = `<tr><td style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
     });
 }
 
