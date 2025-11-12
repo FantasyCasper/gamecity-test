@@ -83,6 +83,7 @@ body {
 
 /* --- 3. ALGEMENE INHOUD (Tabbladen) --- */
 .tab-content {
+    text-align: center;
     display: none; 
     background-color: #1a1a1a;
     padding-top: 20px;
@@ -129,6 +130,7 @@ body {
 #bijzonderheden-container h3 {
     margin-top: 0;
     color: #fff;
+    text-align: center;
 }
 #bijzonderheden-table {
     width: 100%;
