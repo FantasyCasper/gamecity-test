@@ -1,94 +1,71 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET MOBIEL MENU)
+   VOLLEDIGE ADMIN.JS (MET ALGEMEEN DEFECT)
    =============================== */
 
-// ##################################################################
-// #                        BELANGRIJKE STAP                        #
-// # PLAK HIER JE GOOGLE WEB APP URL                                #
-// ##################################################################
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
-// Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
 
-// --- DEEL 1: BEWAKER & INIT (BIJGEWERKT) ---
+// --- DEEL 1: BEWAKER & INIT ---
 (function() {
     if (ingelogdeRol !== 'manager') {
-        alert("Toegang geweigerd. Je moet ingelogd zijn als manager.");
-        window.location.href = "../index.html"; 
-        return; 
+        alert("Toegang geweigerd."); window.location.href = "../index.html"; return; 
     }
     
-    // Haal data op
+    // Haal data op voor de 3 tabbladen
     fetchLogData();
     fetchUsers();
-    fetchDefects(); 
+    fetchAlgemeenDefects(); // <-- AANGEPAST
     
     // Koppel de listeners
     setupTabNavigation();
-    setupMobileMenu(); // <-- NIEUWE FUNCTIEAANROEP
+    setupMobileMenu(); 
     setupUserForm();
     setupUserDeleteListener();
+    setupAlgemeenDefectListeners(); // <-- NIEUW
 
 })(); 
 
-// --- DEEL 2: NAVIGATIE FUNCTIES ---
 
-/**
- * NIEUWE FUNCTIE: Koppel de 'hamburger' menu-knop
- */
+// --- DEEL 2: NAVIGATIE FUNCTIES ---
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
-    const mainNav = document.querySelector('.tab-nav'); // Let op: class is .tab-nav
-    
+    const mainNav = document.querySelector('.tab-nav');
     if (menuToggle && mainNav) {
-        menuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('is-open');
-        });
-        
-        // Zorg dat het menu sluit als je op een tab klikt
+        menuToggle.addEventListener('click', () => { mainNav.classList.toggle('is-open'); });
         document.querySelectorAll('.tab-link').forEach(button => {
-            button.addEventListener('click', () => {
-                if (window.innerWidth <= 720) { // Alleen op mobiel
-                    mainNav.classList.remove('is-open');
-                }
-            });
+            button.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
         });
     }
 }
-
-function setupTabNavigation() {
-    document.querySelectorAll('.tab-link').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
-            const tabId = button.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-            button.classList.add('active');
+function setupTabNavigation(){
+    document.querySelectorAll(".tab-link").forEach(button => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+            document.querySelectorAll(".tab-link").forEach(link => link.classList.remove("active"));
+            const tabId = button.getAttribute("data-tab");
+            document.getElementById(tabId).classList.add("active");
+            button.classList.add("active");
         });
     });
 }
 
-
 // --- DEEL 3: LOGBOEK FUNCTIES ---
-function fetchLogData() { 
-    statusDiv.textContent = "Logboek laden..."; statusDiv.className = 'loading';
+function fetchLogData(){
+    statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = 'none'; renderLogs(result.data);
+        statusDiv.style.display = "none"; renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
-function renderLogs(logs) {
-    const logBody = document.getElementById('log-body');
-    if (logs.length === 0) { 
-        // Pas de colspan aan van 6 naar 7
-        logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; 
-        return; 
+function renderLogs(logs){
+    const logBody = document.getElementById("log-body");
+    if (logs.length === 0) {
+        logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return;
     }
-    let html = '';
+    let html = "";
     logs.forEach(log => {
-        let ts = new Date(log.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
-
+        let ts = new Date(log.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
         html += `
             <tr>
                 <td data-label="Tijdstip">${ts}</td>
@@ -97,37 +74,39 @@ function renderLogs(logs) {
                 <td data-label="Lijst">${log.lijstnaam}</td>
                 <td data-label="Voltooid">${log.voltooid}</td>
                 <td data-label="Gemist">${log.gemist}</td>
-                <td data-label="Bijzonderheden">${log.bijzonderheden || ''}</td>
+                <td data-label="Bijzonderheden">${log.bijzonderheden || ""}</td>
             </tr>
         `;
     });
     logBody.innerHTML = html;
 }
+
 // --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
-function fetchUsers() { 
+function fetchUsers(){
     callApi("GET_USERS").then(result => { renderUsers(result.data); })
     .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
-function renderUsers(users) {
-    const userBody = document.getElementById('user-body');
-    userBody.innerHTML = '';
-    if (users.length === 0) { userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; return; }
-    let html = '';
+function renderUsers(users){
+    const userBody = document.getElementById("user-body");
+    userBody.innerHTML = "";
+    if (users.length === 0) {
+        userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; return;
+    }
+    let html = "";
     users.forEach(user => {
         html += `<tr><td data-label="Gebruikersnaam">${user.username}</td><td data-label="Volledige Naam">${user.fullname}</td><td data-label="Rol">${user.role}</td><td data-label="Actie"><button class="delete-btn" data-username="${user.username}">Verwijder</button></td></tr>`;
     });
     userBody.innerHTML = html;
 }
-function setupUserForm() {
-    const form = document.getElementById('add-user-form');
-    const button = document.getElementById('add-user-button');
-    form.addEventListener('submit', (e) => {
+function setupUserForm(){
+    const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
+    form.addEventListener("submit", e => {
         e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
         const userData = {
-            username: document.getElementById('new-username').value,
-            fullname: document.getElementById('new-fullname').value,
-            pincode: document.getElementById('new-pincode').value,
-            role: document.getElementById('new-role').value
+            username: document.getElementById("new-username").value,
+            fullname: document.getElementById("new-fullname").value,
+            pincode: document.getElementById("new-pincode").value,
+            role: document.getElementById("new-role").value
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
             alert(result.message); form.reset(); fetchUsers(); 
@@ -136,51 +115,94 @@ function setupUserForm() {
         });
     });
 }
-function setupUserDeleteListener() {
-    document.getElementById('user-table').addEventListener('click', (e) => {
-        if (!e.target.classList.contains('delete-btn')) return;
-        const button = e.target; const username = button.dataset.username;
-        if (!confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) return;
-        button.disabled = true; button.textContent = "Bezig...";
-        callApi("DELETE_USER", { username: username }).then(result => {
-            alert(result.message); fetchUsers();
-        }).catch(error => {
-            handleError(error, "Fout bij verwijderen: ");
-            button.disabled = false; button.textContent = "Verwijder";
-        });
+function setupUserDeleteListener(){
+    document.getElementById("user-table").addEventListener("click", e => {
+        if (e.target.classList.contains("delete-btn")) {
+            const button = e.target, username = button.dataset.username;
+            if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
+                button.disabled = true; button.textContent = "Bezig...";
+                callApi("DELETE_USER", { username: username }).then(result => {
+                    alert(result.message); fetchUsers();
+                }).catch(error => {
+                    handleError(error, "Fout bij verwijderen: ");
+                    button.disabled = false; button.textContent = "Verwijder";
+                });
+            }
+        }
     });
 }
 
-// --- DEEL 5: DEFECTEN FUNCTIES ---
-function fetchDefects() {
-    callApi("GET_DEFECTS")
+// --- DEEL 5: ALGEMEEN DEFECTEN FUNCTIES ---
+function fetchAlgemeenDefects() {
+    callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
-            renderDefects(result.data);
+            renderAlgemeenDefects(result.data);
         })
-        .catch(error => handleError(error, "Fout bij laden defecten: "));
+        .catch(error => handleError(error, "Fout bij laden algemene defecten: "));
 }
-function renderDefects(defects) {
-    const defectBody = document.getElementById('defect-body');
+function renderAlgemeenDefects(defects) {
+    const defectBody = document.getElementById('algemeen-defect-body');
     if (!defectBody) return;
+    defectBody.innerHTML = '';
     if (defects.length === 0) {
-        defectBody.innerHTML = '<tr><td colspan="4">Geen defecten gevonden.</td></tr>';
+        defectBody.innerHTML = '<tr><td colspan="6">Geen algemene defecten gevonden.</td></tr>';
         return;
     }
-    let html = '';
     defects.forEach(defect => {
         let ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
-        html += `
-            <tr>
-                <td data-label="Tijdstip">${ts}</td>
-                <td data-label="Gemeld door">${defect.medewerker}</td>
-                <td data-label="Kart #">${defect.kartNummer}</td>
-                <td data-label="Omschrijving Defect">${defect.defect}</td>
-            </tr>
+        const tr = document.createElement('tr');
+        if (defect.status === 'Opgelost') {
+            tr.classList.add('status-opgelost');
+        }
+        const isOpgelost = defect.status === 'Opgelost';
+        const actieKnop = isOpgelost 
+            ? `<button class="delete-btn" data-row-id="${defect.rowId}">Verwijder</button>`
+            : `<button class="action-btn" data-row-id="${defect.rowId}">Markeer Opgelost</button>`;
+        
+        tr.innerHTML = `
+            <td data-label="Tijdstip">${ts}</td>
+            <td data-label="Gemeld door">${defect.medewerker}</td>
+            <td data-label="Locatie">${defect.locatie}</td>
+            <td data-label="Omschrijving">${defect.defect}</td>
+            <td data-label="Status"><strong>${defect.status}</strong></td>
+            <td data-label="Actie">${actieKnop}</td>
         `;
+        defectBody.appendChild(tr);
     });
-    defectBody.innerHTML = html;
 }
-
+function setupAlgemeenDefectListeners() {
+    document.getElementById('algemeen-defect-table').addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.classList.contains('action-btn')) { // 'Markeer Opgelost'
+            const rowId = target.dataset.rowId;
+            markeerAlgemeenDefect(rowId, "Opgelost", target);
+        }
+        if (target.classList.contains('delete-btn')) { // 'Verwijder'
+            if (confirm('Weet je zeker dat je dit opgeloste defect permanent wilt verwijderen?')) {
+                const rowId = target.dataset.rowId;
+                markeerAlgemeenDefect(rowId, "Verwijderd", target); // Gebruikt dezelfde functie
+            }
+        }
+    });
+}
+function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = "Bezig...";
+    const payload = {
+        type: "UPDATE_ALGEMEEN_DEFECT_STATUS",
+        rol: ingelogdeRol, 
+        rowId: rowId,
+        newStatus: newStatus
+    };
+    callApi("UPDATE_ALGEMEEN_DEFECT_STATUS", payload)
+        .then(result => {
+            fetchAlgemeenDefects(); // Ververs de lijst
+        })
+        .catch(error => {
+            handleError(error, `Fout bij bijwerken: `);
+            buttonEl.disabled = false;
+        });
+}
 
 // --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
 async function callApi(type, extraData = {}) {

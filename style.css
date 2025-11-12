@@ -648,3 +648,28 @@ input[type="checkbox"]:checked+label {
 #bijzonderheden-table tr:hover {
     background-color: #333;
 }
+
+/* ===============================
+   STIJLEN VOOR ALGEMEEN DEFECT TAB
+   =============================== */
+#algemeen-defect-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+#algemeen-defect-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+}
+#algemeen-defect-submit {
+    width: 100%;
+    margin-top: 15px;
+}

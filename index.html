@@ -117,6 +117,35 @@
             </div>
         </div>
 
+        <div id="tab-algemeen-defect" class="tab-content">
+            <h1>Algemeen Defect Melden</h1>
+            <p>Meld hier defecten voor locaties (Baan, Lasergame, etc.) of algemene items (Toiletten, Keuken).</p>
+
+            <div id="algemeen-defect-status" class="status-bericht"></div>
+
+            <form id="algemeen-defect-form" class="user-info">
+                <div class="form-veld">
+                    <label for="locatie-select">Activiteit / Locatie:</label>
+                    <select id="locatie-select" required>
+                        <option value="">-- Selecteer Locatie --</option>
+                        <option value="Baan">Baan</option>
+                        <option value="Lasergame">Lasergame</option>
+                        <option value="Prison Island">Prison Island</option>
+                        <option value="Minigolf">Minigolf</option>
+                        <option value="Keuken">Keuken</option>
+                        <option value="Toiletten">Toiletten</option>
+                        <option value="Algemeen">Algemeen</option>
+                    </select>
+                </div>
+                <div class="form-veld">
+                    <label for="algemeen-defect-omschrijving">Omschrijving Defect:</label>
+                    <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..."
+                        required></textarea>
+                </div>
+                <button type="submit" id="algemeen-defect-submit" class="submit-button">Meld Algemeen Defect</button>
+            </form>
+        </div>
+
     </div>
     <script>
         if ('serviceWorker' in navigator) {

@@ -1,12 +1,10 @@
 /* ===============================
-   VOLLEDIGE ADMIN.CSS (MET MOBIEL MENU)
+   VOLLEDIGE ADMIN.CSS (MET ALGEMEEN DEFECT)
    =============================== */
 
 body {
-    padding-top: 20px; /* Padding mag terug, knop is niet meer fixed */
+    padding-top: 20px;
 }
-
-/* Container breder maken */
 .container {
     max-width: 1200px;
 }
@@ -14,15 +12,10 @@ body {
     .container { max-width: 90%; }
 }
 
-/* ===============================
-   NIEUWE NAVIGATIE STIJLEN
-   =============================== */
-
-/* De 'Terug' knop (niet meer 'fixed') */
+/* --- NAVIGATIE --- */
 #back-button {
-    /* position: fixed; is VERWIJDERD */
     padding: 14px 18px;
-    background-color: #555; /* Donkere achtergrond */
+    background-color: #555;
     color: white;
     text-decoration: none;
     border: none;
@@ -34,18 +27,14 @@ body {
 #back-button:hover {
     background-color: #777;
 }
-
-/* De navigatiebalk zelf */
 .tab-nav {
     display: flex;
     border-bottom: 2px solid #555;
-    flex-wrap: wrap; /* Zorgt dat tabs op mobiel netjes onder elkaar gaan */
+    flex-wrap: wrap; 
     background-color: #2a2a2a;
-    border-radius: 8px 8px 0 0; /* Alleen bovenkant afgerond */
+    border-radius: 8px 8px 0 0; 
     overflow: hidden;
 }
-
-/* Knoppen in de navigatiebalk */
 .tab-link {
     padding: 14px 18px;
     cursor: pointer;
@@ -66,15 +55,13 @@ body {
     background-color: #333;
 }
 .tab-content {
-    display: none; /* Standaard verborgen */
+    display: none; 
 }
 .tab-content.active {
-    display: block; /* Toon actieve tab */
+    display: block; 
 }
-
-/* Het hamburger-menu-icoon (standaard verborgen op desktop) */
 #mobile-menu-toggle {
-    display: none; /* Verborgen op desktop */
+    display: none; 
     background-color: #2a2a2a;
     color: #fff;
     font-size: 1.2em;
@@ -84,13 +71,10 @@ body {
     border: none;
     text-align: left;
     width: 100%;
-    border-bottom: 4px solid #007bff; /* Blauwe lijn */
+    border-bottom: 4px solid #007bff;
 }
 
-/* ===============================
-   REST VAN DE STIJLEN
-   =============================== */
-
+/* --- ALGEMEEN --- */
 h2 {
     margin-top: 30px;
     border-bottom: 1px solid #444;
@@ -100,18 +84,18 @@ h2 {
     margin-top: 40px;
 }
 
-/* --- Algemene Tabel Stijlen --- */
-#log-table, #user-table, #defect-table {
+/* --- TABEL STIJLEN (voor alle tabellen) --- */
+#log-table, #user-table, #algemeen-defect-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
-#log-table thead, #user-table thead, #defect-table thead {
+#log-table thead, #user-table thead, #algemeen-defect-table thead {
     background-color: #333;
 }
 #log-table th, #log-table td,
 #user-table th, #user-table td,
-#defect-table th, #defect-table td {
+#algemeen-defect-table th, #algemeen-defect-table td {
     padding: 12px;
     border-bottom: 1px solid #444;
     text-align: left;
@@ -119,15 +103,20 @@ h2 {
     font-size: 0.9em;
     vertical-align: middle;
 }
-#log-table th, #user-table th, #defect-table th {
+#log-table th, #user-table th, #algemeen-defect-table th {
     font-size: 1em;
     font-weight: bold;
 }
-#log-table tbody tr:hover, #user-table tbody tr:hover, #defect-table tbody tr:hover {
+#log-table tbody tr:hover, #user-table tbody tr:hover, #algemeen-defect-table tbody tr:hover {
     background-color: #2a2a2a;
 }
+/* Speciale stijl voor 'Opgelost' */
+.status-opgelost {
+    opacity: 0.5;
+    background-color: #222;
+}
 
-/* --- Gebruiker Toevoegen Formulier --- */
+/* --- GEBRUIKER TOEVOEGEN FORMULIER --- */
 #add-user-form {
     padding: 20px;
     background-color: #2a2a2a;
@@ -170,40 +159,32 @@ h2 {
     background-color: #218838;
 }
 
-/* Delete Knop */
-.delete-btn {
+/* 'Delete' / 'Opgelost' Knoppen */
+.delete-btn, .action-btn {
     padding: 8px 12px;
-    background-color: #dc3545;
+    background-color: #dc3545; /* Rood (Delete) */
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
 }
-.delete-btn:hover {
-    background-color: #c82333;
+.action-btn {
+    background-color: #28a745; /* Groen (Opgelost) */
 }
-.delete-btn:disabled {
+.delete-btn:hover { background-color: #c82333; }
+.action-btn:hover { background-color: #218838; }
+.delete-btn:disabled, .action-btn:disabled {
     background-color: #555;
 }
 
 
-/* Responsive tabellen: op telefoons wordt het een lijst */
+/* --- RESPONSIVE --- */
 @media (max-width: 720px) {
-    /* Toon de hamburger-knop */
-    #mobile-menu-toggle {
-        display: block;
-    }
-    /* De navigatiebalk stapelt nu verticaal */
-    .tab-nav {
-        flex-direction: column; 
-        border-radius: 8px;
-    }
-    /* Verberg alle tab-links op mobiel (ze zitten in de dropdown) */
-    .tab-link, #back-button {
-        display: none;
-    }
-    /* Toon de links als het menu open is */
+    /* Mobiel Menu */
+    #mobile-menu-toggle { display: block; }
+    .tab-nav { flex-direction: column; border-radius: 8px; }
+    .tab-link, #back-button { display: none; }
     .tab-nav.is-open .tab-link,
     .tab-nav.is-open #back-button {
         display: block;
@@ -211,37 +192,37 @@ h2 {
         box-sizing: border-box;
         border-bottom: 1px solid #444;
     }
-    .tab-link.active {
-        border-bottom-color: transparent;
-    }
+    .tab-link.active { border-bottom-color: transparent; }
 
-    /* Tabel responsive regels */
-    #log-table thead, #user-table thead, #defect-table thead {
+    /* Mobiele Tabellen */
+    #log-table thead, #user-table thead, #algemeen-defect-table thead {
         display: none; 
     }
-    #log-table tr, #user-table tr, #defect-table tr {
+    #log-table tr, #user-table tr, #algemeen-defect-table tr {
         display: block;
         border: 1px solid #555;
         margin-bottom: 15px;
     }
-    #log-table td, #user-table td, #defect-table td {
+    #log-table td, #user-table td, #algemeen-defect-table td {
         display: block;
         text-align: right;
         border-bottom: 1px dotted #444;
     }
-    #log-table td:last-child, #user-table td:last-child, #defect-table td:last-child {
+    #log-table td:last-child, #user-table td:last-child, #algemeen-defect-table td:last-child {
         border-bottom: none;
     }
-    #log-table td:before, #user-table td:before, #defect-table td:before {
+    #log-table td:before, #user-table td:before, #algemeen-defect-table td:before {
         content: attr(data-label);
         float: left;
         font-weight: bold;
         color: #fff;
     }
-    #user-table td[data-label="Actie"] {
+    #user-table td[data-label="Actie"],
+    #algemeen-defect-table td[data-label="Actie"] {
         text-align: center;
     }
-    #user-table td[data-label="Actie"]::before {
+    #user-table td[data-label="Actie"]::before,
+    #algemeen-defect-table td[data-label="Actie"]::before {
         display: none;
     }
 }
