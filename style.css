@@ -600,7 +600,7 @@ input[type="checkbox"]:checked+label {
 }
 
 /* ===============================
-   AANPASSING: Bijzonderheden-blok (nu een tabel)
+   AANPASSING: Bijzonderheden-blok (Tabel-versie)
    =============================== */
 
 #bijzonderheden-container {
@@ -622,6 +622,16 @@ input[type="checkbox"]:checked+label {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+}
+
+/* Tabel Header (Nieuw) */
+#bijzonderheden-table th {
+    padding: 12px 10px;
+    border-bottom: 2px solid #555; /* Duidelijkere lijn */
+    color: #aaa; /* Iets lichtere kleur voor header */
+    font-size: 0.9em;
+    text-transform: uppercase;
+    text-align: left;
 }
 
 #bijzonderheden-table td {

@@ -22,7 +22,6 @@
             <button class="main-tab-link" data-tab="tab-kart-dashboard">Kart Dashboard</button>
             <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
-
         <div id="tab-algemeen" class="tab-content active">
             <h1>Activiteitencentrum Dashboard</h1>
             <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
@@ -37,9 +36,16 @@
                 <h3>Bijzonderheden van Gisteren</h3>
 
                 <table id="bijzonderheden-table">
+                    <thead>
+                        <tr>
+                            <th>Activiteit</th>
+                            <th>Lijst</th>
+                            <th>Bijzonderheid</th>
+                        </tr>
+                    </thead>
                     <tbody id="bijzonderheden-body">
                         <tr>
-                            <td>Laden...</td>
+                            <td colspan="3">Laden...</td>
                         </tr>
                     </tbody>
                 </table>

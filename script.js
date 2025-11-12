@@ -1,7 +1,7 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (MET BUGFIX)
+   VOLLEDIGE SCRIPT.JS (MET BIJZONDERHEDEN-TABEL)
    =============================== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
+const WEB_APP_URL = "PLAK_HIER_JE_NIEUWE_WEB_APP_URL"; // <-- CRUCIAAL
 
 // ==============================================================
 //   CHECKLIST DATA (Hard-coded)
@@ -63,9 +63,12 @@ let alleDefecten = [];
 
 // --- DEEL 2: FUNCTIES ---
 
+// ========================
+//  BIJGEWERKTE FUNCTIE
+// ========================
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
-    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDDEN" }; 
+    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDEN" }; 
     
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
@@ -73,24 +76,39 @@ function laadBijzonderhedenVanGisteren() {
     .then(response => response.json())
     .then(result => {
         if (result.status === "success") {
-            tabelBody.innerHTML = ''; 
+            tabelBody.innerHTML = ''; // Leeg de 'Laden...'
             if (result.data.length === 0) {
-                tabelBody.innerHTML = '<tr><td>Geen bijzonderheden gemeld gisteren.</td></tr>';
+                tabelBody.innerHTML = '<tr><td colspan="3">Geen bijzonderheden gemeld gisteren.</td></tr>';
             } else {
-                result.data.forEach(opmerking => {
+                result.data.forEach(item => {
                     const tr = document.createElement('tr');
-                    const td = document.createElement('td');
-                    td.textContent = opmerking;
-                    tr.appendChild(td);
+                    
+                    const tdActiviteit = document.createElement('td');
+                    tdActiviteit.textContent = item.activiteit;
+                    
+                    // Maak de lijstnaam korter (bv. "Checklist Openen" -> "Openen")
+                    const lijst = item.lijstnaam.replace("Checklist ", "");
+                    const tdLijst = document.createElement('td');
+                    tdLijst.textContent = lijst;
+
+                    const tdOpmerking = document.createElement('td');
+                    tdOpmerking.textContent = item.opmerking;
+
+                    tr.appendChild(tdActiviteit);
+                    tr.appendChild(tdLijst);
+                    tr.appendChild(tdOpmerking);
                     tabelBody.appendChild(tr);
                 });
             }
         } else { throw new Error(result.message); }
     })
     .catch(error => {
-        tabelBody.innerHTML = `<tr><td style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
+        tabelBody.innerHTML = `<tr><td colspan="3" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
     });
 }
+// ========================
+
+
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.querySelector('.main-nav');
@@ -272,48 +290,29 @@ function updateChecklists(activiteit) {
         container.classList.remove('checklists-zichtbaar');
     }
 }
-
-// ========================
-//  DEZE FUNCTIE IS GECORRIGEERD
-// ========================
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
-    
     var listId, buttonId, bijzonderhedenId;
     if (lijstNaam === 'Checklist Openen') {
         listId = 'lijst-openen'; buttonId = 'btn-openen'; bijzonderhedenId = 'bijzonderheden-openen';
     } else {
         listId = 'lijst-sluiten'; buttonId = 'btn-sluiten'; bijzonderhedenId = 'bijzonderheden-sluiten';
     }
-    
     var knop = document.getElementById(buttonId);
     knop.disabled = true; knop.textContent = "Bezig...";
-    
     var bijzonderhedenText = document.getElementById(bijzonderhedenId).value.trim();
     var items = [];
     document.querySelectorAll("#" + listId + " li").forEach(li => {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
-    
-    // DEZE VARIABELE-NAAM IS NU CORRECT: 'dataPayload'
     var dataPayload = { 
-        type: "LOG_DATA", 
-        lijstNaam: lijstNaam, 
-        items: items, 
-        medewerker: ingelogdeNaam, 
-        activiteit: activiteit,
-        bijzonderheden: bijzonderhedenText
+        type: "LOG_DATA", lijstNaam: lijstNaam, items: items, 
+        medewerker: ingelogdeNaam, activiteit: activiteit, bijzonderheden: bijzonderhedenText
     };
-    
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { 
-        method: 'POST', 
-        // EN HIJ WORDT HIER CORRECT GEBRUIKT: 'dataPayload'
-        body: JSON.stringify(dataPayload), 
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        mode: 'cors'
-    })
-    .then(response => response.json())
+        method: 'POST', body: JSON.stringify(dataPayload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
+    }).then(response => response.json())
     .then(data => {
         if(data.status === "success") {
             toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
@@ -322,15 +321,12 @@ function verstuurData(lijstNaam) {
             knop.disabled = false;
             knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
         } else { throw new Error(data.message); }
-    })
-    .catch(error => {
+    }).catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
         knop.disabled = false;
         knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
-// ========================
-
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
