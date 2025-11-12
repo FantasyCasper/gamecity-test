@@ -3,7 +3,7 @@
    =============================== */
 
 // De naam is veranderd naar v9
-const CACHE_NAAM = 'checklist-app-cache-v0.14';
+const CACHE_NAAM = 'checklist-app-cache-v0.15';
 
 // De lijst met AL je bestanden
 const urlsToCache = [
@@ -30,7 +30,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAAM)
       .then(function(cache) {
-        console.log('Cache v0.14 geopend en bestanden worden toegevoegd');
+        console.log('Cache v0.15 geopend en bestanden worden toegevoegd');
         // forceer de browser om de nieuwste versie te pakken
         const updateCache = urlsToCache.map(url => {
             return cache.add(new Request(url, { cache: 'reload' }));
