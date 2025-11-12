@@ -1,7 +1,7 @@
 /* ===============================
    VOLLEDIGE SCRIPT.JS (MET ALLE FUNCTIES)
    =============================== */
-const WEB_APP_URL = "PLAK_HIER_JE_WEB_APP_URL"; // <-- CRUCIAAL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 // ==============================================================
 //   CHECKLIST DATA (Hard-coded)
