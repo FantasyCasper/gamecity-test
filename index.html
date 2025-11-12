@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
 </head>
+
 <body>
 
     <button id="logout-button">Uitloggen</button>
@@ -20,11 +22,22 @@
             <button class="main-tab-link" data-tab="tab-kart-dashboard">Kart Dashboard</button>
             <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
-
         <div id="tab-algemeen" class="tab-content active">
             <h1>Activiteitencentrum Dashboard</h1>
             <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
+
             <p>Dit is de algemene informatiepagina.</p>
+            <ul>
+                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
+                <li>Meld eventuele defecten aan de karts via het "Kart Dashboard" tabblad.</li>
+            </ul>
+
+            <div id="bijzonderheden-container">
+                <h3>Bijzonderheden van Gisteren</h3>
+                <ul id="bijzonderheden-lijst">
+                    <li>Laden...</li>
+                </ul>
+            </div>
         </div>
 
         <div id="tab-checklists" class="tab-content">
@@ -36,29 +49,33 @@
                     </select>
                 </div>
             </div>
-            <div id="status-message"></div> 
-            
+            <div id="status-message"></div>
+
             <div class="checklist-section" id="sectie-openen">
                 <button class="collapsible">Checklist Openen</button>
                 <div class="content">
                     <ul id="lijst-openen"></ul>
                     <label for="bijzonderheden-openen" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button>
+                    <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3"
+                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen
+                        Voltooid & Verzenden</button>
                 </div>
             </div>
-            
+
             <div class="checklist-section" id="sectie-sluiten">
                 <button class="collapsible">Checklist Sluiten</button>
                 <div class="content">
                     <ul id="lijst-sluiten"></ul>
                     <label for="bijzonderheden-sluiten" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button>
+                    <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3"
+                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten
+                        Voltooid & Verzenden</button>
                 </div>
             </div>
         </div>
-        
+
         <div id="tab-kart-dashboard" class="tab-content">
             <h1>Kart Dashboard</h1>
             <div class="stat-box-grid">
@@ -85,14 +102,16 @@
             <div id="status-message-defect" class="status-bericht"></div>
             <h2>Openstaande Defecten</h2>
             <div id="defect-card-container" class="problem-card-grid">
-                </div>
+            </div>
         </div>
-        
-    </div> <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-      }
+
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
     </script>
     <script src="script.js"></script>
 </body>
+
 </html>
