@@ -1,9 +1,9 @@
 /* ===============================
-   SERVICE WORKER (CACHE BUSTER V5)
+   SERVICE WORKER (CACHE BUSTER V8)
    =============================== */
 
-// De naam is veranderd naar v5
-const CACHE_NAAM = 'checklist-app-cache-v5';
+// De naam is veranderd naar v8
+const CACHE_NAAM = 'checklist-app-cache-v8';
 
 // De lijst met AL je bestanden
 const urlsToCache = [
@@ -18,6 +18,8 @@ const urlsToCache = [
   'login/index.html',
   'login/login.css',
   'login/login.js',
+  
+  // -- Admin bestanden --
   'admin/admin.html',
   'admin/admin.css',
   'admin/admin.js'
@@ -28,7 +30,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAAM)
       .then(function(cache) {
-        console.log('Cache v5 geopend en bestanden worden toegevoegd');
+        console.log('Cache v8 geopend en bestanden worden toegevoegd');
         // forceer de browser om de nieuwste versie te pakken
         const updateCache = urlsToCache.map(url => {
             return cache.add(new Request(url, { cache: 'reload' }));
@@ -44,7 +46,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cacheName) {
-          // Verwijder alle caches die NIET v5 zijn
+          // Verwijder alle caches die NIET v8 zijn
           return cacheName.startsWith('checklist-app-cache-') && 
                  cacheName !== CACHE_NAAM;
         }).map(function(cacheName) {

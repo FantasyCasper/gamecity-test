@@ -42,10 +42,8 @@
                 <button class="collapsible">Checklist Openen</button>
                 <div class="content">
                     <ul id="lijst-openen"></ul>
-                    
                     <label for="bijzonderheden-openen" class="bijzonderheden-label">Bijzonderheden:</label>
                     <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    
                     <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button>
                 </div>
             </div>
@@ -54,17 +52,41 @@
                 <button class="collapsible">Checklist Sluiten</button>
                 <div class="content">
                     <ul id="lijst-sluiten"></ul>
-                    
                     <label for="bijzonderheden-sluiten" class="bijzonderheden-label">Bijzonderheden:</label>
                     <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    
                     <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button>
                 </div>
             </div>
         </div>
         
         <div id="tab-kart-dashboard" class="tab-content">
+            <h1>Kart Dashboard</h1>
+            <div class="stat-box-grid">
+                <div class="stat-box"><span id="stat-totaal-karts">40</span>Totaal Karts</div>
+                <div class="stat-box"><span id="stat-karts-problemen">0</span>Karts met Problemen</div>
+                <div class="stat-box"><span id="stat-werkende-karts">0</span>Werkende Karts</div>
             </div>
+            <form id="new-defect-form" class="form-bar user-info">
+                <select id="new-defect-kart" required>
+                    <option value="">Kart...</option>
+                </select>
+                <input type="text" id="new-defect-problem" placeholder="Probleem omschrijving..." required>
+                <button type="submit" id="new-defect-submit">+ Toevoegen</button>
+            </form>
+            <div id="new-filter-bar" class="form-bar user-info">
+                <span>Filter:</span>
+                <select id="filter-status">
+                    <option value="open">Status: Open</option>
+                    <option value="opgelost">Status: Opgelost</option>
+                    <option value="alle">Status: Alle</option>
+                </select>
+                <button id="filter-wissen-btn">X Wissen</button>
+            </div>
+            <div id="status-message-defect" class="status-bericht"></div>
+            <h2>Openstaande Defecten</h2>
+            <div id="defect-card-container" class="problem-card-grid">
+                </div>
+        </div>
         
     </div> <script>
       if ('serviceWorker' in navigator) {
