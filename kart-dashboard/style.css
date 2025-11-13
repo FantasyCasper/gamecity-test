@@ -1,0 +1,205 @@
+/* ===============================
+   KART DASHBOARD CSS
+   =============================== */
+
+/* Maak de container breder, net als het admin panel */
+.container {
+    max-width: 1200px;
+}
+@media (min-width: 1400px) {
+    .container { max-width: 90%; }
+}
+
+/* De 'Terug'-knop (gestolen van admin.css) */
+#back-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 8px 12px;
+    background-color: #555;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 1000;
+}
+#back-button:hover {
+    background-color: #777;
+}
+
+/* Verberg de 'Uitloggen'-knop, die hoort bij de hoofd-app */
+#logout-button {
+    display: none;
+}
+
+/* Zorg dat de body padding heeft voor de 'Terug'-knop */
+body {
+    padding-top: 60px;
+}
+
+/* Alle Kart Dashboard stijlen (verplaatst uit style.css) */
+#tab-kart-dashboard h1, h1 {
+    text-align: left;
+    font-size: 1.8em;
+    margin: 0 0 20px 0;
+    padding: 0;
+    background: none;
+    border: none;
+}
+.stat-box-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.stat-box {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #aaa;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+.stat-box span {
+    display: block;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+}
+#stat-karts-problemen { color: #e74c3c; } 
+#stat-werkende-karts { color: #2ecc71; }
+.form-bar {
+    padding: 10px; 
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap; 
+    align-items: center;
+    gap: 10px;
+    /* We voegen de .user-info stijlen hier direct toe */
+    background-color: #2a2a2a;
+    border-radius: 8px;
+}
+.form-bar span { 
+    font-weight: bold;
+    color: #aaa;
+    margin-left: 5px;
+    font-size: 0.9em;
+}
+.form-bar input[type="text"],
+.form-bar select {
+    padding: 10px 12px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.9em;
+    min-width: 150px; 
+    box-sizing: border-box; 
+}
+.form-bar input#new-defect-problem {
+    flex-grow: 1; 
+    min-width: 200px; 
+}
+.form-bar button {
+    flex-shrink: 0; 
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9em;
+}
+#new-defect-submit {
+    background-color: #28a745;
+    color: white;
+}
+#new-defect-submit:hover { background-color: #218838; }
+#filter-wissen-btn {
+    background-color: #28a745; 
+    color: white;
+}
+#filter-wissen-btn:hover { background-color: #218838; }
+.problem-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+.defect-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    border-left: 5px solid #e74c3c; 
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.defect-card.status-opgelost {
+    border-left-color: #2ecc71; 
+    opacity: 0.6;
+}
+.defect-card h3 { margin: 0 0 5px 0; color: #fff; font-size: 1.2em; }
+.defect-card .meta { font-size: 0.8em; color: #999; margin-bottom: 15px; }
+.defect-card .meta-item { display: block; }
+.defect-card .omschrijving { color: #e0e0e0; margin-bottom: 15px; line-height: 1.5; flex-grow: 1; }
+.manager-btn {
+    display: none; 
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.manager-btn:hover { background-color: #218838; }
+/* Let op: we passen de class-check aan */
+body.is-manager .manager-btn { 
+    display: block; 
+}
+
+/* Statusberichten */
+.status-bericht {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    display: none;
+    font-weight: bold;
+}
+.status-bericht.success {
+    background-color: #28a745;
+    color: white;
+}
+.status-bericht.error {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Responsive Stijlen (aangepast) */
+@media (max-width: 720px) {
+    .form-bar {
+        flex-direction: column;
+        align-items: stretch; 
+    }
+    .form-bar input[type="text"],
+    .form-bar select,
+    .form-bar button {
+        width: 100%;
+        box-sizing: border-box; 
+    }
+    .form-bar span {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    #back-button {
+        top: 10px;
+        left: 10px;
+        padding: 6px 10px;
+    }
+}

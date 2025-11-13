@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
 </head>
+
 <body>
 
     <button id="logout-button">Uitloggen</button>
@@ -18,14 +20,14 @@
             <button class="main-tab-link active" data-tab="tab-algemeen">Algemeen</button>
             <button class="main-tab-link" data-tab="tab-checklists">Checklists</button>
             <button class="main-tab-link" data-tab="tab-algemeen-defect">Meld Defect</button>
-            <button class="main-tab-link" data-tab="tab-kart-dashboard">Kart Dashboard</button>
+            <a href="kart-dashboard/index.html" class="main-tab-link" data-tab="tab-kart-dashboard">Kart Dashboard</a>
             <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
 
         <div id="tab-algemeen" class="tab-content active">
             <h1>Activiteitencentrum Dashboard</h1>
             <h2>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
-            
+
             <p>Dit is de algemene informatiepagina.</p>
             <ul>
                 <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
@@ -44,7 +46,9 @@
                         </tr>
                     </thead>
                     <tbody id="bijzonderheden-body">
-                        <tr><td colspan="3">Laden...</td></tr> 
+                        <tr>
+                            <td colspan="3">Laden...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -59,64 +63,38 @@
                     </select>
                 </div>
             </div>
-            <div id="status-message"></div> 
-            
+            <div id="status-message"></div>
+
             <div class="checklist-section" id="sectie-openen">
                 <button class="collapsible">Checklist Openen</button>
                 <div class="content">
                     <ul id="lijst-openen"></ul>
                     <label for="bijzonderheden-openen" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen Voltooid & Verzenden</button>
+                    <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3"
+                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen
+                        Voltooid & Verzenden</button>
                 </div>
             </div>
-            
+
             <div class="checklist-section" id="sectie-sluiten">
                 <button class="collapsible">Checklist Sluiten</button>
                 <div class="content">
                     <ul id="lijst-sluiten"></ul>
                     <label for="bijzonderheden-sluiten" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3" placeholder="Typ hier eventuele opmerkingen..."></textarea>
-                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten Voltooid & Verzenden</button>
+                    <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3"
+                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten
+                        Voltooid & Verzenden</button>
                 </div>
             </div>
         </div>
-        
-        <div id="tab-kart-dashboard" class="tab-content">
-            <h1>Kart Dashboard</h1>
-            <div class="stat-box-grid">
-                <div class="stat-box"><span id="stat-totaal-karts">40</span>Totaal Karts</div>
-                <div class="stat-box"><span id="stat-karts-problemen">0</span>Karts met Problemen</div>
-                <div class="stat-box"><span id="stat-werkende-karts">0</span>Werkende Karts</div>
-            </div>
-            <form id="new-defect-form" class="form-bar user-info">
-                <select id="new-defect-kart" required>
-                    <option value="">Kart...</option>
-                </select>
-                <input type="text" id="new-defect-problem" placeholder="Probleem omschrijving..." required>
-                <button type="submit" id="new-defect-submit">+ Toevoegen</button>
-            </form>
-            <div id="new-filter-bar" class="form-bar user-info">
-                <span>Filter:</span>
-                <select id="filter-status">
-                    <option value="open">Status: Open</option>
-                    <option value="opgelost">Status: Opgelost</option>
-                    <option value="alle">Status: Alle</option>
-                </select>
-                <button id="filter-wissen-btn">X Wissen</button>
-            </div>
-            <div id="status-message-defect" class="status-bericht"></div>
-            <h2>Openstaande Defecten</h2>
-            <div id="defect-card-container" class="problem-card-grid">
-                </div>
-        </div>
-
         <div id="tab-algemeen-defect" class="tab-content">
             <h1>Algemeen Defect Melden</h1>
             <p>Meld hier defecten voor locaties (Baan, Lasergame, etc.)</p>
-            
+
             <div id="algemeen-defect-status" class="status-bericht"></div>
-            
+
             <form id="algemeen-defect-form" class="user-info">
                 <div class="form-veld">
                     <label for="locatie-select">Activiteit / Locatie:</label>
@@ -131,17 +109,20 @@
                 </div>
                 <div class="form-veld">
                     <label for="algemeen-defect-omschrijving">Omschrijving Defect:</label>
-                    <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..." required></textarea>
+                    <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..."
+                        required></textarea>
                 </div>
                 <button type="submit" id="algemeen-defect-submit" class="submit-button">Meld Algemeen Defect</button>
             </form>
         </div>
-        
-    </div> <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-      }
+
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
     </script>
     <script src="script.js"></script>
 </body>
+
 </html>
