@@ -3,7 +3,7 @@
    =============================== */
 
 // De naam is veranderd om de cache te forceren
-const CACHE_NAAM = 'checklist-app-cache-v0.18';
+const CACHE_NAAM = 'checklist-app-cache-v0.19';
 
 // De lijst is bijgewerkt met de nieuwe map
 const urlsToCache = [
@@ -32,7 +32,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAAM)
       .then(function(cache) {
-        console.log('Cache v0.18 geopend en bestanden worden toegevoegd');
+        //console.log('Cache v0.18 geopend en bestanden worden toegevoegd');
         const updateCache = urlsToCache.map(url => {
             return cache.add(new Request(url, { cache: 'reload' }));
         });
