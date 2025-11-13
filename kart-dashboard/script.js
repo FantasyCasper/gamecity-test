@@ -118,11 +118,16 @@ function renderDefectCards(defects){
     const container = document.getElementById("defect-card-container");
     if (!container) return;
     container.innerHTML = ""; 
-    if (defects.length === 0) {
+    
+    // Filter "Verwijderd" eruit VOORDAT we renderen
+    const actieveDefecten = defects.filter(d => d.status !== 'Verwijderd');
+    
+    if (actieveDefecten.length === 0) {
         container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
-    defects.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
-    defects.forEach(defect => {
+    actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
+    
+    actieveDefecten.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
@@ -194,14 +199,21 @@ function markeerDefectOpgelost(rowId, buttonEl){
     });
 }
 
+// ========================
+//  BIJGEWERKTE MODAL FUNCTIES
+// ========================
+const modal = document.getElementById('edit-modal');
+const overlay = document.getElementById('modal-overlay');
+
+// De logica voor het 'Opslaan' EN 'Verwijderen' van de modal
 function setupEditModal() {
-    const modal = document.getElementById('edit-modal');
-    const overlay = document.getElementById('modal-overlay');
     const form = document.getElementById('edit-defect-form');
     const saveButton = document.getElementById('modal-save-btn');
     const cancelButton = document.getElementById('modal-cancel-btn');
     const closeButton = document.getElementById('modal-close-btn');
+    const deleteButton = document.getElementById('modal-delete-btn'); // <-- NIEUW
 
+    // OPSLAAN (Aanpassen)
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         saveButton.disabled = true;
@@ -230,11 +242,39 @@ function setupEditModal() {
             });
     });
     
-    function closeEditModal() {
-        modal.style.display = 'none';
-        overlay.style.display = 'none';
-    }
+    // VERWIJDEREN (alleen voor managers)
+    deleteButton.addEventListener('click', () => {
+        if (!confirm('Weet je zeker dat je deze melding permanent wilt verwijderen? Dit kan niet ongedaan gemaakt worden.')) {
+            return;
+        }
+        
+        deleteButton.disabled = true;
+        deleteButton.textContent = "Bezig...";
+        
+        const rowId = document.getElementById('edit-row-id').value;
+        const payload = { 
+            type: "UPDATE_DEFECT_STATUS", 
+            rol: ingelogdeRol, 
+            rowId: rowId, 
+            newStatus: "Verwijderd" // We zetten de status op 'Verwijderd'
+        };
+
+        callApi(payload)
+            .then(result => {
+                toonDefectStatus("Defect succesvol verwijderd.", "success");
+                closeEditModal();
+                laadDefectenDashboard(); 
+            })
+            .catch(error => {
+                alert("Fout: " + error.message);
+            })
+            .finally(() => {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Verwijder Melding";
+            });
+    });
     
+    // Sluit-knoppen
     cancelButton.addEventListener('click', closeEditModal);
     closeButton.addEventListener('click', closeEditModal);
     overlay.addEventListener('click', closeEditModal);
@@ -245,8 +285,14 @@ function openEditModal(rowId, kartNummer, omschrijving) {
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
     
-    document.getElementById('edit-modal').style.display = 'block';
-    document.getElementById('modal-overlay').style.display = 'block';
+    modal.style.display = 'block';
+    overlay.style.display = 'block';
+}
+
+// Functie om de modal te sluiten
+function closeEditModal() {
+    modal.style.display = 'none';
+    overlay.style.display = 'none';
 }
 
 function toonDefectStatus(bericht, type) {

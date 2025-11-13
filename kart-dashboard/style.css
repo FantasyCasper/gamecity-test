@@ -338,3 +338,36 @@ body.is-manager .manager-btn {
     color: white;
 }
 #modal-save-btn:hover { background-color: #0056b3; }
+
+/* ===============================
+   AANPASSING: Modal Verwijder-knop
+   =============================== */
+
+/* Zorg dat de Verwijder-knop links staat */
+#modal-delete-btn {
+    margin-right: auto; /* Duwt deze knop naar links */
+}
+
+/* Stijl voor de rode verwijderknop in de modal */
+.manager-btn-danger {
+    display: none; /* Standaard verborgen */
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.manager-btn-danger:hover {
+    background-color: #c82333;
+}
+.manager-btn-danger:disabled {
+    background-color: #555;
+}
+    
+/* Toon voor managers */
+body.is-manager .manager-btn-danger {
+    display: block;
+}
