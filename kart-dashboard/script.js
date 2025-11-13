@@ -281,6 +281,7 @@ function setupEditModal() {
 }
 
 function openEditModal(rowId, kartNummer, omschrijving) {
+    const modal = document.getElementById('edit-modal');
     document.getElementById('edit-row-id').value = rowId;
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
