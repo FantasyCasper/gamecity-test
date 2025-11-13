@@ -16,12 +16,10 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "../login/"; return; 
     } 
     
-    // Voeg 'is-manager' class toe aan body (voor knoppen)
     if (ingelogdeRol === 'manager') {
         document.body.classList.add('is-manager'); 
     }
     
-    // Koppel alle event listeners
     vulKartMeldDropdown(); 
     setupDefectForm();
     laadDefectenDashboard(); 
@@ -108,9 +106,9 @@ function setupKartFilter() {
 }
 
 // ========================
-//  RENDER DEFECT CARDS (BIJGEWERKT MET EDIT-KNOP)
+//  RENDER DEFECT CARDS (BIJGEWERKT)
 // ========================
-function renderDefectCards(defects) {
+function renderDefectCards(defects){
     const container = document.getElementById("defect-card-container");
     if (!container) return;
     container.innerHTML = ""; 
@@ -128,12 +126,16 @@ function renderDefectCards(defects) {
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isBinnen24Uur = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         
-        // Toon 'Aanpassen' knop als je eigenaar bent, het 'Open' is, EN binnen 24u
         if (isEigenaar && defect.status === "Open" && isBinnen24Uur) {
-            editKnopHtml = `<button class="edit-defect-btn" data-row-id="${defect.rowId}">Aanpassen</button>`;
+            // Sla de data op in de knop zelf
+            editKnopHtml = `<button class="edit-defect-btn" 
+                                    data-row-id="${defect.rowId}" 
+                                    data-kart="${defect.kartNummer}" 
+                                    data-omschrijving="${escape(defect.defect)}">
+                                Aanpassen
+                           </button>`;
         }
         
-        // Toon 'Opgelost' knop alleen als het 'Open' is (voor managers)
         const managerKnopHtml = (defect.status === "Open") 
             ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` 
             : '';
@@ -157,7 +159,7 @@ function renderDefectCards(defects) {
 // ========================
 
 // ========================
-//  SETUP DASHBOARD LISTENERS (BIJGEWERKT MET EDIT-KNOP)
+//  SETUP DASHBOARD LISTENERS (BIJGEWERKT)
 // ========================
 function setupDashboardListeners(){
     const container = document.getElementById("defect-card-container");
@@ -169,7 +171,7 @@ function setupDashboardListeners(){
         }
         // Check voor "Aanpassen" knop
         if (e.target.classList.contains("edit-defect-btn")) {
-            handleDefectEdit(e.target, e.target.dataset.rowId);
+            handleDefectEdit(e.target);
         }
     });
 }
@@ -192,15 +194,23 @@ function markeerDefectOpgelost(rowId, buttonEl){
 // ========================
 //  NIEUWE FUNCTIE: Defect Aanpassen
 // ========================
-function handleDefectEdit(buttonEl, rowId) {
-    const kaart = buttonEl.closest('.defect-card');
-    const omschrijvingP = kaart.querySelector('.omschrijving');
-    const huidigeTekst = omschrijvingP.textContent;
+function handleDefectEdit(buttonEl) {
+    const rowId = buttonEl.dataset.rowId;
+    const huidigeKart = buttonEl.dataset.kart;
+    const huidigeTekst = unescape(buttonEl.dataset.omschrijving);
     
-    const nieuweTekst = prompt("Pas je omschrijving aan:", huidigeTekst);
+    // Vraag 1: Kartnummer
+    const nieuweKart = prompt("Pas kartnummer aan:", huidigeKart);
+    if (!nieuweKart) { return; } // Gebruiker annuleerde
     
-    if (!nieuweTekst || nieuweTekst.trim() === "" || nieuweTekst.trim() === huidigeTekst) {
-        return; // Gebruiker annuleerde of wijzigde niets
+    // Vraag 2: Omschrijving
+    const nieuweTekst = prompt("Pas omschrijving aan:", huidigeTekst);
+    if (!nieuweTekst) { return; } // Gebruiker annuleerde
+    
+    // Check of er iets is gewijzigd
+    if (nieuweKart.trim() === huidigeKart && nieuweTekst.trim() === huidigeTekst) {
+        toonDefectStatus("Er is niets gewijzigd.", "error"); // 'error' is hier 'info'
+        return;
     }
     
     buttonEl.disabled = true;
@@ -209,8 +219,9 @@ function handleDefectEdit(buttonEl, rowId) {
     const payload = { 
         type: "UPDATE_DEFECT", 
         rowId: rowId, 
+        newKartNummer: newKartNummer.trim(), // Stuur nieuwe kartnummer mee
         newText: nieuweTekst.trim(), 
-        medewerker: ingelogdeNaam // Stuur naam mee voor veiligheidscheck
+        medewerker: ingelogdeNaam 
     };
 
     callApi(payload)
@@ -236,6 +247,11 @@ function toonDefectStatus(bericht, type) {
 
 // --- ALGEMENE API CALL ---
 async function callApi(payload) {
+    // Voeg 'rol' toe aan *alleen* admin-verzoeken
+    if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
+        payload.rol = ingelogdeRol;
+    }
+    
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
     const response = await fetch(url, {
         method: 'POST',
