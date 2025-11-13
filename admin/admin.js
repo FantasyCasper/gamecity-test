@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET TD ROL LOGICA)
+   VOLLEDIGE ADMIN.JS (MET LADEN-FIX)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
@@ -9,37 +9,32 @@ const statusDiv = document.getElementById('status-message');
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
-    // 1. Check toegang (Manager OF TD)
     if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
         alert("Toegang geweigerd."); 
         window.location.href = "../index.html"; 
         return; 
     }
     
-    // 2. Data ophalen
-    // Iedereen mag defecten zien
+    // Iedereen (Manager & TD) haalt defecten op
     fetchAlgemeenDefects(); 
     
     if (ingelogdeRol === 'manager') {
-        // Alleen managers mogen logs en gebruikers zien
+        // Alleen managers halen logboek en gebruikers op
         fetchLogData();
         fetchUsers();
     }
 
-    // 3. Interface aanpassen voor TD
+    // Interface aanpassen voor TD
     if (ingelogdeRol === 'TD') {
-        // A. Verberg de tab-knoppen voor Logboek en Gebruikers
         const logBtn = document.querySelector('.tab-link[data-tab="tab-logs"]');
         const userBtn = document.querySelector('.tab-link[data-tab="tab-users"]');
         if (logBtn) logBtn.style.display = 'none';
         if (userBtn) userBtn.style.display = 'none';
 
-        // B. Schakel over naar het Defecten tabblad
-        // 1. Maak huidige tab (Logboek) inactief
+        // Schakel over naar het Defecten tabblad
         document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         
-        // 2. Maak Defecten tab actief
         const defectBtn = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
         const defectContent = document.getElementById('tab-algemeen-defecten');
         
@@ -47,7 +42,7 @@ const statusDiv = document.getElementById('status-message');
         if (defectContent) defectContent.classList.add('active');
     }
     
-    // 4. Koppel de listeners
+    // Koppel de listeners
     setupTabNavigation();
     setupMobileMenu(); 
     setupUserForm();
@@ -88,7 +83,8 @@ function setupTabNavigation(){
 function fetchLogData(){
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = "none"; renderLogs(result.data);
+        statusDiv.style.display = "none"; // Verberg bericht als logboek geladen is
+        renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
 function renderLogs(logs){
@@ -169,6 +165,8 @@ function setupUserDeleteListener(){
 function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
+            // HIER IS DE FIX: Verberg het bericht OOK als defecten zijn geladen
+            statusDiv.style.display = "none"; 
             renderAlgemeenDefects(result.data);
         })
         .catch(error => handleError(error, "Fout bij laden algemene defecten: "));
