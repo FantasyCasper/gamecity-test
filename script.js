@@ -38,9 +38,9 @@ let ingelogdeRol = "";
     } 
     
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
-    if (ingelogdeRol === 'manager') {
+if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
-        // .is-manager class is niet meer nodig in de hoofd-app
+        document.querySelector('.container').classList.add('is-manager'); // Dit toont de 'Opgelost' knoppen op het Kart Dashboard
     }
     
     const activiteitSelect = document.getElementById('activiteit-select');

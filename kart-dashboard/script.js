@@ -16,8 +16,8 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "../login/"; return;
     }
 
-    if (ingelogdeRol === 'manager') {
-        document.body.classList.add('is-manager');
+if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
+        document.body.classList.add('is-manager'); 
     }
 
     vulKartDropdowns();
