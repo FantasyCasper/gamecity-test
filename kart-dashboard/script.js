@@ -281,19 +281,28 @@ function setupEditModal() {
 }
 
 function openEditModal(rowId, kartNummer, omschrijving) {
-    const modal = document.getElementById('edit-modal');
     document.getElementById('edit-row-id').value = rowId;
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
-
-    modal.style.display = 'block';
-    overlay.style.display = 'block';
+    
+    // FIX: Zoek het element hier direct op
+    const modal = document.getElementById('edit-modal');
+    const overlay = document.getElementById('modal-overlay');
+    
+    if (modal && overlay) {
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+    }
 }
-
 // Functie om de modal te sluiten
 function closeEditModal() {
-    modal.style.display = 'none';
-    overlay.style.display = 'none';
+    const modal = document.getElementById('edit-modal');
+    const overlay = document.getElementById('modal-overlay');
+    
+    if (modal && overlay) {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }
 }
 
 function toonDefectStatus(bericht, type) {
