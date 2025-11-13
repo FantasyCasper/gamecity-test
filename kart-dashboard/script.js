@@ -6,34 +6,34 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwF
 
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
-let alleDefecten = []; 
+let alleDefecten = [];
 
 // --- DEEL 1: DE "BEWAKER" ---
-(function() {
+(function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
     if (!ingelogdeNaam || !ingelogdeRol) {
-        alert("Je bent niet ingelogd."); window.location.href = "../login/"; return; 
-    } 
-    
-    if (ingelogdeRol === 'manager') {
-        document.body.classList.add('is-manager'); 
+        alert("Je bent niet ingelogd."); window.location.href = "../login/"; return;
     }
-    
-    vulKartDropdowns(); 
-    setupDefectForm();
-    laadDefectenDashboard(); 
-    setupKartFilter();
-    setupEditModal(); 
 
-})(); 
+    if (ingelogdeRol === 'manager') {
+        document.body.classList.add('is-manager');
+    }
+
+    vulKartDropdowns();
+    setupDefectForm();
+    laadDefectenDashboard();
+    setupKartFilter();
+    setupEditModal();
+
+})();
 
 // --- DEEL 2: FUNCTIES ---
 
 function vulKartDropdowns() {
     const meldSelect = document.getElementById('new-defect-kart');
     const editSelect = document.getElementById('edit-kart-select');
-    
+
     if (meldSelect) {
         for (let i = 1; i <= 40; i++) {
             meldSelect.add(new Option(`Kart ${i}`, i));
@@ -47,24 +47,24 @@ function vulKartDropdowns() {
 }
 
 function setupDefectForm() { // Kart defect
-    const defectForm = document.getElementById('new-defect-form'); 
+    const defectForm = document.getElementById('new-defect-form');
     if (!defectForm) return;
-    const defectButton = document.getElementById('new-defect-submit'); 
-    
-    defectForm.addEventListener('submit', function(e) {
+    const defectButton = document.getElementById('new-defect-submit');
+
+    defectForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        const kartNummer = document.getElementById('new-defect-kart').value; 
-        const omschrijving = document.getElementById('new-defect-problem').value.trim(); 
+        const kartNummer = document.getElementById('new-defect-kart').value;
+        const omschrijving = document.getElementById('new-defect-problem').value.trim();
         if (kartNummer === "" || omschrijving === "") {
             toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error"); return;
         }
         defectButton.disabled = true; defectButton.textContent = "Bezig...";
         const payload = { type: "LOG_DEFECT", medewerker: ingelogdeNaam, kartNummer: kartNummer, defect: omschrijving };
-        
+
         callApi(payload)
             .then(data => {
                 toonDefectStatus("Defect succesvol gemeld!", "success");
-                defectForm.reset(); laadDefectenDashboard(); 
+                defectForm.reset(); laadDefectenDashboard();
             })
             .catch(error => {
                 toonDefectStatus(error.message || "Melden mislukt", "error");
@@ -77,17 +77,17 @@ function setupDefectForm() { // Kart defect
 
 function laadDefectenDashboard() {
     callApi({ type: "GET_DEFECTS" })
-    .then(result => {
-        alleDefecten = result.data; 
-        updateStatBoxes(alleDefecten);
-        renderDefectCards(alleDefecten); 
-        setupDashboardListeners(); 
-    })
-    .catch(error => {
-        if(document.getElementById('defect-card-container')) {
-            document.getElementById('defect-card-container').innerHTML = `<p style="color: red;">Kon defecten niet laden: ${error.message}</p>`;
-        }
-    });
+        .then(result => {
+            alleDefecten = result.data;
+            updateStatBoxes(alleDefecten);
+            renderDefectCards(alleDefecten);
+            setupDashboardListeners();
+        })
+        .catch(error => {
+            if (document.getElementById('defect-card-container')) {
+                document.getElementById('defect-card-container').innerHTML = `<p style="color: red;">Kon defecten niet laden: ${error.message}</p>`;
+            }
+        });
 }
 
 function updateStatBoxes(defects) {
@@ -114,29 +114,29 @@ function setupKartFilter() {
     });
 }
 
-function renderDefectCards(defects){
+function renderDefectCards(defects) {
     const container = document.getElementById("defect-card-container");
     if (!container) return;
-    container.innerHTML = ""; 
-    
+    container.innerHTML = "";
+
     // Filter "Verwijderd" eruit VOORDAT we renderen
     const actieveDefecten = defects.filter(d => d.status !== 'Verwijderd');
-    
+
     if (actieveDefecten.length === 0) {
         container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
-    
+
     actieveDefecten.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
-        
+
         let editKnopHtml = '';
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isBinnen24Uur = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
-        
+
         if (isEigenaar && defect.status === "Open" && isBinnen24Uur) {
             editKnopHtml = `<button class="edit-defect-btn" 
                                     data-row-id="${defect.rowId}" 
@@ -145,9 +145,9 @@ function renderDefectCards(defects){
                                 Aanpassen
                            </button>`;
         }
-        
-        const managerKnopHtml = (defect.status === "Open") 
-            ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` 
+
+        const managerKnopHtml = (defect.status === "Open")
+            ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>`
             : '';
 
         kaart.innerHTML = `
@@ -167,7 +167,7 @@ function renderDefectCards(defects){
     });
 }
 
-function setupDashboardListeners(){
+function setupDashboardListeners() {
     const container = document.getElementById("defect-card-container");
     if (!container) return;
     container.addEventListener("click", e => {
@@ -185,28 +185,28 @@ function setupDashboardListeners(){
     });
 }
 
-function markeerDefectOpgelost(rowId, buttonEl){
+function markeerDefectOpgelost(rowId, buttonEl) {
     if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
     const payload = { type: "UPDATE_DEFECT_STATUS", rol: ingelogdeRol, rowId: rowId, newStatus: "Opgelost" };
     callApi(payload)
-    .then(result => {
-        toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
-        laadDefectenDashboard(); 
-    }).catch(error => {
-        toonDefectStatus(error.message, "error");
-        buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
-    });
+        .then(result => {
+            toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
+            laadDefectenDashboard();
+        }).catch(error => {
+            toonDefectStatus(error.message, "error");
+            buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
+        });
 }
 
 // ========================
 //  BIJGEWERKTE MODAL FUNCTIES
 // ========================
-const modal = document.getElementById('edit-modal');
-const overlay = document.getElementById('modal-overlay');
 
 // De logica voor het 'Opslaan' EN 'Verwijderen' van de modal
 function setupEditModal() {
+    const modal = document.getElementById('edit-modal');
+    const overlay = document.getElementById('modal-overlay');
     const form = document.getElementById('edit-defect-form');
     const saveButton = document.getElementById('modal-save-btn');
     const cancelButton = document.getElementById('modal-cancel-btn');
@@ -218,7 +218,7 @@ function setupEditModal() {
         e.preventDefault();
         saveButton.disabled = true;
         saveButton.textContent = "Opslaan...";
-        
+
         const payload = {
             type: "UPDATE_DEFECT",
             rowId: document.getElementById('edit-row-id').value,
@@ -231,31 +231,31 @@ function setupEditModal() {
             .then(result => {
                 toonDefectStatus("Defect succesvol bijgewerkt.", "success");
                 closeEditModal();
-                laadDefectenDashboard(); 
+                laadDefectenDashboard();
             })
             .catch(error => {
-                alert("Fout: " + error.message); 
+                alert("Fout: " + error.message);
             })
             .finally(() => {
                 saveButton.disabled = false;
                 saveButton.textContent = "Opslaan";
             });
     });
-    
+
     // VERWIJDEREN (alleen voor managers)
     deleteButton.addEventListener('click', () => {
         if (!confirm('Weet je zeker dat je deze melding permanent wilt verwijderen? Dit kan niet ongedaan gemaakt worden.')) {
             return;
         }
-        
+
         deleteButton.disabled = true;
         deleteButton.textContent = "Bezig...";
-        
+
         const rowId = document.getElementById('edit-row-id').value;
-        const payload = { 
-            type: "UPDATE_DEFECT_STATUS", 
-            rol: ingelogdeRol, 
-            rowId: rowId, 
+        const payload = {
+            type: "UPDATE_DEFECT_STATUS",
+            rol: ingelogdeRol,
+            rowId: rowId,
             newStatus: "Verwijderd" // We zetten de status op 'Verwijderd'
         };
 
@@ -263,7 +263,7 @@ function setupEditModal() {
             .then(result => {
                 toonDefectStatus("Defect succesvol verwijderd.", "success");
                 closeEditModal();
-                laadDefectenDashboard(); 
+                laadDefectenDashboard();
             })
             .catch(error => {
                 alert("Fout: " + error.message);
@@ -273,7 +273,7 @@ function setupEditModal() {
                 deleteButton.textContent = "Verwijder Melding";
             });
     });
-    
+
     // Sluit-knoppen
     cancelButton.addEventListener('click', closeEditModal);
     closeButton.addEventListener('click', closeEditModal);
@@ -284,7 +284,7 @@ function openEditModal(rowId, kartNummer, omschrijving) {
     document.getElementById('edit-row-id').value = rowId;
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
-    
+
     modal.style.display = 'block';
     overlay.style.display = 'block';
 }
@@ -297,7 +297,7 @@ function closeEditModal() {
 
 function toonDefectStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message-defect');
-    statusDiv.textContent = bericht; 
+    statusDiv.textContent = bericht;
     statusDiv.className = `status-bericht ${type}`;
     statusDiv.style.display = 'block';
     setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
@@ -309,7 +309,7 @@ async function callApi(payload) {
     if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
         payload.rol = ingelogdeRol;
     }
-    
+
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
     const response = await fetch(url, {
         method: 'POST',
@@ -318,6 +318,6 @@ async function callApi(payload) {
         mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; } 
+    if (result.status === "success") { return result; }
     else { throw new Error(result.message); }
 }
