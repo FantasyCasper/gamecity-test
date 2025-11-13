@@ -1,5 +1,5 @@
 /* ===============================
-   KART DASHBOARD SCRIPT (MET EDIT-FUNCTIE)
+   KART DASHBOARD SCRIPT (MET EDIT-MODAL)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
@@ -20,20 +20,29 @@ let alleDefecten = [];
         document.body.classList.add('is-manager'); 
     }
     
-    vulKartMeldDropdown(); 
+    vulKartDropdowns(); 
     setupDefectForm();
     laadDefectenDashboard(); 
     setupKartFilter();
+    setupEditModal(); 
 
 })(); 
 
 // --- DEEL 2: FUNCTIES ---
 
-function vulKartMeldDropdown() {
-    const kartSelect = document.getElementById('new-defect-kart');
-    if (!kartSelect) return; 
-    for (let i = 1; i <= 40; i++) {
-        kartSelect.add(new Option(`Kart ${i}`, i));
+function vulKartDropdowns() {
+    const meldSelect = document.getElementById('new-defect-kart');
+    const editSelect = document.getElementById('edit-kart-select');
+    
+    if (meldSelect) {
+        for (let i = 1; i <= 40; i++) {
+            meldSelect.add(new Option(`Kart ${i}`, i));
+        }
+    }
+    if (editSelect) {
+        for (let i = 1; i <= 40; i++) {
+            editSelect.add(new Option(`Kart ${i}`, i));
+        }
     }
 }
 
@@ -105,9 +114,6 @@ function setupKartFilter() {
     });
 }
 
-// ========================
-//  RENDER DEFECT CARDS (BIJGEWERKT)
-// ========================
 function renderDefectCards(defects){
     const container = document.getElementById("defect-card-container");
     if (!container) return;
@@ -127,7 +133,6 @@ function renderDefectCards(defects){
         const isBinnen24Uur = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         
         if (isEigenaar && defect.status === "Open" && isBinnen24Uur) {
-            // Sla de data op in de knop zelf
             editKnopHtml = `<button class="edit-defect-btn" 
                                     data-row-id="${defect.rowId}" 
                                     data-kart="${defect.kartNummer}" 
@@ -156,26 +161,24 @@ function renderDefectCards(defects){
         container.appendChild(kaart);
     });
 }
-// ========================
 
-// ========================
-//  SETUP DASHBOARD LISTENERS (BIJGEWERKT)
-// ========================
 function setupDashboardListeners(){
     const container = document.getElementById("defect-card-container");
     if (!container) return;
     container.addEventListener("click", e => {
-        // Check voor "Opgelost" knop
         if (e.target.classList.contains("manager-btn")) {
             markeerDefectOpgelost(e.target.dataset.rowId, e.target);
         }
-        // Check voor "Aanpassen" knop
         if (e.target.classList.contains("edit-defect-btn")) {
-            handleDefectEdit(e.target);
+            const knop = e.target;
+            openEditModal(
+                knop.dataset.rowId,
+                knop.dataset.kart,
+                unescape(knop.dataset.omschrijving)
+            );
         }
     });
 }
-// ========================
 
 function markeerDefectOpgelost(rowId, buttonEl){
     if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
@@ -191,51 +194,60 @@ function markeerDefectOpgelost(rowId, buttonEl){
     });
 }
 
-// ========================
-//  NIEUWE FUNCTIE: Defect Aanpassen
-// ========================
-function handleDefectEdit(buttonEl) {
-    const rowId = buttonEl.dataset.rowId;
-    const huidigeKart = buttonEl.dataset.kart;
-    const huidigeTekst = unescape(buttonEl.dataset.omschrijving);
+function setupEditModal() {
+    const modal = document.getElementById('edit-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const form = document.getElementById('edit-defect-form');
+    const saveButton = document.getElementById('modal-save-btn');
+    const cancelButton = document.getElementById('modal-cancel-btn');
+    const closeButton = document.getElementById('modal-close-btn');
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveButton.disabled = true;
+        saveButton.textContent = "Opslaan...";
+        
+        const payload = {
+            type: "UPDATE_DEFECT",
+            rowId: document.getElementById('edit-row-id').value,
+            newKartNummer: document.getElementById('edit-kart-select').value,
+            newText: document.getElementById('edit-defect-omschrijving').value.trim(),
+            medewerker: ingelogdeNaam
+        };
+
+        callApi(payload)
+            .then(result => {
+                toonDefectStatus("Defect succesvol bijgewerkt.", "success");
+                closeEditModal();
+                laadDefectenDashboard(); 
+            })
+            .catch(error => {
+                alert("Fout: " + error.message); 
+            })
+            .finally(() => {
+                saveButton.disabled = false;
+                saveButton.textContent = "Opslaan";
+            });
+    });
     
-    // Vraag 1: Kartnummer
-    const nieuweKart = prompt("Pas kartnummer aan:", huidigeKart);
-    if (!nieuweKart) { return; } // Gebruiker annuleerde
-    
-    // Vraag 2: Omschrijving
-    const nieuweTekst = prompt("Pas omschrijving aan:", huidigeTekst);
-    if (!nieuweTekst) { return; } // Gebruiker annuleerde
-    
-    // Check of er iets is gewijzigd
-    if (nieuweKart.trim() === huidigeKart && nieuweTekst.trim() === huidigeTekst) {
-        toonDefectStatus("Er is niets gewijzigd.", "error"); // 'error' is hier 'info'
-        return;
+    function closeEditModal() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
     }
     
-    buttonEl.disabled = true;
-    buttonEl.textContent = "Opslaan...";
-    
-    const payload = { 
-        type: "UPDATE_DEFECT", 
-        rowId: rowId, 
-        newKartNummer: newKartNummer.trim(), // Stuur nieuwe kartnummer mee
-        newText: nieuweTekst.trim(), 
-        medewerker: ingelogdeNaam 
-    };
-
-    callApi(payload)
-    .then(result => {
-        toonDefectStatus("Defect succesvol bijgewerkt.", "success");
-        laadDefectenDashboard(); // Ververs de hele lijst
-    })
-    .catch(error => {
-        toonDefectStatus(error.message, "error");
-        buttonEl.disabled = false;
-        buttonEl.textContent = "Aanpassen";
-    });
+    cancelButton.addEventListener('click', closeEditModal);
+    closeButton.addEventListener('click', closeEditModal);
+    overlay.addEventListener('click', closeEditModal);
 }
-// ========================
+
+function openEditModal(rowId, kartNummer, omschrijving) {
+    document.getElementById('edit-row-id').value = rowId;
+    document.getElementById('edit-kart-select').value = kartNummer;
+    document.getElementById('edit-defect-omschrijving').value = omschrijving;
+    
+    document.getElementById('edit-modal').style.display = 'block';
+    document.getElementById('modal-overlay').style.display = 'block';
+}
 
 function toonDefectStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message-defect');
