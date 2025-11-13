@@ -1,5 +1,5 @@
 /* ===============================
-   KART DASHBOARD SCRIPT
+   KART DASHBOARD SCRIPT (MET EDIT-FUNCTIE)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
@@ -16,7 +16,7 @@ let alleDefecten = [];
         alert("Je bent niet ingelogd."); window.location.href = "../login/"; return; 
     } 
     
-    // Toon manager knoppen
+    // Voeg 'is-manager' class toe aan body (voor knoppen)
     if (ingelogdeRol === 'manager') {
         document.body.classList.add('is-manager'); 
     }
@@ -54,35 +54,29 @@ function setupDefectForm() { // Kart defect
         defectButton.disabled = true; defectButton.textContent = "Bezig...";
         const payload = { type: "LOG_DEFECT", medewerker: ingelogdeNaam, kartNummer: kartNummer, defect: omschrijving };
         
-        fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-            method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-        }).then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
+        callApi(payload)
+            .then(data => {
                 toonDefectStatus("Defect succesvol gemeld!", "success");
                 defectForm.reset(); laadDefectenDashboard(); 
-            } else { throw new Error(data.message); }
-        }).catch(error => {
-            toonDefectStatus(error.message || "Melden mislukt", "error");
-        }).finally(() => {
-            defectButton.disabled = false; defectButton.textContent = "+ Toevoegen";
-        });
+            })
+            .catch(error => {
+                toonDefectStatus(error.message || "Melden mislukt", "error");
+            })
+            .finally(() => {
+                defectButton.disabled = false; defectButton.textContent = "+ Toevoegen";
+            });
     });
 }
 
 function laadDefectenDashboard() {
-    const payload = { type: "GET_DEFECTS" }; 
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    }).then(response => response.json())
+    callApi({ type: "GET_DEFECTS" })
     .then(result => {
-        if (result.status === "success") {
-            alleDefecten = result.data; 
-            updateStatBoxes(alleDefecten);
-            renderDefectCards(alleDefecten); 
-            setupDashboardListeners(); 
-        } else { throw new Error(result.message); }
-    }).catch(error => {
+        alleDefecten = result.data; 
+        updateStatBoxes(alleDefecten);
+        renderDefectCards(alleDefecten); 
+        setupDashboardListeners(); 
+    })
+    .catch(error => {
         if(document.getElementById('defect-card-container')) {
             document.getElementById('defect-card-container').innerHTML = `<p style="color: red;">Kon defecten niet laden: ${error.message}</p>`;
         }
@@ -113,19 +107,37 @@ function setupKartFilter() {
     });
 }
 
+// ========================
+//  RENDER DEFECT CARDS (BIJGEWERKT MET EDIT-KNOP)
+// ========================
 function renderDefectCards(defects) {
-    const container = document.getElementById('defect-card-container');
+    const container = document.getElementById("defect-card-container");
     if (!container) return;
-    container.innerHTML = ''; 
+    container.innerHTML = ""; 
     if (defects.length === 0) {
-        container.innerHTML = '<p>Geen defecten gevonden voor deze selectie.</p>'; return;
+        container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
-    defects.sort((a, b) => (a.status === 'Open' ? -1 : 1) - (b.status === 'Open' ? -1 : 1));
+    defects.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
     defects.forEach(defect => {
-        const ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
-        const kaart = document.createElement('div');
-        kaart.className = 'defect-card';
-        if (defect.status === 'Opgelost') { kaart.classList.add('status-opgelost'); }
+        const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
+        const kaart = document.createElement("div");
+        kaart.className = "defect-card";
+        if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
+        
+        let editKnopHtml = '';
+        const isEigenaar = (defect.medewerker === ingelogdeNaam);
+        const isBinnen24Uur = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
+        
+        // Toon 'Aanpassen' knop als je eigenaar bent, het 'Open' is, EN binnen 24u
+        if (isEigenaar && defect.status === "Open" && isBinnen24Uur) {
+            editKnopHtml = `<button class="edit-defect-btn" data-row-id="${defect.rowId}">Aanpassen</button>`;
+        }
+        
+        // Toon 'Opgelost' knop alleen als het 'Open' is (voor managers)
+        const managerKnopHtml = (defect.status === "Open") 
+            ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` 
+            : '';
+
         kaart.innerHTML = `
             <h3>Kart ${defect.kartNummer}</h3>
             <div class="meta">
@@ -134,40 +146,85 @@ function renderDefectCards(defects) {
                 <span class="meta-item">Status: <strong>${defect.status}</strong></span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
-            ${defect.status === 'Open' ? `<button class="manager-btn" data-row-id="${defect.rowId}">Markeer als Opgelost</button>` : ''}
+            <div class="knoppen-container">
+                ${editKnopHtml}
+                ${managerKnopHtml}
+            </div>
         `;
         container.appendChild(kaart);
     });
 }
+// ========================
 
-function setupDashboardListeners() {
-    const container = document.getElementById('defect-card-container');
+// ========================
+//  SETUP DASHBOARD LISTENERS (BIJGEWERKT MET EDIT-KNOP)
+// ========================
+function setupDashboardListeners(){
+    const container = document.getElementById("defect-card-container");
     if (!container) return;
-    container.addEventListener('click', (e) => {
-        if (e.target.classList.contains('manager-btn')) {
-            const rowId = e.target.dataset.rowId;
-            markeerDefectOpgelost(rowId, e.target);
+    container.addEventListener("click", e => {
+        // Check voor "Opgelost" knop
+        if (e.target.classList.contains("manager-btn")) {
+            markeerDefectOpgelost(e.target.dataset.rowId, e.target);
+        }
+        // Check voor "Aanpassen" knop
+        if (e.target.classList.contains("edit-defect-btn")) {
+            handleDefectEdit(e.target, e.target.dataset.rowId);
         }
     });
 }
+// ========================
 
-function markeerDefectOpgelost(rowId, buttonEl) {
-    if (!confirm('Weet je zeker dat je dit defect als opgelost wilt markeren?')) { return; }
+function markeerDefectOpgelost(rowId, buttonEl){
+    if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
     const payload = { type: "UPDATE_DEFECT_STATUS", rol: ingelogdeRol, rowId: rowId, newStatus: "Opgelost" };
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    }).then(response => response.json())
+    callApi(payload)
     .then(result => {
-        if (result.status === "success") {
-            toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
-            laadDefectenDashboard(); 
-        } else { throw new Error(result.message); }
+        toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
+        laadDefectenDashboard(); 
     }).catch(error => {
         toonDefectStatus(error.message, "error");
         buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
     });
 }
+
+// ========================
+//  NIEUWE FUNCTIE: Defect Aanpassen
+// ========================
+function handleDefectEdit(buttonEl, rowId) {
+    const kaart = buttonEl.closest('.defect-card');
+    const omschrijvingP = kaart.querySelector('.omschrijving');
+    const huidigeTekst = omschrijvingP.textContent;
+    
+    const nieuweTekst = prompt("Pas je omschrijving aan:", huidigeTekst);
+    
+    if (!nieuweTekst || nieuweTekst.trim() === "" || nieuweTekst.trim() === huidigeTekst) {
+        return; // Gebruiker annuleerde of wijzigde niets
+    }
+    
+    buttonEl.disabled = true;
+    buttonEl.textContent = "Opslaan...";
+    
+    const payload = { 
+        type: "UPDATE_DEFECT", 
+        rowId: rowId, 
+        newText: nieuweTekst.trim(), 
+        medewerker: ingelogdeNaam // Stuur naam mee voor veiligheidscheck
+    };
+
+    callApi(payload)
+    .then(result => {
+        toonDefectStatus("Defect succesvol bijgewerkt.", "success");
+        laadDefectenDashboard(); // Ververs de hele lijst
+    })
+    .catch(error => {
+        toonDefectStatus(error.message, "error");
+        buttonEl.disabled = false;
+        buttonEl.textContent = "Aanpassen";
+    });
+}
+// ========================
 
 function toonDefectStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message-defect');
@@ -175,4 +232,18 @@ function toonDefectStatus(bericht, type) {
     statusDiv.className = `status-bericht ${type}`;
     statusDiv.style.display = 'block';
     setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+
+// --- ALGEMENE API CALL ---
+async function callApi(payload) {
+    const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
+    const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: 'cors'
+    });
+    const result = await response.json();
+    if (result.status === "success") { return result; } 
+    else { throw new Error(result.message); }
 }

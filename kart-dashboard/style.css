@@ -203,3 +203,31 @@ body.is-manager .manager-btn {
         padding: 6px 10px;
     }
 }
+
+/* ===============================
+   AANPASSING: Edit-knop
+   =============================== */
+.edit-defect-btn {
+    background-color: #007bff; /* Blauw */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px; /* Maak 'm even groot als de Opgelost-knop */
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-right: 10px; /* Ruimte naast de 'Opgelost' knop */
+}
+.edit-defect-btn:hover {
+    background-color: #0056b3;
+}
+.edit-defect-btn:disabled {
+    background-color: #555;
+}
+
+/* Zorg dat de knoppen naast elkaar passen */
+.defect-card .knoppen-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Ruimte tussen de knoppen */
+}
