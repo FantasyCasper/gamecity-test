@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET ALGEMEEN DEFECT)
+   VOLLEDIGE ADMIN.JS (MET TD ROL LOGICA)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
@@ -8,38 +8,53 @@ const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function () {
-    // UPDATE: Manager EN TD mogen erin
+(function() {
+    // 1. Check toegang (Manager OF TD)
     if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
-        alert("Toegang geweigerd."); window.location.href = "../index.html"; return;
+        alert("Toegang geweigerd."); 
+        window.location.href = "../index.html"; 
+        return; 
     }
-
-    // --- SPECIFIEKE LOGICA PER ROL ---
+    
+    // 2. Data ophalen
+    // Iedereen mag defecten zien
+    fetchAlgemeenDefects(); 
+    
     if (ingelogdeRol === 'manager') {
-        // Managers mogen alles zien
+        // Alleen managers mogen logs en gebruikers zien
         fetchLogData();
         fetchUsers();
-        fetchAlgemeenDefects();
-    } else if (ingelogdeRol === 'TD') {
-        // TD mag ALLEEN defecten zien
-
-        // Verberg de knoppen voor Logboek en Gebruikers
-        document.querySelector('.tab-link[data-tab="tab-logs"]').style.display = 'none';
-        document.querySelector('.tab-link[data-tab="tab-users"]').style.display = 'none';
-
-        // Forceer klik op 'Defecten' tab en haal data op
-        document.querySelector('.tab-link[data-tab="tab-defecten"]').click();
-        fetchAlgemeenDefects();
     }
 
-    // Koppel de listeners
+    // 3. Interface aanpassen voor TD
+    if (ingelogdeRol === 'TD') {
+        // A. Verberg de tab-knoppen voor Logboek en Gebruikers
+        const logBtn = document.querySelector('.tab-link[data-tab="tab-logs"]');
+        const userBtn = document.querySelector('.tab-link[data-tab="tab-users"]');
+        if (logBtn) logBtn.style.display = 'none';
+        if (userBtn) userBtn.style.display = 'none';
+
+        // B. Schakel over naar het Defecten tabblad
+        // 1. Maak huidige tab (Logboek) inactief
+        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        
+        // 2. Maak Defecten tab actief
+        const defectBtn = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
+        const defectContent = document.getElementById('tab-algemeen-defecten');
+        
+        if (defectBtn) defectBtn.classList.add('active');
+        if (defectContent) defectContent.classList.add('active');
+    }
+    
+    // 4. Koppel de listeners
     setupTabNavigation();
-    setupMobileMenu();
+    setupMobileMenu(); 
     setupUserForm();
     setupUserDeleteListener();
-    setupAlgemeenDefectListeners();
+    setupAlgemeenDefectListeners(); 
 
-})();
+})(); 
 
 
 // --- DEEL 2: NAVIGATIE FUNCTIES ---
@@ -53,33 +68,30 @@ function setupMobileMenu() {
         });
     }
 }
-function setupTabNavigation() {
+function setupTabNavigation(){
     document.querySelectorAll(".tab-link").forEach(button => {
         button.addEventListener("click", () => {
             document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
             document.querySelectorAll(".tab-link").forEach(link => link.classList.remove("active"));
             const tabId = button.getAttribute("data-tab");
-
-            // HIER IS DE FIX VOOR DE FOUT
+            
             const tabContent = document.getElementById(tabId);
-            if (tabContent) { // Controleer of het element bestaat
+            if (tabContent) {
                 tabContent.classList.add("active");
                 button.classList.add("active");
-            } else {
-                console.error("Kon tab-inhoud niet vinden voor ID:", tabId);
             }
         });
     });
 }
 
 // --- DEEL 3: LOGBOEK FUNCTIES ---
-function fetchLogData() {
+function fetchLogData(){
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
         statusDiv.style.display = "none"; renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
-function renderLogs(logs) {
+function renderLogs(logs){
     const logBody = document.getElementById("log-body");
     if (logs.length === 0) {
         logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return;
@@ -103,11 +115,11 @@ function renderLogs(logs) {
 }
 
 // --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
-function fetchUsers() {
+function fetchUsers(){
     callApi("GET_USERS").then(result => { renderUsers(result.data); })
-        .catch(error => handleError(error, "Fout bij laden gebruikers: "));
+    .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
-function renderUsers(users) {
+function renderUsers(users){
     const userBody = document.getElementById("user-body");
     userBody.innerHTML = "";
     if (users.length === 0) {
@@ -119,7 +131,7 @@ function renderUsers(users) {
     });
     userBody.innerHTML = html;
 }
-function setupUserForm() {
+function setupUserForm(){
     const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
     form.addEventListener("submit", e => {
         e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
@@ -130,13 +142,13 @@ function setupUserForm() {
             role: document.getElementById("new-role").value
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
-            alert(result.message); form.reset(); fetchUsers();
+            alert(result.message); form.reset(); fetchUsers(); 
         }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
             button.disabled = false; button.textContent = "Gebruiker Toevoegen";
         });
     });
 }
-function setupUserDeleteListener() {
+function setupUserDeleteListener(){
     document.getElementById("user-table").addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
@@ -176,10 +188,10 @@ function renderAlgemeenDefects(defects) {
             tr.classList.add('status-opgelost');
         }
         const isOpgelost = defect.status === 'Opgelost';
-        const actieKnop = isOpgelost
+        const actieKnop = isOpgelost 
             ? `<button class="delete-btn" data-row-id="${defect.rowId}">Verwijder</button>`
             : `<button class="action-btn" data-row-id="${defect.rowId}">Markeer Opgelost</button>`;
-
+        
         tr.innerHTML = `
             <td data-label="Tijdstip">${ts}</td>
             <td data-label="Gemeld door">${defect.medewerker}</td>
@@ -211,7 +223,7 @@ function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
     buttonEl.textContent = "Bezig...";
     const payload = {
         type: "UPDATE_ALGEMEEN_DEFECT_STATUS",
-        rol: ingelogdeRol,
+        rol: ingelogdeRol, 
         rowId: rowId,
         newStatus: newStatus
     };
@@ -236,7 +248,7 @@ async function callApi(type, extraData = {}) {
         mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; }
+    if (result.status === "success") { return result; } 
     else { throw new Error(result.message); }
 }
 function handleError(error, prefix = "Fout: ") {
