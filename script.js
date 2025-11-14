@@ -21,7 +21,6 @@ let alleDefecten = [];
 
     if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
-        document.querySelector('.container').classList.add('is-manager'); 
     }
     
     // Koppel alle event listeners
@@ -43,7 +42,7 @@ function setupMobileMenu() {
     const mainNav = document.querySelector('.main-nav');
     if (menuToggle && mainNav) {
         menuToggle.addEventListener('click', () => { mainNav.classList.toggle('is-open'); });
-        document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
+        document.querySelectorAll('.main-tab-link').forEach(button => {
             button.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
         });
     }
