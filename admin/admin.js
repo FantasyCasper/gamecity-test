@@ -1,40 +1,46 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET LADEN-FIX)
+   VOLLEDIGE ADMIN.JS (OPGESCHOOND - 3 TABS)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
+// Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
+    // 1. Check toegang (Manager OF TD)
     if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
         alert("Toegang geweigerd."); 
         window.location.href = "../index.html"; 
         return; 
     }
     
+    // 2. Data ophalen
     // Iedereen (Manager & TD) haalt defecten op
     fetchAlgemeenDefects(); 
     
     if (ingelogdeRol === 'manager') {
-        // Alleen managers halen logboek en gebruikers op
+        // Alleen managers mogen logs en gebruikers zien
         fetchLogData();
         fetchUsers();
     }
 
-    // Interface aanpassen voor TD
+    // 3. Interface aanpassen voor TD
     if (ingelogdeRol === 'TD') {
+        // A. Verberg de tab-knoppen voor Logboek en Gebruikers
         const logBtn = document.querySelector('.tab-link[data-tab="tab-logs"]');
         const userBtn = document.querySelector('.tab-link[data-tab="tab-users"]');
         if (logBtn) logBtn.style.display = 'none';
         if (userBtn) userBtn.style.display = 'none';
 
-        // Schakel over naar het Defecten tabblad
+        // B. Schakel over naar het Defecten tabblad
+        // 1. Maak huidige tab (Logboek) inactief
         document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         
+        // 2. Maak Defecten tab actief
         const defectBtn = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
         const defectContent = document.getElementById('tab-algemeen-defecten');
         
@@ -42,7 +48,7 @@ const statusDiv = document.getElementById('status-message');
         if (defectContent) defectContent.classList.add('active');
     }
     
-    // Koppel de listeners
+    // 4. Koppel de listeners
     setupTabNavigation();
     setupMobileMenu(); 
     setupUserForm();
@@ -61,6 +67,11 @@ function setupMobileMenu() {
         document.querySelectorAll('.tab-link').forEach(button => {
             button.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
         });
+        // Zorg dat 'Terug naar app' ook het menu sluit
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
+        }
     }
 }
 function setupTabNavigation(){
@@ -83,7 +94,7 @@ function setupTabNavigation(){
 function fetchLogData(){
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = "none"; // Verberg bericht als logboek geladen is
+        statusDiv.style.display = "none"; 
         renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
@@ -165,8 +176,7 @@ function setupUserDeleteListener(){
 function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
-            // HIER IS DE FIX: Verberg het bericht OOK als defecten zijn geladen
-            statusDiv.style.display = "none"; 
+            statusDiv.style.display = "none"; // Verberg 'Laden...'
             renderAlgemeenDefects(result.data);
         })
         .catch(error => handleError(error, "Fout bij laden algemene defecten: "));
