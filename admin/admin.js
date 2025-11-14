@@ -2,7 +2,7 @@
    VOLLEDIGE ADMIN.JS (OPGESCHOOND - 3 TABS)
    =============================== */
 
-const WEB_APP_URL = "PLAK_HIER_JE_NIEUWE_URL"; // <-- CRUCIAAL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
 
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
