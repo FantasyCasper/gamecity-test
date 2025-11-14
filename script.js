@@ -93,6 +93,7 @@ function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
 async function callApi(payload) { // Helper functie
+    // Voeg 'rol' toe aan *alleen* admin-verzoeken
     if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
         payload.rol = ingelogdeRol;
     }
@@ -152,7 +153,7 @@ function laadChecklistConfiguratie() {
     });
 }
 function updateChecklists(activiteit) {
-    const container = document.querySelector('#tab-checklists .container') || document;
+    const container = document.querySelector('#tab-checklists') || document;
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
     openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';

@@ -2,7 +2,7 @@
    VOLLEDIGE ADMIN.JS (MET CHECKLIST BEHEER)
    =============================== */
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
+const WEB_APP_URL = "PLAK_HIER_JE_NIEUWE_URL"; // <-- CRUCIAAL
 
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
@@ -46,6 +46,7 @@ let HUIDIGE_CHECKLIST_CONFIG = {}; // Voor de checklist editor
     setupChecklistEditor(); // Nieuw
 
 })(); 
+
 
 // --- DEEL 2: NAVIGATIE FUNCTIES ---
 function setupMobileMenu() {
@@ -248,6 +249,7 @@ function createTaakLi(taak) {
 }
 function renderTaskList(listId, takenArray) {
     const ul = document.getElementById(listId);
+    if (!ul) return;
     ul.innerHTML = ''; 
     takenArray.forEach(taak => {
         ul.appendChild(createTaakLi(taak));
@@ -283,9 +285,11 @@ function setupChecklistEditor() {
             }
         });
         const input = document.getElementById(button.dataset.sourceInput);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); button.click(); }
-        });
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); button.click(); }
+            });
+        }
     });
 
     document.querySelectorAll('.task-list').forEach(list => {
