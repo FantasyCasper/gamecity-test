@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (OPGESCHOOND - 3 TABS)
+   VOLLEDIGE ADMIN.JS (MET LADEN-FIX)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykI7IjMAeUFrMhJJwFAIV7gvbdjhe1vqNLr1WRevW4Mee0M7v_Nw8P2H6IhzemydogHw/exec";
@@ -15,11 +15,11 @@ const statusDiv = document.getElementById('status-message');
         return; 
     }
     
-    // Data ophalen
+    // Iedereen (Manager & TD) haalt defecten op
     fetchAlgemeenDefects(); 
     
     if (ingelogdeRol === 'manager') {
-        // Alleen managers mogen logs en gebruikers zien
+        // Alleen managers halen logboek en gebruikers op
         fetchLogData();
         fetchUsers();
     }
@@ -31,6 +31,7 @@ const statusDiv = document.getElementById('status-message');
         if (logBtn) logBtn.style.display = 'none';
         if (userBtn) userBtn.style.display = 'none';
 
+        // Schakel over naar het Defecten tabblad
         document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         
@@ -60,10 +61,6 @@ function setupMobileMenu() {
         document.querySelectorAll('.tab-link').forEach(button => {
             button.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
         });
-        const backButton = document.getElementById('back-button');
-        if (backButton) {
-            backButton.addEventListener('click', () => { if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } });
-        }
     }
 }
 function setupTabNavigation(){
@@ -86,7 +83,7 @@ function setupTabNavigation(){
 function fetchLogData(){
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = "none"; 
+        statusDiv.style.display = "none"; // Verberg bericht als logboek geladen is
         renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
@@ -132,7 +129,6 @@ function renderUsers(users){
 }
 function setupUserForm(){
     const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
-    if (!form) return; // Sla over als de gebruiker TD is
     form.addEventListener("submit", e => {
         e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
         const userData = {
@@ -149,9 +145,7 @@ function setupUserForm(){
     });
 }
 function setupUserDeleteListener(){
-    const userTable = document.getElementById("user-table");
-    if (!userTable) return; // Sla over als de gebruiker TD is
-    userTable.addEventListener("click", e => {
+    document.getElementById("user-table").addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
             if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
@@ -171,7 +165,8 @@ function setupUserDeleteListener(){
 function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
-            statusDiv.style.display = "none"; // Verberg 'Laden...'
+            // HIER IS DE FIX: Verberg het bericht OOK als defecten zijn geladen
+            statusDiv.style.display = "none"; 
             renderAlgemeenDefects(result.data);
         })
         .catch(error => handleError(error, "Fout bij laden algemene defecten: "));
