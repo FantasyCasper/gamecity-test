@@ -132,6 +132,7 @@ function renderUsers(users){
 }
 function setupUserForm(){
     const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
+    if (!form) return; // Sla over als de gebruiker TD is
     form.addEventListener("submit", e => {
         e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
         const userData = {
@@ -148,7 +149,9 @@ function setupUserForm(){
     });
 }
 function setupUserDeleteListener(){
-    document.getElementById("user-table").addEventListener("click", e => {
+    const userTable = document.getElementById("user-table");
+    if (!userTable) return; // Sla over als de gebruiker TD is
+    userTable.addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
             if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
