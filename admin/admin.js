@@ -2,7 +2,7 @@
    VOLLEDIGE ADMIN.JS (MET CHECKLIST BEHEER)
    =============================== */
 
-const WEB_APP_URL = "PLAK_HIER_JE_NIEUWE_URL"; // <-- CRUCIAAL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
