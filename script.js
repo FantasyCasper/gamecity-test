@@ -110,17 +110,25 @@ function koppelListeners() {
 
 // --- API Helper ---
 async function callApi(payload) {
-    // Voeg rol toe aan beheertaken
-    if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
-        payload.rol = ingelogdeRol;
-    }
+    // Voeg ALTIJD rol toe
+    payload.rol = ingelogdeRol;
+
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
+
     const response = await fetch(url, {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: 'cors'
     });
+
     const result = await response.json();
-    if (result.status === "success") { return result; } 
-    else { throw new Error(result.message); }
+
+    if (result.status === "success") {
+        return result;
+    } else {
+        throw new Error(result.message);
+    }
 }
 
 
@@ -128,7 +136,7 @@ async function callApi(payload) {
 
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
-    callApi({ type: "SET_CHECKLIST_CONFIG" })
+    callApi({ type: "GET_CHECKLIST_CONFIG" })
     .then(result => {
         console.log("Checklists geladen:", result.data);
         CHECKLIST_DATA = result.data; // Vul de variabele
