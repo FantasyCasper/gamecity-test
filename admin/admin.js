@@ -1,6 +1,7 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (LOGBOEK, USERS, DEFECTEN)
-   =============================== */
+   VOLLEDIGE ADMIN.JS
+   (Logboek, Users, Checklists, Defecten)
+   ================================ */
 
 // ##################################################################
 // #                        BELANGRIJKE STAP                        #
@@ -11,35 +12,44 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 // Globale variabelen
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
+let HUIDIGE_CHECKLIST_CONFIG = {}; // Voor de checklist editor
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function() {
-    // 1. Check toegang (Manager OF TD)
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. Check of URL is ingevuld
+    if (!WEB_APP_URL || WEB_APP_URL.includes("PLAK_HIER")) {
+        alert("LET OP: Je bent vergeten de WEB_APP_URL in admin.js te plakken!");
+        return;
+    }
+
+    // 2. Check toegang (Manager OF TD)
     if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
-        alert("Toegang geweigerd."); 
+        alert("Toegang geweigerd. Je hebt geen rechten."); 
         window.location.href = "../index.html"; 
         return; 
     }
     
-    // 2. Data ophalen
-    // Iedereen (Manager & TD) mag defecten zien
+    // 3. Data ophalen (Iedereen mag defecten zien)
     fetchAlgemeenDefects(); 
     
     if (ingelogdeRol === 'manager') {
-        // Alleen managers mogen logs en gebruikers zien
+        // Alleen managers mogen deze data ophalen
         fetchLogData();
         fetchUsers();
+        fetchChecklistConfig(); 
     }
 
-    // 3. Interface aanpassen voor TD (Verberg tabs die ze niet mogen zien)
+    // 4. Interface aanpassen voor TD
     if (ingelogdeRol === 'TD') {
-        // A. Verberg de tab-knoppen voor Logboek en Gebruikers
-        const logBtn = document.querySelector('.tab-link[data-tab="tab-logs"]');
-        const userBtn = document.querySelector('.tab-link[data-tab="tab-users"]');
-        if (logBtn) logBtn.style.display = 'none';
-        if (userBtn) userBtn.style.display = 'none';
+        // Verberg de knoppen voor Logboek, Gebruikers en Checklists
+        const tabsToHide = ['tab-logs', 'tab-users', 'tab-checklists'];
+        tabsToHide.forEach(id => {
+            const btn = document.querySelector(`.tab-link[data-tab="${id}"]`);
+            if (btn) btn.style.display = 'none';
+        });
 
-        // B. Schakel direct over naar het Defecten tabblad
+        // Schakel direct over naar het Defecten tabblad
         document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         
@@ -50,17 +60,19 @@ const statusDiv = document.getElementById('status-message');
         if (defectContent) defectContent.classList.add('active');
     }
     
-    // 4. Koppel de listeners
+    // 5. Koppel alle listeners
     setupTabNavigation();
     setupMobileMenu(); 
     setupUserForm();
     setupUserDeleteListener();
     setupAlgemeenDefectListeners(); 
+    setupChecklistEditor(); 
 
-})(); 
+});
 
 
 // --- DEEL 2: NAVIGATIE FUNCTIES ---
+
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.querySelector('.tab-nav');
@@ -70,14 +82,13 @@ function setupMobileMenu() {
             mainNav.classList.toggle('is-open'); 
         });
         
-        // Zorg dat het menu sluit als je op een tab klikt
+        // Sluit menu bij klikken op een link
         document.querySelectorAll('.tab-link').forEach(button => {
             button.addEventListener('click', () => { 
                 if (window.innerWidth <= 720) { mainNav.classList.remove('is-open'); } 
             });
         });
         
-        // Zorg dat 'Terug naar app' ook het menu sluit
         const backButton = document.getElementById('back-button');
         if (backButton) {
             backButton.addEventListener('click', () => { 
@@ -90,11 +101,11 @@ function setupMobileMenu() {
 function setupTabNavigation(){
     document.querySelectorAll(".tab-link").forEach(button => {
         button.addEventListener("click", () => {
-            // Verberg alle tabs
+            // Verberg alles
             document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
             document.querySelectorAll(".tab-link").forEach(link => link.classList.remove("active"));
             
-            // Toon de gekozen tab
+            // Toon geselecteerde
             const tabId = button.getAttribute("data-tab");
             const tabContent = document.getElementById(tabId);
             
@@ -106,13 +117,20 @@ function setupTabNavigation(){
     });
 }
 
+
 // --- DEEL 3: LOGBOEK FUNCTIES ---
+
 function fetchLogData(){
-    statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
-    callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = "none"; // Verberg bericht
-        renderLogs(result.data);
-    }).catch(error => handleError(error, "Fout bij laden logboek: "));
+    statusDiv.textContent = "Logboek laden..."; 
+    statusDiv.className = "loading";
+    statusDiv.style.display = "block";
+    
+    callApi("GET_LOGS")
+        .then(result => {
+            statusDiv.style.display = "none"; 
+            renderLogs(result.data);
+        })
+        .catch(error => handleError(error, "Fout bij laden logboek: "));
 }
 
 function renderLogs(logs){
@@ -120,7 +138,8 @@ function renderLogs(logs){
     if (!logBody) return;
     
     if (logs.length === 0) {
-        logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return;
+        logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; 
+        return;
     }
     
     let html = "";
@@ -141,31 +160,44 @@ function renderLogs(logs){
     logBody.innerHTML = html;
 }
 
+
 // --- DEEL 4: GEBRUIKERSBEHEER FUNCTIES ---
+
 function fetchUsers(){
-    callApi("GET_USERS").then(result => { renderUsers(result.data); })
-    .catch(error => handleError(error, "Fout bij laden gebruikers: "));
+    callApi("GET_USERS")
+        .then(result => { renderUsers(result.data); })
+        .catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 
 function renderUsers(users){
     const userBody = document.getElementById("user-body");
     if (!userBody) return;
-    userBody.innerHTML = "";
     
+    userBody.innerHTML = "";
     if (users.length === 0) {
-        userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; return;
+        userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; 
+        return;
     }
     
     let html = "";
     users.forEach(user => {
-        html += `<tr><td data-label="Gebruikersnaam">${user.username}</td><td data-label="Volledige Naam">${user.fullname}</td><td data-label="Rol">${user.role}</td><td data-label="Actie"><button class="delete-btn" data-username="${user.username}">Verwijder</button></td></tr>`;
+        html += `
+            <tr>
+                <td data-label="Gebruikersnaam">${user.username}</td>
+                <td data-label="Volledige Naam">${user.fullname}</td>
+                <td data-label="Rol">${user.role}</td>
+                <td data-label="Actie"><button class="delete-btn" data-username="${user.username}">Verwijder</button></td>
+            </tr>
+        `;
     });
     userBody.innerHTML = html;
 }
 
 function setupUserForm(){
-    const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
-    if (!form) return; // Sla over als de gebruiker TD is (formulier bestaat niet of is verborgen)
+    const form = document.getElementById("add-user-form");
+    const button = document.getElementById("add-user-button");
+    
+    if (!form) return; // Stop als element niet bestaat (bv bij TD rol)
     
     form.addEventListener("submit", e => {
         e.preventDefault(); 
@@ -179,37 +211,51 @@ function setupUserForm(){
             role: document.getElementById("new-role").value
         };
         
-        callApi("ADD_USER", { userData: userData }).then(result => {
-            alert(result.message); 
-            form.reset(); 
-            fetchUsers(); 
-        }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
-            button.disabled = false; button.textContent = "Gebruiker Toevoegen";
-        });
+        callApi("ADD_USER", { userData: userData })
+            .then(result => {
+                alert(result.message); 
+                form.reset(); 
+                fetchUsers(); 
+            })
+            .catch(error => handleError(error, "Fout bij toevoegen: "))
+            .finally(() => {
+                button.disabled = false; 
+                button.textContent = "Gebruiker Toevoegen";
+            });
     });
 }
 
 function setupUserDeleteListener(){
     const userTable = document.getElementById("user-table");
-    if (!userTable) return; 
+    if (!userTable) return;
     
     userTable.addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
-            const button = e.target, username = button.dataset.username;
+            const button = e.target;
+            const username = button.dataset.username;
+            
             if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
-                button.disabled = true; button.textContent = "Bezig...";
-                callApi("DELETE_USER", { username: username }).then(result => {
-                    alert(result.message); fetchUsers();
-                }).catch(error => {
-                    handleError(error, "Fout bij verwijderen: ");
-                    button.disabled = false; button.textContent = "Verwijder";
-                });
+                button.disabled = true; 
+                button.textContent = "Bezig...";
+                
+                callApi("DELETE_USER", { username: username })
+                    .then(result => {
+                        alert(result.message); 
+                        fetchUsers();
+                    })
+                    .catch(error => {
+                        handleError(error, "Fout bij verwijderen: ");
+                        button.disabled = false; 
+                        button.textContent = "Verwijder";
+                    });
             }
         }
     });
 }
 
+
 // --- DEEL 5: ALGEMEEN DEFECTEN FUNCTIES ---
+
 function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
@@ -260,11 +306,15 @@ function setupAlgemeenDefectListeners() {
 
     table.addEventListener('click', (e) => {
         const target = e.target;
-        if (target.classList.contains('action-btn')) { // 'Markeer Opgelost'
+        
+        // Markeer als opgelost
+        if (target.classList.contains('action-btn')) { 
             const rowId = target.dataset.rowId;
             markeerAlgemeenDefect(rowId, "Opgelost", target);
         }
-        if (target.classList.contains('delete-btn')) { // 'Verwijder'
+        
+        // Verwijder (alleen als al opgelost)
+        if (target.classList.contains('delete-btn')) { 
             if (confirm('Weet je zeker dat je dit opgeloste defect permanent wilt verwijderen?')) {
                 const rowId = target.dataset.rowId;
                 markeerAlgemeenDefect(rowId, "Verwijderd", target); 
@@ -284,7 +334,7 @@ function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
         newStatus: newStatus
     };
     
-    callApi("UPDATE_ALGEMEEN_DEFECT_STATUS", payload)
+    callApi(payload)
         .then(result => {
             fetchAlgemeenDefects(); // Ververs de lijst
         })
@@ -294,18 +344,147 @@ function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
         });
 }
 
-// --- DEEL 6: ALGEMENE API & FOUTAFHANDELING ---
+
+// --- DEEL 6: CHECKLIST BEHEER FUNCTIES ---
+
+function fetchChecklistConfig() {
+    callApi("GET_CHECKLIST_CONFIG")
+        .then(result => {
+            HUIDIGE_CHECKLIST_CONFIG = result.data;
+            // Je zou hier een melding kunnen geven als het laden gelukt is
+        })
+        .catch(error => handleError(error, "Fout bij laden checklists: "));
+}
+
+function createTaakLi(taak) {
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${taak}</span><button class="delete-task-btn">X</button>`;
+    return li;
+}
+
+function renderTaskList(listId, takenArray) {
+    const ul = document.getElementById(listId);
+    if (!ul) return;
+    
+    ul.innerHTML = ''; 
+    if (!takenArray) return;
+
+    takenArray.forEach(taak => {
+        ul.appendChild(createTaakLi(taak));
+    });
+}
+
+function setupChecklistEditor() {
+    const activiteitSelect = document.getElementById('cl-activiteit');
+    const saveButton = document.getElementById('checklist-save-button');
+    
+    if (!activiteitSelect || !saveButton) return; // Stop als elementen niet bestaan
+
+    // 1. Luister naar verandering in dropdown
+    activiteitSelect.addEventListener('change', () => {
+        const activiteit = activiteitSelect.value;
+        const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
+        
+        if (config) {
+            renderTaskList('cl-openen-list', config.openen);
+            renderTaskList('cl-sluiten-list', config.sluiten);
+        } else {
+            // Als er nog geen config is voor deze activiteit, maak leeg
+            renderTaskList('cl-openen-list', []);
+            renderTaskList('cl-sluiten-list', []);
+        }
+    });
+
+    // 2. Luister naar de '+' knoppen
+    document.querySelectorAll('.add-task-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetListId = button.dataset.targetList; // Haal ID uit data-attribuut
+            const sourceInputId = button.dataset.sourceInput; // Haal ID uit data-attribuut
+            
+            const input = document.getElementById(sourceInputId);
+            const list = document.getElementById(targetListId);
+            
+            if (input && list) {
+                const taakText = input.value.trim();
+                if (taakText) {
+                    list.appendChild(createTaakLi(taakText));
+                    input.value = ''; // Maak invoerveld leeg
+                    input.focus(); 
+                }
+            }
+        });
+        
+        // Sta ook 'Enter' toe in het invoerveld
+        const input = document.getElementById(button.dataset.sourceInput);
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); button.click(); }
+            });
+        }
+    });
+
+    // 3. Luister naar de 'X' (verwijder) knoppen (Event Delegation)
+    document.querySelectorAll('.task-list').forEach(list => {
+        list.addEventListener('click', (e) => {
+            // Check of er op een knop met class 'delete-task-btn' is geklikt
+            if (e.target.classList.contains('delete-task-btn')) {
+                e.target.parentElement.remove(); // Verwijder de <li>
+            }
+        });
+    });
+
+    // 4. Luister naar de 'Opslaan' knop
+    saveButton.addEventListener('click', () => {
+        const activiteit = activiteitSelect.value;
+        if (!activiteit || activiteit === "") { 
+            alert("Selecteer eerst een activiteit."); 
+            return; 
+        }
+        
+        // Haal alle taken op uit de HTML lijsten
+        const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span')).map(span => span.textContent);
+        const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span')).map(span => span.textContent);
+        
+        saveButton.disabled = true; 
+        saveButton.textContent = "Opslaan...";
+        
+        // Update het lokale object zodat het direct beschikbaar is zonder herladen
+        if (!HUIDIGE_CHECKLIST_CONFIG[activiteit]) HUIDIGE_CHECKLIST_CONFIG[activiteit] = {};
+        HUIDIGE_CHECKLIST_CONFIG[activiteit].openen = takenOpenen;
+        HUIDIGE_CHECKLIST_CONFIG[activiteit].sluiten = takenSluiten;
+        
+        // Stuur naar de server (Eerst 'openen', dan 'sluiten')
+        callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, type: "openen", taken: takenOpenen })
+            .then(result => {
+                // Als de eerste lukt, doe de tweede
+                return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, type: "sluiten", taken: takenSluiten });
+            })
+            .then(result => {
+                alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
+                // We hoeven fetchChecklistConfig() niet opnieuw te doen omdat we lokaal al hebben geüpdatet
+            })
+            .catch(error => handleError(error, "Fout bij opslaan checklist: "))
+            .finally(() => {
+                saveButton.disabled = false; 
+                saveButton.textContent = "Checklist Opslaan";
+            });
+    });
+}
+
+
+// --- DEEL 7: ALGEMENE API & FOUTAFHANDELING ---
+
 async function callApi(type, extraData = {}) {
-    // Voeg een cache-buster toe om problemen te voorkomen
+    // Voeg cache-buster toe aan URL
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); 
     
-    // Als het eerste argument een string is (zoals "GET_LOGS"), maak er een object van.
-    // Als het al een object is (zoals bij markeerAlgemeenDefect), gebruik het direct.
+    // Bouw payload (ondersteunt zowel ("TYPE", {data}) als ({type: "TYPE", ...}))
     let payload;
     if (typeof type === 'string') {
         payload = { type: type, rol: ingelogdeRol, ...extraData };
     } else {
         payload = type;
+        payload.rol = ingelogdeRol; // Voeg rol altijd toe
     }
 
     const response = await fetch(url, {
@@ -314,9 +493,13 @@ async function callApi(type, extraData = {}) {
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         mode: 'cors'
     });
+    
     const result = await response.json();
-    if (result.status === "success") { return result; } 
-    else { throw new Error(result.message); }
+    if (result.status === "success") { 
+        return result; 
+    } else { 
+        throw new Error(result.message); 
+    }
 }
 
 function handleError(error, prefix = "Fout: ") {
