@@ -46,17 +46,23 @@ let alleDefecten = [];
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
     callApi({ type: "GET_CHECKLIST_CONFIG" })
-    .then(result => {
-        CHECKLIST_DATA = result.data;
-        const select = document.getElementById('activiteit-select');
-        select.innerHTML = '<option value="">-- Selecteer een activiteit --</option>';
-        for (const act in CHECKLIST_DATA) {
-            select.add(new Option(act, act));
-        }
-    })
-    .catch(error => alert("Kon checklists niet laden: " + error.message));
-}
+        .then(result => {
+            console.log("Checklists geladen:", result.data);
+            CHECKLIST_DATA = result.data; // Sla data op
 
+            // Vul de dropdown
+            const activiteitSelect = document.getElementById('activiteit-select');
+            activiteitSelect.innerHTML = '<option value="">-- Selecteer een activiteit --</option>';
+
+            for (const activiteit in CHECKLIST_DATA) {
+                activiteitSelect.add(new Option(activiteit, activiteit));
+            }
+        })
+        .catch(error => {
+            console.error("Fout bij laden checklists:", error);
+            toonStatus("Kan checklists niet laden. Check je verbinding.", "error");
+        });
+}
 
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
@@ -160,18 +166,36 @@ function laadBijzonderhedenVanGisteren() {
 
 // --- DEEL 4: CHECKLIST TAB FUNCTIES ---
 function updateChecklists(activiteit) {
-    const container = document.querySelector('.container');
-    const openUl = document.getElementById('lijst-openen');
-    const sluitUl = document.getElementById('lijst-sluiten');
-    openUl.innerHTML = ''; sluitUl.innerHTML = '';
-    
+    const container = document.querySelector('#tab-checklists .container') || document;
+    const openLijstUL = document.getElementById('lijst-openen');
+    const sluitLijstUL = document.getElementById('lijst-sluiten');
+
+    openLijstUL.innerHTML = '';
+    sluitLijstUL.innerHTML = '';
+
+    document.querySelectorAll(".collapsible").forEach(coll => {
+        coll.classList.remove("active");
+        coll.parentElement.querySelector('.content').style.maxHeight = null;
+    });
+
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
-        data.openen.forEach((t, i) => openUl.innerHTML += `<li><input type="checkbox" id="o${i}"><label for="o${i}">${t}</label></li>`);
-        data.sluiten.forEach((t, i) => sluitUl.innerHTML += `<li><input type="checkbox" id="s${i}"><label for="s${i}">${t}</label></li>`);
-        container.classList.add('checklists-zichtbaar');
+
+        // Vul de lijsten dynamisch
+        if (data.openen) {
+            data.openen.forEach((item, i) => {
+                openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`;
+            });
+        }
+        if (data.sluiten) {
+            data.sluiten.forEach((item, i) => {
+                sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`;
+            });
+        }
+
+        if (container) container.classList.add('checklists-zichtbaar');
     } else {
-        container.classList.remove('checklists-zichtbaar');
+        if (container) container.classList.remove('checklists-zichtbaar');
     }
 }
 
