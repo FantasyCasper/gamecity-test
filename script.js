@@ -1,33 +1,14 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (OPGESCHOOND)
+   VOLLEDIGE SCRIPT.JS (MET SPREADSHEET CHECKLISTS)
    =============================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
-// ==============================================================
-//   CHECKLIST DATA (Hard-coded)
-// ==============================================================
-const CHECKLIST_DATA = {
-    "Baan": {
-        openen: ["Baan lichten aan", "Karts controleren", "Helmen desinfecteren", "Pitdeur openen"],
-        sluiten: ["Karts aan de lader", "Baan lichten uit", "Helmen opruimen", "Pitdeur sluiten"]
-    },
-    "Lasergame": {
-        openen: ["Lichten aan", "Blacklights aan", "Rookmachines aan", "Computer aan", "Printer aan", "Versterker aan", "Pakken uit pluggen", "Ronde in de Arena lopen"],
-        sluiten: ["Lasermaxx afsluiten (via exit)", "Computer uit", "Versterker uit", "Ventilator/Verwarming opruimen", "Printer uit - papier bijvullen", "Pakken inpluggen", "Ruimte controleren op defecten en rommel", "Ronde in de Arena lopen met stoffer en blik", "Luchtverfrissers controleren", "Rookmachines bijvullen", "Prullenbak legen"]
-    },
-    "Prison Island": {
-        openen: ["lichten aan", "Briefings TV aan", "Computer aan", "Printer aan", "Rondje door de hal + cellen controleren"],
-        sluiten: ["Lichten uit", "Computer + Printer + Scherm uit", "Printer bijvullen", "Briefings TV uit", "Cellen + briefingsruimte controleren op defecten/rommel", "Alle brievenbusjes naar beneden", "Bureau netjes achterlaten", "De hal met stoffer en blik vegen", "Prullenback checken, is die vol dan vervangen."]
-    },
-    "Minigolf": {
-        openen: ["Ballen en clubs klaarzetten", "Verlichting banen aan", "Scorekaarten aanvullen"],
-        sluiten: ["Ballen en clubs innemen/opruimen", "Verlichting uit", "Afval controleren"]
-    }
-};
-// ==============================================================
+// We beginnen leeg, de data komt uit de spreadsheet!
+let CHECKLIST_DATA = {}; 
+
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
-// 'alleDefecten' is verwijderd
+let alleDefecten = []; 
 
 // --- DEEL 1: DE "BEWAKER" ---
 (function() {
@@ -38,28 +19,65 @@ let ingelogdeRol = "";
     } 
     
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
-if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
+
+    if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
-        document.querySelector('.container').classList.add('is-manager'); // Dit toont de 'Opgelost' knoppen op het Kart Dashboard
-    }
-    
-    const activiteitSelect = document.getElementById('activiteit-select');
-    for (const activiteit in CHECKLIST_DATA) {
-        activiteitSelect.add(new Option(activiteit, activiteit));
+        document.querySelector('.container').classList.add('is-manager'); 
     }
     
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
     setupMobileMenu(); 
-    setupAlgemeenDefectForm(); // Algemeen defect
-    laadBijzonderhedenVanGisteren(); // Algemeen tab
+    vulKartMeldDropdown(); 
+    setupDefectForm(); 
+    setupAlgemeenDefectForm(); 
+    laadDefectenDashboard(); 
+    setupKartFilter();
+    laadBijzonderhedenVanGisteren();
     
-    // Alle Kart Dashboard functies zijn verwijderd
+    // HAAL DE CHECKLISTS OP!
+    laadChecklistConfiguratie();
 
 })(); 
 
-// --- DEEL 2: NAVIGATIE & ALGEMENE FUNCTIES ---
+// --- DEEL 2: FUNCTIES ---
+
+function laadChecklistConfiguratie() {
+    console.log("Checklists ophalen van server...");
+    
+    // We roepen de nieuwe publieke functie aan
+    const payload = { type: "GET_CHECKLIST_CONFIG" };
+    
+    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
+        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === "success") {
+            console.log("Checklists geladen!");
+            CHECKLIST_DATA = result.data; // Vul de variabele met data uit de sheet
+            
+            // Vul NU pas de dropdown
+            const activiteitSelect = document.getElementById('activiteit-select');
+            // Leegmaken voor de zekerheid
+            while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
+            
+            for (const activiteit in CHECKLIST_DATA) {
+                activiteitSelect.add(new Option(activiteit, activiteit));
+            }
+        } else {
+            // Fallback als er geen checklists zijn
+            alert("Kon checklists niet laden: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Fout bij laden checklists:", error);
+        alert("Netwerkfout bij laden checklists.");
+    });
+}
+
+
 function setupMobileMenu() {
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.querySelector('.main-nav');
@@ -73,8 +91,6 @@ function setupMobileMenu() {
 function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', (e) => {
-            // Stop de standaard actie als het een knop is
-            // (laat <a> links wel werken)
             if (button.tagName === 'BUTTON') {
                 e.preventDefault(); 
                 document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -86,38 +102,6 @@ function setupMainTabs() {
         });
     });
 }
-function laadBijzonderhedenVanGisteren() {
-    const tabelBody = document.getElementById('bijzonderheden-body');
-    const payload = { type: "GET_YESTERDAYS_BIJZONDERHEDDEN" }; 
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-            tabelBody.innerHTML = ''; 
-            if (result.data.length === 0) {
-                tabelBody.innerHTML = '<tr><td colspan="3">Geen bijzonderheden gemeld gisteren.</td></tr>';
-            } else {
-                result.data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                    <td>${item.medewerker}</td>
-                    <td>${item.activiteit}</td>
-                    <td>${item.lijstnaam.replace("Checklist ", "")}</td>
-                    <td>${item.opmerking}</td>
-                `;
-                    tabelBody.appendChild(tr);
-                });
-            }
-        } else { throw new Error(result.message); }
-    })
-    .catch(error => {
-        tabelBody.innerHTML = `<tr><td colspan="3" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
-    });
-}
-
-// --- DEEL 3: CHECKLIST FUNCTIES ---
 function koppelListeners() {
     document.getElementById('logout-button').addEventListener('click', function() {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
@@ -133,8 +117,70 @@ function koppelListeners() {
         });
     });
 }
+function toonStatus(bericht, type) {
+    var statusDiv = document.getElementById('status-message');
+    statusDiv.textContent = bericht; statusDiv.className = type;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function toonDefectStatus(bericht, type) {
+    var statusDiv = document.getElementById('status-message-defect');
+    statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function toonAlgemeenDefectStatus(bericht, type) {
+    var statusDiv = document.getElementById('algemeen-defect-status');
+    statusDiv.textContent = bericht;
+    statusDiv.className = `status-bericht ${type}`;
+    statusDiv.style.display = 'block';
+    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+}
+function resetCheckboxes(listId) {
+    document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
+}
+async function callApi(payload) { // Helper functie
+    if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
+        payload.rol = ingelogdeRol;
+    }
+    const url = WEB_APP_URL + "?v=" + new Date().getTime();
+    const response = await fetch(url, {
+        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
+    });
+    const result = await response.json();
+    if (result.status === "success") { return result; } 
+    else { throw new Error(result.message); }
+}
+
+// --- DEEL 3: ALGEMEEN TAB FUNCTIES ---
+function laadBijzonderhedenVanGisteren() {
+    const tabelBody = document.getElementById('bijzonderheden-body');
+    callApi({ type: "GET_YESTERDAYS_BIJZONDERHEDDEN" })
+    .then(result => {
+        tabelBody.innerHTML = ''; 
+        if (result.data.length === 0) {
+            tabelBody.innerHTML = '<tr><td colspan="4">Geen bijzonderheden gemeld gisteren.</td></tr>';
+        } else {
+            result.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.medewerker}</td>
+                    <td>${item.activiteit}</td>
+                    <td>${item.lijstnaam.replace("Checklist ", "")}</td>
+                    <td>${item.opmerking}</td>
+                `;
+                tabelBody.appendChild(tr);
+            });
+        }
+    })
+    .catch(error => {
+        tabelBody.innerHTML = `<tr><td colspan="4" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
+    });
+}
+
+// --- DEEL 4: CHECKLIST TAB FUNCTIES ---
 function updateChecklists(activiteit) {
-    const container = document.querySelector('.container');
+    const container = document.querySelector('#tab-checklists .container') || document;
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
     openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';
@@ -146,9 +192,9 @@ function updateChecklists(activiteit) {
         const data = CHECKLIST_DATA[activiteit];
         data.openen.forEach((item, i) => { openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; });
         data.sluiten.forEach((item, i) => { sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`; });
-        container.classList.add('checklists-zichtbaar');
+        if(container) container.classList.add('checklists-zichtbaar');
     } else {
-        container.classList.remove('checklists-zichtbaar');
+        if(container) container.classList.remove('checklists-zichtbaar');
     }
 }
 function verstuurData(lijstNaam) {
@@ -171,18 +217,13 @@ function verstuurData(lijstNaam) {
         type: "LOG_DATA", lijstNaam: lijstNaam, items: items, 
         medewerker: ingelogdeNaam, activiteit: activiteit, bijzonderheden: bijzonderhedenText
     };
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), { 
-        method: 'POST', body: JSON.stringify(dataPayload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    })
-    .then(response => response.json())
+    callApi(dataPayload)
     .then(data => {
-        if(data.status === "success") {
-            toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
-            resetCheckboxes(listId);
-            document.getElementById(bijzonderhedenId).value = ''; 
-            knop.disabled = false;
-            knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-        } else { throw new Error(data.message); }
+        toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
+        resetCheckboxes(listId);
+        document.getElementById(bijzonderhedenId).value = ''; 
+        knop.disabled = false;
+        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     })
     .catch(error => {
         toonStatus(error.message || "Failed to fetch", "error");
@@ -190,73 +231,46 @@ function verstuurData(lijstNaam) {
         knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
     });
 }
-function resetCheckboxes(listId) {
-    document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
-}
 
-// --- DEEL 4: ALGEMEEN DEFECT TAB FUNCTIES ---
+// --- DEEL 5: ALGEMEEN DEFECT TAB FUNCTIES ---
 function setupAlgemeenDefectForm() {
     const form = document.getElementById('algemeen-defect-form');
     if (!form) return;
     const button = document.getElementById('algemeen-defect-submit');
-    
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const locatie = document.getElementById('locatie-select').value;
         const omschrijving = document.getElementById('algemeen-defect-omschrijving').value.trim();
-        
         if (locatie === "" || omschrijving === "") {
-            toonAlgemeenDefectStatus("Selecteer een locatie en vul een omschrijving in.", "error");
-            return;
+            toonAlgemeenDefectStatus("Selecteer een locatie en vul een omschrijving in.", "error"); return;
         }
-        
-        button.disabled = true;
-        button.textContent = "Bezig met melden...";
-        
-        const payload = {
-            type: "LOG_ALGEMEEN_DEFECT",
-            medewerker: ingelogdeNaam,
-            locatie: locatie,
-            defect: omschrijving
-        };
-        
-        fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            mode: 'cors'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
+        button.disabled = true; button.textContent = "Bezig met melden...";
+        const payload = { type: "LOG_ALGEMEEN_DEFECT", medewerker: ingelogdeNaam, locatie: locatie, defect: omschrijving };
+        callApi(payload)
+            .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-            } else {
-                throw new Error(data.message);
-            }
-        })
-        .catch(error => {
-            toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
-        })
-        .finally(() => {
-            button.disabled = false;
-            button.textContent = "Meld Algemeen Defect";
-        });
+            })
+            .catch(error => {
+                toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
+            })
+            .finally(() => {
+                button.disabled = false; button.textContent = "Meld Algemeen Defect";
+            });
     });
 }
 
-// --- DEEL 5: STATUSBERICHT FUNCTIES ---
-function toonStatus(bericht, type) {
-    var statusDiv = document.getElementById('status-message');
-    statusDiv.textContent = bericht; statusDiv.className = type;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-}
-// 'toonDefectStatus' is verwijderd, we gebruiken nu 'toonAlgemeenDefectStatus'
-function toonAlgemeenDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('algemeen-defect-status');
-    statusDiv.textContent = bericht;
-    statusDiv.className = `status-bericht ${type}`;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-}
+// --- DEEL 6: KART DASHBOARD (Lege functies, want die staan in hun eigen bestand) ---
+function vulKartMeldDropdown() {}
+function setupDefectForm() {}
+function laadDefectenDashboard() {}
+function setupKartFilter() {}
+function renderDefectCards(defects) {}
+function setupDashboardListeners() {}
+function markeerDefectOpgelost(rowId, buttonEl) {}
+function updateStatBoxes(defects) {}
+function handleDefectEdit(buttonEl) {}
+function toonDefectStatus(bericht, type) {}
+function closeEditModal() {}
+function openEditModal(rowId, kartNummer, omschrijving) {}
+function setupEditModal() {}
