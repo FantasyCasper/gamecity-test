@@ -13,75 +13,68 @@
         <div class="tab-nav">
             <button id="mobile-menu-toggle">☰ Menu</button>
             <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
-            
             <button class="tab-link active" data-tab="tab-logs">Logboek</button>
             <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
-            <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button> 
-        </div>
+            <button class="tab-link" data-tab="tab-checklists">Checklist Beheer</button>
+            <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button> </div>
         
         <div id="status-message">Laden...</div>
 
         <div id="tab-logs" class="tab-content active">
-            <h2>Logboek Overzicht</h2>
-            <table id="log-table">
-                <thead>
-                    <tr>
-                        <th>Tijdstip</th>
-                        <th>Medewerker</th>
-                        <th>Activiteit</th>
-                        <th>Lijst</th>
-                        <th>Voltooid</th>
-                        <th>Gemist</th>
-                        <th>Bijzonderheden</th>
-                    </tr>
-                </thead>
-                <tbody id="log-body"></tbody>
-            </table>
+            <h2>Logboek</h2>
+            <table id="log-table"><thead><tr><th>Tijd</th><th>Wie</th><th>Wat</th><th>Lijst</th><th>V</th><th>X</th><th>Opm</th></tr></thead><tbody id="log-body"></tbody></table>
         </div>
 
         <div id="tab-users" class="tab-content">
-            <h2>Nieuwe Gebruiker Toevoegen</h2>
+            <h2>Gebruikers</h2>
             <form id="add-user-form">
                 <div class="form-grid">
-                    <div class="form-veld"><label for="new-username">Gebruikersnaam (inlog)</label><input type="text" id="new-username" required></div>
-                    <div class="form-veld"><label for="new-fullname">Volledige Naam</label><input type="text" id="new-fullname" required></div>
-                    <div class="form-veld"><label for="new-pincode">Pincode (4 cijfers)</label><input type="password" id="new-pincode" required maxlength="4"></div>
-                    <div class="form-veld"><label for="new-role">Rol</label><select id="new-role"><option value="medewerker" selected>Medewerker</option><option value="TD">TD</option><option value="manager">Manager</option></select></div>
+                   <input type="text" id="new-username" placeholder="Username" required>
+                   <input type="text" id="new-fullname" placeholder="Naam" required>
+                   <input type="password" id="new-pincode" placeholder="Pin" required>
+                   <select id="new-role"><option value="medewerker">Medewerker</option><option value="manager">Manager</option><option value="TD">TD</option></select>
                 </div>
-                <button type="submit" id="add-user-button">Gebruiker Toevoegen</button>
+                <button type="submit" id="add-user-button">Toevoegen</button>
             </form>
-            <h2 class="user-list-header">Bestaande Gebruikers</h2>
-            <table id="user-table">
-                <thead>
-                    <tr>
-                        <th>Gebruikersnaam</th>
-                        <th>Volledige Naam</th>
-                        <th>Rol</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
-                <tbody id="user-body"></tbody>
-            </table>
+            <table id="user-table"><thead><tr><th>User</th><th>Naam</th><th>Rol</th><th>Actie</th></tr></thead><tbody id="user-body"></tbody></table>
         </div>
         
         <div id="tab-algemeen-defecten" class="tab-content">
-            <h2>Overzicht Algemene Defecten</h2>
-            <p>Overzicht van alle defecten (exclusief karts), met de nieuwste bovenaan.</p>
-            
-            <table id="algemeen-defect-table">
-                <thead>
-                    <tr>
-                        <th>Tijdstip</th>
-                        <th>Gemeld door</th>
-                        <th>Locatie</th>
-                        <th>Omschrijving</th>
-                        <th>Status</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
-                <tbody id="algemeen-defect-body">
-                    </tbody>
-            </table>
+            <h2>Defecten</h2>
+            <table id="algemeen-defect-table"><thead><tr><th>Tijd</th><th>Wie</th><th>Waar</th><th>Wat</th><th>Status</th><th>Actie</th></tr></thead><tbody id="algemeen-defect-body"></tbody></table>
+        </div>
+
+        <div id="tab-checklists" class="tab-content">
+            <h2>Checklists Bewerken</h2>
+            <div id="checklist-editor">
+                <div class="form-veld">
+                    <label>Activiteit:</label>
+                    <select id="cl-activiteit">
+                        <option value="">-- Selecteer --</option>
+                        <option value="Baan">Baan</option>
+                        <option value="Lasergame">Lasergame</option>
+                        <option value="Prison Island">Prison Island</option>
+                        <option value="Minigolf">Minigolf</option>
+                    </select>
+                </div>
+                <div class="form-grid">
+                    <div class="form-veld">
+                        <label>Openen Taken</label>
+                        <div class="list-builder">
+                            <ul id="cl-openen-list" class="task-list"></ul>
+                            <div class="add-task-form"><input type="text" id="cl-openen-input"><button class="add-task-btn" data-target="cl-openen-list" data-input="cl-openen-input">+</button></div>
+                        </div>
+                    </div>
+                    <div class="form-veld">
+                        <label>Sluiten Taken</label>
+                        <div class="list-builder">
+                            <ul id="cl-sluiten-list" class="task-list"></ul>
+                            <div class="add-task-form"><input type="text" id="cl-sluiten-input"><button class="add-task-btn" data-target="cl-sluiten-list" data-input="cl-sluiten-input">+</button></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="checklist-save-button">Opslaan</button>
+            </div>
         </div>
         
     </div>

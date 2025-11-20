@@ -4,75 +4,57 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 // We beginnen leeg, de data komt uit de spreadsheet!
-let CHECKLIST_DATA = {}; 
+let CHECKLIST_DATA = {};
 
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
-let alleDefecten = []; 
+let alleDefecten = [];
 
 // --- DEEL 1: DE "BEWAKER" ---
-(function() {
+(function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
     if (!ingelogdeNaam || !ingelogdeRol) {
-        alert("Je bent niet ingelogd."); window.location.href = "login/"; return; 
-    } 
-    
+        alert("Je bent niet ingelogd."); window.location.href = "login/"; return;
+    }
+
     document.getElementById('algemeen-welkom-naam').textContent = ingelogdeNaam;
 
     if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
-        document.querySelector('.container').classList.add('is-manager'); 
+        document.querySelector('.container').classList.add('is-manager');
     }
-    
+
     // Koppel alle event listeners
     koppelListeners();
     setupMainTabs();
-    setupMobileMenu(); 
-    vulKartMeldDropdown(); 
-    setupDefectForm(); 
-    setupAlgemeenDefectForm(); 
-    laadDefectenDashboard(); 
+    setupMobileMenu();
+    vulKartMeldDropdown();
+    setupDefectForm();
+    setupAlgemeenDefectForm();
+    laadDefectenDashboard();
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
-    
+
     // HAAL DE CHECKLISTS OP!
     laadChecklistConfiguratie();
 
-})(); 
+})();
 
 // --- DEEL 2: FUNCTIES ---
 
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
-    
-    // We sturen een GET_CHECKLIST_CONFIG verzoek
-    const payload = { type: "GET_CHECKLIST_CONFIG" };
-    
-    fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
-    })
-    .then(response => response.json())
+    callApi({ type: "GET_CHECKLIST_CONFIG" })
     .then(result => {
-        if (result.status === "success") {
-            console.log("Checklists geladen!");
-            CHECKLIST_DATA = result.data; // <-- VUL DE GLOBAL
-            
-            // Nu de data er is, vul de dropdown
-            const activiteitSelect = document.getElementById('activiteit-select');
-            // Leegmaken (behalve de eerste optie)
-            while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-            
-            for (const activiteit in CHECKLIST_DATA) {
-                activiteitSelect.add(new Option(activiteit, activiteit));
-            }
-        } else {
-            alert("Fout bij laden checklists: " + result.message);
+        CHECKLIST_DATA = result.data;
+        const select = document.getElementById('activiteit-select');
+        select.innerHTML = '<option value="">-- Selecteer een activiteit --</option>';
+        for (const act in CHECKLIST_DATA) {
+            select.add(new Option(act, act));
         }
     })
-    .catch(error => {
-        alert("Netwerkfout: " + error.message);
-    });
+    .catch(error => alert("Kon checklists niet laden: " + error.message));
 }
 
 
@@ -90,7 +72,7 @@ function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', (e) => {
             if (button.tagName === 'BUTTON') {
-                e.preventDefault(); 
+                e.preventDefault();
                 document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
                 document.querySelectorAll('.main-tab-link').forEach(link => link.classList.remove('active'));
                 const tabId = button.getAttribute('data-tab');
@@ -101,14 +83,14 @@ function setupMainTabs() {
     });
 }
 function koppelListeners() {
-    document.getElementById('logout-button').addEventListener('click', function() {
+    document.getElementById('logout-button').addEventListener('click', function () {
         if (confirm('Weet je zeker dat je wilt uitloggen?')) {
             localStorage.clear(); window.location.href = 'login/';
         }
     });
     document.getElementById('activiteit-select').addEventListener('change', (e) => updateChecklists(e.target.value));
     document.querySelectorAll(".collapsible").forEach(coll => {
-        coll.addEventListener("click", function() {
+        coll.addEventListener("click", function () {
             this.classList.toggle("active");
             var content = this.parentElement.querySelector('.content');
             content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
@@ -137,120 +119,79 @@ function toonAlgemeenDefectStatus(bericht, type) {
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }
-async function callApi(payload) { // Helper functie
-    if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
+
+async function callApi(payload) {
+    if (payload.type.startsWith("UPDATE") || payload.type.startsWith("GET_LOGS") || payload.type.startsWith("ADD") || payload.type.startsWith("DELETE") || payload.type.startsWith("SET")) {
         payload.rol = ingelogdeRol;
     }
-    const url = WEB_APP_URL + "?v=" + new Date().getTime();
-    const response = await fetch(url, {
+    const res = await fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
         method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
     });
-    const result = await response.json();
-    if (result.status === "success") { return result; } 
-    else { throw new Error(result.message); }
+    const json = await res.json();
+    if (json.status === "success") return json;
+    throw new Error(json.message);
 }
 
 // --- DEEL 3: ALGEMEEN TAB FUNCTIES ---
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
     callApi({ type: "GET_YESTERDAYS_BIJZONDERHEDDEN" })
-    .then(result => {
-        tabelBody.innerHTML = ''; 
-        if (result.data.length === 0) {
-            tabelBody.innerHTML = '<tr><td colspan="4">Geen bijzonderheden gemeld gisteren.</td></tr>';
-        } else {
-            result.data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+        .then(result => {
+            tabelBody.innerHTML = '';
+            if (result.data.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="4">Geen bijzonderheden gemeld gisteren.</td></tr>';
+            } else {
+                result.data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
                     <td>${item.medewerker}</td>
                     <td>${item.activiteit}</td>
                     <td>${item.lijstnaam.replace("Checklist ", "")}</td>
                     <td>${item.opmerking}</td>
                 `;
-                tabelBody.appendChild(tr);
-            });
-        }
-    })
-    .catch(error => {
-        tabelBody.innerHTML = `<tr><td colspan="4" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
-    });
+                    tabelBody.appendChild(tr);
+                });
+            }
+        })
+        .catch(error => {
+            tabelBody.innerHTML = `<tr><td colspan="4" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
+        });
 }
 
 // --- DEEL 4: CHECKLIST TAB FUNCTIES ---
 function updateChecklists(activiteit) {
-    // FIX: Selecteer direct de hoofdcontainer
-    const container = document.querySelector('.container'); 
-    const openLijstUL = document.getElementById('lijst-openen');
-    const sluitLijstUL = document.getElementById('lijst-sluiten');
-    
-    // Veiligheidscheck: als we op een pagina zijn zonder deze elementen, stop dan
-    if (!container || !openLijstUL || !sluitLijstUL) return;
-
-    openLijstUL.innerHTML = ''; 
-    sluitLijstUL.innerHTML = '';
-    
-    // Reset de inklap-panelen
-    document.querySelectorAll(".collapsible").forEach(coll => {
-        coll.classList.remove("active");
-        // Veilige selectie van de content div
-        var content = coll.nextElementSibling; 
-        if (content && content.classList.contains('content')) {
-             content.style.maxHeight = null;
-        }
-    });
+    const container = document.querySelector('.container');
+    const openUl = document.getElementById('lijst-openen');
+    const sluitUl = document.getElementById('lijst-sluiten');
+    openUl.innerHTML = ''; sluitUl.innerHTML = '';
     
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
-        
-        // Vul de lijsten
-        data.openen.forEach((item, i) => { 
-            openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; 
-        });
-        
-        data.sluiten.forEach((item, i) => { 
-            sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`; 
-        });
-        
-        // FIX: Voeg de class toe aan de correct gevonden container
+        data.openen.forEach((t, i) => openUl.innerHTML += `<li><input type="checkbox" id="o${i}"><label for="o${i}">${t}</label></li>`);
+        data.sluiten.forEach((t, i) => sluitUl.innerHTML += `<li><input type="checkbox" id="s${i}"><label for="s${i}">${t}</label></li>`);
         container.classList.add('checklists-zichtbaar');
     } else {
-        // FIX: Verwijder de class
         container.classList.remove('checklists-zichtbaar');
     }
 }
+
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
-    if (activiteit === "") { toonStatus("Fout: Kies een activiteit.", "error"); return; }
-    var listId, buttonId, bijzonderhedenId;
-    if (lijstNaam === 'Checklist Openen') {
-        listId = 'lijst-openen'; buttonId = 'btn-openen'; bijzonderhedenId = 'bijzonderheden-openen';
-    } else {
-        listId = 'lijst-sluiten'; buttonId = 'btn-sluiten'; bijzonderhedenId = 'bijzonderheden-sluiten';
-    }
-    var knop = document.getElementById(buttonId);
-    knop.disabled = true; knop.textContent = "Bezig...";
-    var bijzonderhedenText = document.getElementById(bijzonderhedenId).value.trim();
-    var items = [];
-    document.querySelectorAll("#" + listId + " li").forEach(li => {
-        items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
-    });
-    var dataPayload = { 
-        type: "LOG_DATA", lijstNaam: lijstNaam, items: items, 
-        medewerker: ingelogdeNaam, activiteit: activiteit, bijzonderheden: bijzonderhedenText
-    };
-    callApi(dataPayload)
-    .then(data => {
-        toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
-        resetCheckboxes(listId);
-        document.getElementById(bijzonderhedenId).value = ''; 
-        knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    })
-    .catch(error => {
-        toonStatus(error.message || "Failed to fetch", "error");
-        knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    });
+    if (!activiteit) return toonStatus("Kies activiteit", "error");
+    const suffix = lijstNaam.includes("Open") ? "openen" : "sluiten";
+    const listId = "lijst-" + suffix;
+    const textId = "bijzonderheden-" + suffix;
+    const items = [];
+    document.querySelectorAll(`#${listId} li`).forEach(li => items.push({ label: li.innerText, checked: li.querySelector('input').checked }));
+    const opm = document.getElementById(textId).value;
+
+    callApi({ type: "LOG_DATA", lijstNaam: lijstNaam, items: items, medewerker: ingelogdeNaam, activiteit: activiteit, bijzonderheden: opm })
+        .then(() => {
+            toonStatus("Opgeslagen!", "success");
+            document.getElementById(textId).value = "";
+            document.querySelectorAll(`#${listId} input`).forEach(i => i.checked = false);
+        })
+        .catch(e => toonStatus(e.message, "error"));
 }
 
 // --- DEEL 5: ALGEMEEN DEFECT TAB FUNCTIES ---
@@ -258,7 +199,7 @@ function setupAlgemeenDefectForm() {
     const form = document.getElementById('algemeen-defect-form');
     if (!form) return;
     const button = document.getElementById('algemeen-defect-submit');
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
         const locatie = document.getElementById('locatie-select').value;
         const omschrijving = document.getElementById('algemeen-defect-omschrijving').value.trim();
@@ -282,16 +223,16 @@ function setupAlgemeenDefectForm() {
 }
 
 // --- DEEL 6: KART DASHBOARD (Lege functies, want die staan in hun eigen bestand) ---
-function vulKartMeldDropdown() {}
-function setupDefectForm() {}
-function laadDefectenDashboard() {}
-function setupKartFilter() {}
-function renderDefectCards(defects) {}
-function setupDashboardListeners() {}
-function markeerDefectOpgelost(rowId, buttonEl) {}
-function updateStatBoxes(defects) {}
-function handleDefectEdit(buttonEl) {}
-function toonDefectStatus(bericht, type) {}
-function closeEditModal() {}
-function openEditModal(rowId, kartNummer, omschrijving) {}
-function setupEditModal() {}
+function vulKartMeldDropdown() { }
+function setupDefectForm() { }
+function laadDefectenDashboard() { }
+function setupKartFilter() { }
+function renderDefectCards(defects) { }
+function setupDashboardListeners() { }
+function markeerDefectOpgelost(rowId, buttonEl) { }
+function updateStatBoxes(defects) { }
+function handleDefectEdit(buttonEl) { }
+function toonDefectStatus(bericht, type) { }
+function closeEditModal() { }
+function openEditModal(rowId, kartNummer, omschrijving) { }
+function setupEditModal() { }
