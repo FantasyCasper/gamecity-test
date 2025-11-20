@@ -306,13 +306,40 @@ function setupChecklistEditor() {
                 return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "sluiten", taken: takenSluiten });
             })
             .then(result => {
-                alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
+                toonMooieModal("Opgeslagen!", `Checklist voor "${activiteit}" is succesvol opgeslagen.`);
             })
             .catch(error => handleError(error, "Fout bij opslaan checklist: "))
             .finally(() => {
                 saveButton.disabled = false; saveButton.textContent = "Checklist Opslaan";
             });
     });
+}
+
+// --- NIEUWE MODAL FUNCTIE ---
+function toonMooieModal(titel, bericht) {
+    const overlay = document.getElementById('custom-modal-overlay');
+    const modal = document.getElementById('custom-modal');
+    const titleEl = document.getElementById('modal-title');
+    const msgEl = document.getElementById('modal-message');
+    const btn = document.getElementById('modal-ok-btn');
+
+    if(titleEl) titleEl.textContent = titel;
+    if(msgEl) msgEl.textContent = bericht;
+
+    if(overlay && modal) {
+        overlay.style.display = 'block';
+        modal.style.display = 'block';
+    }
+
+    // Sluit functie
+    function sluitModal() {
+        overlay.style.display = 'none';
+        modal.style.display = 'none';
+    }
+
+    // Koppel klik events (zorg dat we niet dubbel koppelen)
+    btn.onclick = sluitModal;
+    overlay.onclick = sluitModal;
 }
 
 // --- API ---

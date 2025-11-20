@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +9,21 @@
     <link rel="stylesheet" href="admin.css">
     <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
 </head>
+
 <body>
     <div class="container">
-        
+
         <div class="tab-nav">
             <button id="mobile-menu-toggle">☰ Menu</button>
-            
+
             <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
-            
+
             <button class="tab-link active" data-tab="tab-logs">Logboek</button>
             <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
             <button class="tab-link" data-tab="tab-checklists">Checklist Beheer</button>
-            <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button> 
+            <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button>
         </div>
-        
+
         <div id="status-message">Laden...</div>
 
         <div id="tab-logs" class="tab-content active">
@@ -69,7 +71,7 @@
                 </div>
                 <button type="submit" id="add-user-button">Gebruiker Toevoegen</button>
             </form>
-            
+
             <h2 class="user-list-header">Bestaande Gebruikers</h2>
             <table id="user-table">
                 <thead>
@@ -87,7 +89,7 @@
         <div id="tab-checklists" class="tab-content">
             <h2>Checklists Bewerken</h2>
             <p>Selecteer een activiteit om de taken te bewerken.</p>
-            
+
             <div id="checklist-editor">
                 <div class="form-veld">
                     <label for="cl-activiteit">Kies een activiteit om te bewerken:</label>
@@ -99,7 +101,7 @@
                         <option value="Minigolf">Minigolf</option>
                     </select>
                 </div>
-                
+
                 <div class="form-grid">
                     <div class="form-veld">
                         <label for="cl-openen-input">Openen Taken</label>
@@ -107,31 +109,33 @@
                             <ul id="cl-openen-list" class="task-list"></ul>
                             <div class="add-task-form">
                                 <input type="text" id="cl-openen-input" placeholder="Nieuwe taak...">
-                                <button type="button" class="add-task-btn" data-target-list="cl-openen-list" data-source-input="cl-openen-input">+</button>
+                                <button type="button" class="add-task-btn" data-target-list="cl-openen-list"
+                                    data-source-input="cl-openen-input">+</button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-veld">
                         <label for="cl-sluiten-input">Sluiten Taken</label>
                         <div class="list-builder">
                             <ul id="cl-sluiten-list" class="task-list"></ul>
                             <div class="add-task-form">
                                 <input type="text" id="cl-sluiten-input" placeholder="Nieuwe taak...">
-                                <button type="button" class="add-task-btn" data-target-list="cl-sluiten-list" data-source-input="cl-sluiten-input">+</button>
+                                <button type="button" class="add-task-btn" data-target-list="cl-sluiten-list"
+                                    data-source-input="cl-sluiten-input">+</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <button type="button" id="checklist-save-button">Checklist Opslaan</button>
             </div>
         </div>
-        
+
         <div id="tab-algemeen-defecten" class="tab-content">
             <h2>Overzicht Algemene Defecten</h2>
             <p>Overzicht van alle defecten (exclusief karts), met de nieuwste bovenaan.</p>
-            
+
             <table id="algemeen-defect-table">
                 <thead>
                     <tr>
@@ -144,11 +148,19 @@
                     </tr>
                 </thead>
                 <tbody id="algemeen-defect-body">
-                    </tbody>
+                </tbody>
             </table>
         </div>
-        
+
     </div>
+    <div id="custom-modal-overlay" class="modal-overlay"></div>
+    <div id="custom-modal" class="modal-box">
+        <h3 id="modal-title">Succes</h3>
+        <p id="modal-message">Bericht...</p>
+        <button id="modal-ok-btn">OK</button>
+    </div>
+
     <script src="admin.js"></script>
 </body>
+
 </html>
