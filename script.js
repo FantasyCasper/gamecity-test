@@ -44,9 +44,9 @@ let alleDefecten = [];
 // --- DEEL 2: FUNCTIES ---
 
 function laadChecklistConfiguratie() {
-    console.log("Checklists ophalen van server...");
+    console.log("Checklists ophalen...");
     
-    // We roepen de nieuwe publieke functie aan
+    // We sturen een GET_CHECKLIST_CONFIG verzoek
     const payload = { type: "GET_CHECKLIST_CONFIG" };
     
     fetch(WEB_APP_URL + "?v=" + new Date().getTime(), {
@@ -56,24 +56,22 @@ function laadChecklistConfiguratie() {
     .then(result => {
         if (result.status === "success") {
             console.log("Checklists geladen!");
-            CHECKLIST_DATA = result.data; // Vul de variabele met data uit de sheet
+            CHECKLIST_DATA = result.data; // <-- VUL DE GLOBAL
             
-            // Vul NU pas de dropdown
+            // Nu de data er is, vul de dropdown
             const activiteitSelect = document.getElementById('activiteit-select');
-            // Leegmaken voor de zekerheid
+            // Leegmaken (behalve de eerste optie)
             while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
             
             for (const activiteit in CHECKLIST_DATA) {
                 activiteitSelect.add(new Option(activiteit, activiteit));
             }
         } else {
-            // Fallback als er geen checklists zijn
-            alert("Kon checklists niet laden: " + result.message);
+            alert("Fout bij laden checklists: " + result.message);
         }
     })
     .catch(error => {
-        console.error("Fout bij laden checklists:", error);
-        alert("Netwerkfout bij laden checklists.");
+        alert("Netwerkfout: " + error.message);
     });
 }
 
