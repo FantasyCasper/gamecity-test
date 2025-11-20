@@ -454,10 +454,10 @@ function setupChecklistEditor() {
         HUIDIGE_CHECKLIST_CONFIG[activiteit].sluiten = takenSluiten;
         
         // Stuur naar de server (Eerst 'openen', dan 'sluiten')
-        callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, type: "openen", taken: takenOpenen })
+        callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "openen", taken: takenOpenen })
             .then(result => {
                 // Als de eerste lukt, doe de tweede
-                return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, type: "sluiten", taken: takenSluiten });
+                return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "sluiten", taken: takenSluiten })
             })
             .then(result => {
                 alert(`Checklist voor "${activiteit}" succesvol opgeslagen.`);
