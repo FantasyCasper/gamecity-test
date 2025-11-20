@@ -226,7 +226,7 @@ function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
 
 // --- DEEL 6: CHECKLISTS ---
 function fetchChecklistConfig() {
-    callApi("SET_CHECKLIST_CONFIG").then(result => {
+    callApi("GET_CHECKLIST_CONFIG").then(result => {
         HUIDIGE_CHECKLIST_CONFIG = result.data;
     }).catch(error => handleError(error, "Fout bij laden checklists: "));
 }
