@@ -178,21 +178,44 @@ function laadBijzonderhedenVanGisteren() {
 
 // --- DEEL 4: CHECKLIST TAB FUNCTIES ---
 function updateChecklists(activiteit) {
-    const container = document.querySelector('#tab-checklists .container') || document;
+    // FIX: Selecteer direct de hoofdcontainer
+    const container = document.querySelector('.container'); 
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
-    openLijstUL.innerHTML = ''; sluitLijstUL.innerHTML = '';
+    
+    // Veiligheidscheck: als we op een pagina zijn zonder deze elementen, stop dan
+    if (!container || !openLijstUL || !sluitLijstUL) return;
+
+    openLijstUL.innerHTML = ''; 
+    sluitLijstUL.innerHTML = '';
+    
+    // Reset de inklap-panelen
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.classList.remove("active");
-        coll.parentElement.querySelector('.content').style.maxHeight = null;
+        // Veilige selectie van de content div
+        var content = coll.nextElementSibling; 
+        if (content && content.classList.contains('content')) {
+             content.style.maxHeight = null;
+        }
     });
+    
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
-        data.openen.forEach((item, i) => { openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; });
-        data.sluiten.forEach((item, i) => { sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`; });
-        if(container) container.classList.add('checklists-zichtbaar');
+        
+        // Vul de lijsten
+        data.openen.forEach((item, i) => { 
+            openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; 
+        });
+        
+        data.sluiten.forEach((item, i) => { 
+            sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`; 
+        });
+        
+        // FIX: Voeg de class toe aan de correct gevonden container
+        container.classList.add('checklists-zichtbaar');
     } else {
-        if(container) container.classList.remove('checklists-zichtbaar');
+        // FIX: Verwijder de class
+        container.classList.remove('checklists-zichtbaar');
     }
 }
 function verstuurData(lijstNaam) {
