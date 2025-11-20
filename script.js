@@ -101,7 +101,12 @@ function laadBijzonderhedenVanGisteren() {
             } else {
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${item.activiteit}</td><td>${item.lijstnaam.replace("Checklist ", "")}</td><td>${item.opmerking}</td>`;
+                    tr.innerHTML = `
+                    <td>${item.medewerker}</td>
+                    <td>${item.activiteit}</td>
+                    <td>${item.lijstnaam.replace("Checklist ", "")}</td>
+                    <td>${item.opmerking}</td>
+                `;
                     tabelBody.appendChild(tr);
                 });
             }
