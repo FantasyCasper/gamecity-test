@@ -128,7 +128,7 @@ async function callApi(payload) {
 
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
-    callApi({ type: "GET_CHECKLIST_CONFIG" })
+    callApi({ type: "SET_CHECKLIST_CONFIG" })
     .then(result => {
         console.log("Checklists geladen:", result.data);
         CHECKLIST_DATA = result.data; // Vul de variabele
