@@ -311,12 +311,33 @@ function setupKartFilter() {}
 
 
 // --- STATUS HELPERS ---
+let statusTimeout; 
+
 function toonStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message');
+    
     if (statusDiv) {
-        statusDiv.textContent = bericht; statusDiv.className = type;
+        // 1. Reset eventuele vorige timers, zodat hij niet te vroeg verdwijnt
+        if (statusTimeout) {
+            clearTimeout(statusTimeout);
+        }
+
+        // 2. Reset de weergave even om de animatie opnieuw te kunnen starten
+        statusDiv.style.display = 'none';
+        void statusDiv.offsetWidth; // Dit trucje forceert de browser om te 'verversen'
+
+        // 3. Vul de inhoud en class
+        var icon = type === 'success' ? '✅ ' : '⚠️ ';
+        statusDiv.textContent = icon + bericht;
+        statusDiv.className = 'status-bericht ' + type;
+        
+        // 4. Toon de melding
         statusDiv.style.display = 'block';
-        setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+        
+        // 5. Start de nieuwe timer van 4 seconden
+        statusTimeout = setTimeout(() => { 
+            statusDiv.style.display = 'none'; 
+        }, 4000);
     }
 }
 function toonAlgemeenDefectStatus(bericht, type) {
