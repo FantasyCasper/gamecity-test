@@ -1,25 +1,35 @@
 /* ===============================
-   KART DASHBOARD SCRIPT (MET EDIT-MODAL)
+   KART DASHBOARD SCRIPT (MET PERMISSIES)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 let ingelogdeNaam = "";
-let ingelogdeRol = "";
+let ingelogdePermissies = {};
 let alleDefecten = [];
 
 // --- DEEL 1: DE "BEWAKER" ---
 (function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
-    ingelogdeRol = localStorage.getItem('ingelogdeRol');
-    if (!ingelogdeNaam || !ingelogdeRol) {
-        alert("Je bent niet ingelogd."); window.location.href = "../login/"; return;
-    }
+    const rawPerms = localStorage.getItem('ingelogdePermissies');
 
-if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
+    // 1. Login Check
+    if (!ingelogdeNaam || !rawPerms) {
+        alert("Je bent niet ingelogd."); 
+        window.location.href = "../login/"; 
+        return;
+    }
+    
+    // Parse de permissies
+    ingelogdePermissies = JSON.parse(rawPerms);
+
+    // 2. Bepaal of we 'Manager' knoppen (Oplossen/Verwijderen) mogen zien
+    // Dit mag als je 'Admin' OF 'TD' rechten hebt.
+    if (ingelogdePermissies.admin || ingelogdePermissies.td) {
         document.body.classList.add('is-manager'); 
     }
 
+    // 3. Start modules
     vulKartDropdowns();
     setupDefectForm();
     laadDefectenDashboard();
@@ -59,6 +69,8 @@ function setupDefectForm() { // Kart defect
             toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error"); return;
         }
         defectButton.disabled = true; defectButton.textContent = "Bezig...";
+        
+        // Let op: type is "LOG_DEFECT"
         const payload = { type: "LOG_DEFECT", medewerker: ingelogdeNaam, kartNummer: kartNummer, defect: omschrijving };
 
         callApi(payload)
@@ -108,10 +120,12 @@ function setupKartFilter() {
         }
         renderDefectCards(gefilterdeLijst);
     }
-    statusFilter.addEventListener('change', pasFiltersToe);
-    wisButton.addEventListener('click', () => {
-        statusFilter.value = 'open'; pasFiltersToe();
-    });
+    if (statusFilter) {
+        statusFilter.addEventListener('change', pasFiltersToe);
+        wisButton.addEventListener('click', () => {
+            statusFilter.value = 'open'; pasFiltersToe();
+        });
+    }
 }
 
 function renderDefectCards(defects) {
@@ -188,7 +202,10 @@ function setupDashboardListeners() {
 function markeerDefectOpgelost(rowId, buttonEl) {
     if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
-    const payload = { type: "UPDATE_DEFECT_STATUS", rol: ingelogdeRol, rowId: rowId, newStatus: "Opgelost" };
+    
+    // API Call update: we sturen nu impliciet permissies mee via callApi
+    const payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Opgelost" };
+    
     callApi(payload)
         .then(result => {
             toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
@@ -200,10 +217,9 @@ function markeerDefectOpgelost(rowId, buttonEl) {
 }
 
 // ========================
-//  BIJGEWERKTE MODAL FUNCTIES
+//  MODAL FUNCTIES
 // ========================
 
-// De logica voor het 'Opslaan' EN 'Verwijderen' van de modal
 function setupEditModal() {
     const modal = document.getElementById('edit-modal');
     const overlay = document.getElementById('modal-overlay');
@@ -211,7 +227,9 @@ function setupEditModal() {
     const saveButton = document.getElementById('modal-save-btn');
     const cancelButton = document.getElementById('modal-cancel-btn');
     const closeButton = document.getElementById('modal-close-btn');
-    const deleteButton = document.getElementById('modal-delete-btn'); // <-- NIEUW
+    const deleteButton = document.getElementById('modal-delete-btn');
+
+    if (!form) return;
 
     // OPSLAAN (Aanpassen)
     form.addEventListener('submit', (e) => {
@@ -242,42 +260,42 @@ function setupEditModal() {
             });
     });
 
-    // VERWIJDEREN (alleen voor managers)
-    deleteButton.addEventListener('click', () => {
-        if (!confirm('Weet je zeker dat je deze melding permanent wilt verwijderen? Dit kan niet ongedaan gemaakt worden.')) {
-            return;
-        }
+    // VERWIJDEREN (alleen voor managers/TD)
+    if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            if (!confirm('Weet je zeker dat je deze melding permanent wilt verwijderen?')) {
+                return;
+            }
 
-        deleteButton.disabled = true;
-        deleteButton.textContent = "Bezig...";
+            deleteButton.disabled = true;
+            deleteButton.textContent = "Bezig...";
 
-        const rowId = document.getElementById('edit-row-id').value;
-        const payload = {
-            type: "UPDATE_DEFECT_STATUS",
-            rol: ingelogdeRol,
-            rowId: rowId,
-            newStatus: "Verwijderd" // We zetten de status op 'Verwijderd'
-        };
+            const rowId = document.getElementById('edit-row-id').value;
+            const payload = {
+                type: "UPDATE_DEFECT_STATUS",
+                rowId: rowId,
+                newStatus: "Verwijderd" 
+            };
 
-        callApi(payload)
-            .then(result => {
-                toonDefectStatus("Defect succesvol verwijderd.", "success");
-                closeEditModal();
-                laadDefectenDashboard();
-            })
-            .catch(error => {
-                alert("Fout: " + error.message);
-            })
-            .finally(() => {
-                deleteButton.disabled = false;
-                deleteButton.textContent = "Verwijder Melding";
-            });
-    });
+            callApi(payload)
+                .then(result => {
+                    toonDefectStatus("Defect succesvol verwijderd.", "success");
+                    closeEditModal();
+                    laadDefectenDashboard();
+                })
+                .catch(error => {
+                    alert("Fout: " + error.message);
+                })
+                .finally(() => {
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = "Verwijderen";
+                });
+        });
+    }
 
-    // Sluit-knoppen
-    cancelButton.addEventListener('click', closeEditModal);
-    closeButton.addEventListener('click', closeEditModal);
-    overlay.addEventListener('click', closeEditModal);
+    if (cancelButton) cancelButton.addEventListener('click', closeEditModal);
+    if (closeButton) closeButton.addEventListener('click', closeEditModal);
+    if (overlay) overlay.addEventListener('click', closeEditModal);
 }
 
 function openEditModal(rowId, kartNummer, omschrijving) {
@@ -285,7 +303,6 @@ function openEditModal(rowId, kartNummer, omschrijving) {
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
     
-    // FIX: Zoek het element hier direct op
     const modal = document.getElementById('edit-modal');
     const overlay = document.getElementById('modal-overlay');
     
@@ -294,7 +311,7 @@ function openEditModal(rowId, kartNummer, omschrijving) {
         overlay.style.display = 'block';
     }
 }
-// Functie om de modal te sluiten
+
 function closeEditModal() {
     const modal = document.getElementById('edit-modal');
     const overlay = document.getElementById('modal-overlay');
@@ -307,20 +324,31 @@ function closeEditModal() {
 
 function toonDefectStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message-defect');
-    statusDiv.textContent = bericht;
-    statusDiv.className = `status-bericht ${type}`;
-    statusDiv.style.display = 'block';
-    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+    if (statusDiv) {
+        statusDiv.textContent = bericht;
+        statusDiv.className = `status-bericht ${type}`;
+        statusDiv.style.display = 'block';
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 4000);
+    }
 }
 
-// --- ALGEMENE API CALL ---
-async function callApi(payload) {
-    // Voeg 'rol' toe aan *alleen* admin-verzoeken
-    if (payload.type.startsWith("UPDATE_") || payload.type.startsWith("GET_") || payload.type.startsWith("ADD_") || payload.type.startsWith("DELETE_")) {
-        payload.rol = ingelogdeRol;
+// --- ALGEMENE API CALL (AANGEPAST VOOR PERMISSIES) ---
+async function callApi(type, extraData = {}) {
+    const url = WEB_APP_URL + "?v=" + new Date().getTime(); 
+    let payload;
+
+    // Support voor beide aanroep-stijlen (string of object)
+    if (typeof type === 'string') {
+        payload = { type: type, ...extraData };
+    } else {
+        payload = type;
     }
 
-    const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
+    // VOEG PERMISSIES TOE
+    if (typeof ingelogdePermissies !== 'undefined') {
+        payload.perms = ingelogdePermissies;
+    }
+
     const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(payload),
