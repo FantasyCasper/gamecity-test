@@ -47,6 +47,7 @@ let alleAdminDefectenCache = [];
     if (ingelogdePermissies.users) {
         setupUserForm();
         setupUserDeleteListener();
+        setupUserPermListeners();
     }
 
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
@@ -137,16 +138,40 @@ function fetchLogData() {
         statusDiv.style.display = "none"; renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
-function renderLogs(logs) {
-    const logBody = document.getElementById("log-body");
-    if (!logBody) return;
-    if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return; }
-    let html = "";
-    logs.forEach(log => {
-        let ts = new Date(log.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
-        html += `<tr><td data-label="Tijdstip">${ts}</td><td data-label="Medewerker">${log.medewerker}</td><td data-label="Activiteit">${log.activiteit}</td><td data-label="Lijst">${log.lijstnaam}</td><td data-label="Voltooid">${log.voltooid}</td><td data-label="Gemist">${log.gemist}</td><td data-label="Bijzonderheden">${log.bijzonderheden || ""}</td></tr>`;
+function renderUsers(users) {
+    const userBody = document.getElementById("user-body");
+    userBody.innerHTML = "";
+    
+    // Check wie er zelf is ingelogd (zodat je jezelf niet per ongeluk uitzet!)
+    const ingelogdeGebruiker = localStorage.getItem('ingelogdeMedewerker') || "";
+
+    users.forEach(user => {
+        const isSelf = (user.username.toLowerCase() === ingelogdeGebruiker.toLowerCase());
+        
+        // Helper om een checkbox te maken
+        // We gebruiken data-attributen om te weten wie en wat we moeten updaten
+        const createCheckbox = (type, value) => `
+            <input type="checkbox" 
+                   class="perm-checkbox" 
+                   data-username="${user.username}" 
+                   data-type="${type}" 
+                   ${value ? 'checked' : ''} 
+                   ${isSelf && type === 'users' ? 'disabled' : ''}> `;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${user.username}</td>
+            <td>${user.fullname}</td>
+            <td style="text-align:center;">${createCheckbox('checklists', user.perms.checklists)}</td>
+            <td style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
+            <td style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
+            <td style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
+            <td>
+                ${!isSelf ? `<button class="delete-btn" data-username="${user.username}">Verwijder</button>` : '<span style="color:#aaa; font-size:0.8em;">(Jijzelf)</span>'}
+            </td>
+        `;
+        userBody.appendChild(tr);
     });
-    logBody.innerHTML = html;
 }
 
 // --- DEEL 4: USERS ---
@@ -477,4 +502,42 @@ function handleError(error, prefix = "Fout: ") {
         statusDiv.className = 'error';
         statusDiv.textContent = prefix + (error.message || "Failed to fetch");
     }
+}
+
+function setupUserPermListeners() {
+    const table = document.getElementById('user-table');
+    if (!table) return;
+
+    table.addEventListener('change', (e) => {
+        // Check of er op een permissie-checkbox is geklikt
+        if (e.target.classList.contains('perm-checkbox')) {
+            const checkbox = e.target;
+            const username = checkbox.dataset.username;
+            const permType = checkbox.dataset.type;
+            const newValue = checkbox.checked;
+
+            // Optioneel: visuele feedback (even uitgrijzen)
+            checkbox.disabled = true;
+            document.body.style.cursor = 'wait';
+
+            callApi("UPDATE_USER_PERMS", { 
+                targetUser: username, 
+                permType: permType, 
+                newValue: newValue 
+            })
+            .then(result => {
+                // Gelukt!
+                toonMooieModal("Succes", `Rechten voor ${username} bijgewerkt.`);
+            })
+            .catch(error => {
+                // Mislukt, zet vinkje terug
+                checkbox.checked = !newValue;
+                toonMooieModal("Fout", "Kon rechten niet aanpassen: " + error.message);
+            })
+            .finally(() => {
+                checkbox.disabled = false;
+                document.body.style.cursor = 'default';
+            });
+        }
+    });
 }
