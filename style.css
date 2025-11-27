@@ -10,8 +10,10 @@ body {
     padding: 20px;
     color: #e0e0e0;
 }
+
 .container {
-    max-width: 1200px; /* Standaard breedte voor de app */
+    max-width: 1200px;
+    /* Standaard breedte voor de app */
     margin: 0 auto;
 }
 
@@ -20,9 +22,9 @@ body {
 /* De navigatiebalk zelf */
 .main-nav {
     display: flex;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
     background-color: #2a2a2a;
-    border-radius: 8px 8px 0 0; 
+    border-radius: 8px 8px 0 0;
     overflow: hidden;
 }
 
@@ -37,24 +39,33 @@ body {
     font-size: 1em;
     font-weight: bold;
     text-decoration: none;
-    display: inline-block; /* Zichtbaar op desktop */
+    display: inline-block;
+    /* Zichtbaar op desktop */
 }
+
 .main-tab-link:hover {
     background-color: #333;
     color: #fff;
 }
+
 .main-tab-link.active {
     color: #fff;
-    border-bottom-color: #007bff; 
+    border-bottom-color: #007bff;
 }
 
 /* De Admin tabs */
 .admin-tab {
-    display: none; /* Standaard verborgen */
-    background-color: #1a1a1a;
+    display: none;
+    /* Standaard verborgen */
+    flex-wrap: wrap;
+    background-color: #2a2a2a;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
 }
+
 .admin-tab.zichtbaar {
-    display: inline-block; /* Getoond voor managers */
+    display: inline-block;
+    /* Getoond voor managers */
 }
 
 /* De 'Uitloggen' knop (zweeft rechtsboven) */
@@ -70,15 +81,16 @@ body {
     cursor: pointer;
     font-size: 0.9em;
     font-weight: bold;
-    z-index: 1000; 
+    z-index: 1000;
 }
+
 #logout-button:hover {
     background-color: #c82333;
 }
 
 /* Het hamburger-menu-icoon (standaard verborgen op desktop) */
 #mobile-menu-toggle {
-    display: none; 
+    display: none;
     background-color: #2a2a2a;
     color: #fff;
     font-size: 1.2em;
@@ -94,18 +106,20 @@ body {
 
 /* --- 3. ALGEMENE INHOUD (Tabbladen) --- */
 .tab-content {
-    display: none; 
+    display: none;
     background-color: #1a1a1a;
     padding-top: 20px;
 }
+
 .tab-content.active {
-    display: block; 
+    display: block;
 }
 
 /* Centreren van 'Algemeen' tabblad (Definitieve Fix) */
 #tab-algemeen {
     text-align: center;
 }
+
 #tab-algemeen h1,
 #tab-algemeen h2 {
     color: #fff;
@@ -113,20 +127,23 @@ body {
     padding-bottom: 10px;
     /* 'display: inline-block' is verwijderd, ze staan nu onder elkaar */
 }
+
 #tab-algemeen p {
     color: #e0e0e0;
     line-height: 1.6;
 }
+
 #tab-algemeen ul {
-    display: inline-block; 
-    text-align: left;      
+    display: inline-block;
+    text-align: left;
     margin-top: 15px;
 }
+
 #tab-algemeen li {
     color: #e0e0e0;
     line-height: 1.6;
-    padding: 0; 
-    border: none; 
+    padding: 0;
+    border: none;
 }
 
 /* Bijzonderheden-blok (Tabel-versie) */
@@ -135,35 +152,41 @@ body {
     border-radius: 8px;
     padding: 20px;
     margin-top: 25px;
-    border-left: 5px solid #007bff; 
-    text-align: left; 
+    border-left: 5px solid #007bff;
+    text-align: left;
 }
+
 #bijzonderheden-container h3 {
     margin-top: 0;
     color: #fff;
 }
+
 #bijzonderheden-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
 }
+
 #bijzonderheden-table th {
     padding: 12px 10px;
-    border-bottom: 2px solid #555; 
-    color: #aaa; 
+    border-bottom: 2px solid #555;
+    color: #aaa;
     font-size: 0.9em;
     text-transform: uppercase;
     text-align: left;
 }
+
 #bijzonderheden-table td {
     padding: 12px 10px;
     border-bottom: 1px solid #333;
     color: #e0e0e0;
     line-height: 1.5;
 }
+
 #bijzonderheden-table tr:last-child td {
     border-bottom: none;
 }
+
 #bijzonderheden-table tr:hover {
     background-color: #333;
 }
@@ -180,16 +203,19 @@ body {
     gap: 15px;
     margin-top: 0;
 }
+
 .info-veld {
     display: flex;
     flex-direction: column;
 }
+
 .user-info label {
     font-weight: bold;
     color: #e0e0e0;
     margin-bottom: 8px;
     font-size: 0.9em;
 }
+
 .user-info select {
     width: 100%;
     padding: 12px;
@@ -207,6 +233,7 @@ body {
     background-position: right 15px center;
     background-size: 10px;
 }
+
 .collapsible {
     background-color: #333333;
     color: #e0e0e0;
@@ -219,31 +246,60 @@ body {
     font-size: 1.2em;
     font-weight: bold;
 }
-.collapsible:after { content: '▼'; font-size: 0.8em; color: #e0e0e0; float: right; }
-.collapsible.active:after { content: "▲"; }
-.content { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; }
+
+.collapsible:after {
+    content: '▼';
+    font-size: 0.8em;
+    color: #e0e0e0;
+    float: right;
+}
+
+.collapsible.active:after {
+    content: "▲";
+}
+
+.content {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}
+
 #tab-checklists ul {
     list-style-type: none;
     padding: 0;
     margin: 10px 0;
 }
+
 #tab-checklists li {
     padding: 12px 5px;
     border-bottom: 1px solid #333;
     display: flex;
     align-items: center;
 }
+
 #tab-checklists li:last-child {
     border-bottom: none;
 }
-input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
-#tab-checklists label { 
-    font-size: 1em; 
-    flex-grow: 1; 
-    cursor: pointer; 
-    color: #e0e0e0; 
+
+input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 15px;
+    cursor: pointer;
 }
-input[type="checkbox"]:checked+label { text-decoration: line-through; color: #888; }
+
+#tab-checklists label {
+    font-size: 1em;
+    flex-grow: 1;
+    cursor: pointer;
+    color: #e0e0e0;
+}
+
+input[type="checkbox"]:checked+label {
+    text-decoration: line-through;
+    color: #888;
+}
+
 .submit-button {
     display: block;
     width: 90%;
@@ -258,10 +314,24 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.submit-button:hover { background-color: #218838; }
-.submit-button:disabled { background-color: #555; cursor: not-allowed; }
-.checklist-section { display: none; }
-.container.checklists-zichtbaar .checklist-section { display: block; }
+
+.submit-button:hover {
+    background-color: #218838;
+}
+
+.submit-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.checklist-section {
+    display: none;
+}
+
+.container.checklists-zichtbaar .checklist-section {
+    display: block;
+}
+
 .bijzonderheden-label {
     display: block;
     font-weight: bold;
@@ -270,6 +340,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     margin-bottom: 8px;
     font-size: 0.9em;
 }
+
 .bijzonderheden-text {
     width: 100%;
     padding: 10px;
@@ -291,14 +362,16 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     margin: 0 0 20px 0;
     padding: 0;
     background: none;
-    border: none; 
+    border: none;
 }
+
 .stat-box-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
+
 .stat-box {
     background-color: #2a2a2a;
     border-radius: 8px;
@@ -309,6 +382,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     text-transform: uppercase;
     font-size: 0.9em;
 }
+
 .stat-box span {
     display: block;
     font-size: 2.5em;
@@ -316,24 +390,35 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     color: #fff;
     margin-bottom: 5px;
 }
-#stat-karts-problemen { color: #e74c3c; } 
-#stat-werkende-karts { color: #2ecc71; }
+
+#stat-karts-problemen {
+    color: #e74c3c;
+}
+
+#stat-werkende-karts {
+    color: #2ecc71;
+}
+
 .form-bar {
-    padding: 10px; 
+    padding: 10px;
     margin-bottom: 20px;
     display: flex;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-    background-color: #2a2a2a; /* Toegevoegd, was .user-info */
-    border-radius: 8px; /* Toegevoegd, was .user-info */
+    background-color: #2a2a2a;
+    /* Toegevoegd, was .user-info */
+    border-radius: 8px;
+    /* Toegevoegd, was .user-info */
 }
-.form-bar span { 
+
+.form-bar span {
     font-weight: bold;
     color: #aaa;
     margin-left: 5px;
     font-size: 0.9em;
 }
+
 .form-bar input[type="text"],
 .form-bar select {
     padding: 10px 12px;
@@ -342,15 +427,17 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     color: #e0e0e0;
     border-radius: 5px;
     font-size: 0.9em;
-    min-width: 150px; 
-    box-sizing: border-box; 
+    min-width: 150px;
+    box-sizing: border-box;
 }
+
 .form-bar input#new-defect-problem {
-    flex-grow: 1; 
-    min-width: 200px; 
+    flex-grow: 1;
+    min-width: 200px;
 }
+
 .form-bar button {
-    flex-shrink: 0; 
+    flex-shrink: 0;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
@@ -359,16 +446,25 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     transition: background-color 0.2s;
     font-size: 0.9em;
 }
+
 #new-defect-submit {
     background-color: #28a745;
     color: white;
 }
-#new-defect-submit:hover { background-color: #218838; }
+
+#new-defect-submit:hover {
+    background-color: #218838;
+}
+
 #filter-wissen-btn {
-    background-color: #28a745; 
+    background-color: #28a745;
     color: white;
 }
-#filter-wissen-btn:hover { background-color: #218838; }
+
+#filter-wissen-btn:hover {
+    background-color: #218838;
+}
+
 .problem-card-grid {
     display: grid;
     /* Maak kolommen van 350px, maar laat ze niet groeien (geen 1fr) */
@@ -377,24 +473,46 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     /* Optioneel: centreer de kaarten als er lege ruimte is */
     /* justify-content: center; */
 }
+
 .defect-card {
     background-color: #2a2a2a;
     border-radius: 8px;
-    border-left: 5px solid #e74c3c; 
+    border-left: 5px solid #e74c3c;
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
+
 .defect-card.status-opgelost {
-    border-left-color: #2ecc71; 
+    border-left-color: #2ecc71;
     opacity: 0.6;
 }
-.defect-card h3 { margin: 0 0 5px 0; color: #fff; font-size: 1.2em; }
-.defect-card .meta { font-size: 0.8em; color: #999; margin-bottom: 15px; }
-.defect-card .meta-item { display: block; }
-.defect-card .omschrijving { color: #e0e0e0; margin-bottom: 15px; line-height: 1.5; flex-grow: 1; }
+
+.defect-card h3 {
+    margin: 0 0 5px 0;
+    color: #fff;
+    font-size: 1.2em;
+}
+
+.defect-card .meta {
+    font-size: 0.8em;
+    color: #999;
+    margin-bottom: 15px;
+}
+
+.defect-card .meta-item {
+    display: block;
+}
+
+.defect-card .omschrijving {
+    color: #e0e0e0;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
 .manager-btn {
-    display: none; 
+    display: none;
     background-color: #28a745;
     color: white;
     border: none;
@@ -403,35 +521,48 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     font-weight: bold;
     cursor: pointer;
 }
-.manager-btn:hover { background-color: #218838; }
-.container.is-manager .manager-btn { display: block; }
+
+.manager-btn:hover {
+    background-color: #218838;
+}
+
+.container.is-manager .manager-btn {
+    display: block;
+}
 
 /* Edit knop (voor aanpassen) */
 .edit-defect-btn {
-    display: none; /* Standaard verborgen */
-    background-color: #007bff; /* Blauw */
+    display: none;
+    /* Standaard verborgen */
+    background-color: #007bff;
+    /* Blauw */
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 10px; 
+    padding: 10px;
     font-weight: bold;
     cursor: pointer;
     font-size: 0.9em;
 }
+
 .edit-defect-btn:hover {
     background-color: #0056b3;
 }
+
 .edit-defect-btn:disabled {
     background-color: #555;
 }
+
 /* Toon de knop als de regels kloppen (wordt via JS gezet) */
 .defect-card.kan-aanpassen .edit-defect-btn {
     display: block;
 }
+
 .defect-card .knoppen-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* Ruimte tussen de knoppen */
+    gap: 10px;
+    /* Ruimte tussen de knoppen */
 }
 
 
@@ -441,6 +572,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     margin: 0 auto;
     /* Hergebruikt .user-info stijl in HTML */
 }
+
 #algemeen-defect-form textarea {
     width: 100%;
     padding: 10px;
@@ -454,6 +586,7 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     resize: vertical;
     min-height: 120px;
 }
+
 #algemeen-defect-submit {
     width: 100%;
     margin-top: 15px;
@@ -469,15 +602,23 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     display: none;
     font-weight: bold;
 }
-#status-message.success, #status-message-defect.success, #algemeen-defect-status.success {
+
+#status-message.success,
+#status-message-defect.success,
+#algemeen-defect-status.success {
     background-color: #28a745;
     color: white;
 }
-#status-message.error, #status-message-defect.error, #algemeen-defect-status.error {
+
+#status-message.error,
+#status-message-defect.error,
+#algemeen-defect-status.error {
     background-color: #dc3545;
     color: white;
 }
-#status-message-defect, #algemeen-defect-status {
+
+#status-message-defect,
+#algemeen-defect-status {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
@@ -487,38 +628,55 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 @media (max-width: 720px) {
     body {
         padding: 10px;
-        padding-top: 60px; 
+        padding-top: 60px;
     }
+
     .container {
         max-width: 100%;
         margin: 0;
         padding: 0;
     }
+
     #tab-algemeen h1 {
         font-size: 1.3em;
         padding: 15px;
     }
+
     .user-info {
         padding: 15px;
         margin-bottom: 15px;
     }
+
     .form-bar {
         flex-direction: column;
-        align-items: stretch; 
+        align-items: stretch;
     }
+
     .form-bar input[type="text"],
     .form-bar select,
     .form-bar button {
         width: 100%;
-        box-sizing: border-box; 
+        box-sizing: border-box;
     }
+
     .form-bar span {
         text-align: center;
         margin-bottom: 5px;
     }
-    .collapsible { padding: 15px; }
-    .content { padding: 0 15px; }
-    .submit-button { padding: 15px; font-size: 1em; }
+
+    .collapsible {
+        padding: 15px;
+    }
+
+    .content {
+        padding: 0 15px;
+    }
+
+    .submit-button {
+        padding: 15px;
+        font-size: 1em;
+    }
+
     #logout-button {
         top: 10px;
         right: 10px;
@@ -529,26 +687,36 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
     #mobile-menu-toggle {
         display: block;
     }
+
     .main-nav {
-        flex-direction: column; 
+        flex-direction: column;
         border-radius: 8px;
     }
+
     .main-tab-link {
         display: none;
     }
+
     .main-nav.is-open .main-tab-link {
         display: block;
         width: 100%;
         box-sizing: border-box;
         border-bottom: 1px solid #444;
     }
+
     .main-tab-link.active {
         border-bottom-color: transparent;
     }
+
     .admin-tab.zichtbaar {
-        display: none; 
+        display: none;
     }
+
     .main-nav.is-open .admin-tab.zichtbaar {
-        display: block; 
+        display: block;
+        flex-wrap: wrap;
+        background-color: #2a2a2a;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
     }
 }
