@@ -4,53 +4,101 @@
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
-const ingelogdeRol = localStorage.getItem('ingelogdeRol');
+let ingelogdePermissies = {};
 const statusDiv = document.getElementById('status-message');
 let HUIDIGE_CHECKLIST_CONFIG = {};
 let alleAdminDefectenCache = [];
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function () {
-    if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
-        alert("Toegang geweigerd.");
+    const rawPerms = localStorage.getItem('ingelogdePermissies');
+    if (!rawPerms) {
+        window.location.href = "../index.html";
+        return;
+    }
+    ingelogdePermissies = JSON.parse(rawPerms);
+
+    // BEVEILIGING: Heb je uberhaupt iets te zoeken hier?
+    if (!ingelogdePermissies.admin && !ingelogdePermissies.td && !ingelogdePermissies.users) {
+        alert("Geen toegang tot Admin Panel.");
         window.location.href = "../index.html";
         return;
     }
 
-    fetchAlgemeenDefects();
+    // INTERFACE AANPASSEN OP BASIS VAN RECHTEN
+    manageTabVisibility();
 
-    if (ingelogdeRol === 'manager') {
+    // Data ophalen op basis van rechten
+    if (ingelogdePermissies.admin || ingelogdePermissies.td) {
+        fetchAlgemeenDefects();
+    }
+    if (ingelogdePermissies.admin) {
         fetchLogData();
-        fetchUsers();
         fetchChecklistConfig();
     }
-
-    if (ingelogdeRol === 'TD') {
-        const logBtn = document.querySelector('.tab-link[data-tab="tab-logs"]');
-        const userBtn = document.querySelector('.tab-link[data-tab="tab-users"]');
-        const checkBtn = document.querySelector('.tab-link[data-tab="tab-checklists"]');
-        if (logBtn) logBtn.style.display = 'none';
-        if (userBtn) userBtn.style.display = 'none';
-        if (checkBtn) checkBtn.style.display = 'none';
-
-        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-
-        const defectBtn = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
-        const defectContent = document.getElementById('tab-algemeen-defecten');
-
-        if (defectBtn) defectBtn.classList.add('active');
-        if (defectContent) defectContent.classList.add('active');
+    if (ingelogdePermissies.users) {
+        fetchUsers();
     }
 
+    // Listeners starten
     setupTabNavigation();
     setupMobileMenu();
-    setupUserForm();
-    setupUserDeleteListener();
-    setupAlgemeenDefectListeners();
-    setupChecklistEditor();
+
+    if (ingelogdePermissies.users) {
+        setupUserForm();
+        setupUserDeleteListener();
+    }
+
+    if (ingelogdePermissies.admin || ingelogdePermissies.td) {
+        setupAlgemeenDefectListeners();
+    }
+
+    if (ingelogdePermissies.admin) {
+        setupChecklistEditor();
+    }
 
 })();
+
+function manageTabVisibility() {
+    // 1. Verberg alles eerst
+    const logTab = document.querySelector('.tab-link[data-tab="tab-logs"]');
+    const userTab = document.querySelector('.tab-link[data-tab="tab-users"]');
+    const checkTab = document.querySelector('.tab-link[data-tab="tab-checklists"]');
+    const defectTab = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
+
+    if (logTab) logTab.style.display = 'none';
+    if (userTab) userTab.style.display = 'none';
+    if (checkTab) checkTab.style.display = 'none';
+    if (defectTab) defectTab.style.display = 'none';
+
+    // 2. Toon wat mag
+    let firstVisibleTab = null;
+
+    if (ingelogdePermissies.admin) {
+        if (logTab) logTab.style.display = 'inline-block';
+        if (checkTab) checkTab.style.display = 'inline-block';
+        if (defectTab) defectTab.style.display = 'inline-block'; // Admin ziet ook defecten
+        if (!firstVisibleTab) firstVisibleTab = 'tab-logs';
+    }
+
+    if (ingelogdePermissies.users) {
+        if (userTab) userTab.style.display = 'inline-block';
+        if (!firstVisibleTab) firstVisibleTab = 'tab-users';
+    }
+
+    // Specifiek voor TD (alleen defecten, tenzij ze ook admin zijn)
+    if (ingelogdePermissies.td) {
+        if (defectTab) defectTab.style.display = 'inline-block';
+        if (!firstVisibleTab) firstVisibleTab = 'tab-algemeen-defecten';
+    }
+
+    // 3. Open het eerste tabblad dat mag
+    if (firstVisibleTab) {
+        // Klik virtueel op de tab
+        const tabBtn = document.querySelector(`.tab-link[data-tab="${firstVisibleTab}"]`);
+        if (tabBtn) tabBtn.click();
+    }
+}
 
 // --- DEEL 2: NAVIGATIE ---
 function setupMobileMenu() {
@@ -107,25 +155,42 @@ function fetchUsers() {
 }
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if (!userBody) return;
     userBody.innerHTML = "";
-    if (users.length === 0) { userBody.innerHTML = '<tr><td colspan="4">Geen gebruikers gevonden.</td></tr>'; return; }
-    let html = "";
+
     users.forEach(user => {
-        html += `<tr><td data-label="Gebruikersnaam">${user.username}</td><td data-label="Volledige Naam">${user.fullname}</td><td data-label="Rol">${user.role}</td><td data-label="Actie"><button class="delete-btn" data-username="${user.username}">Verwijder</button></td></tr>`;
+        // Helper voor vinkje/kruisje
+        const icon = (val) => val ? '✅' : '❌';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${user.username}</td>
+            <td>${user.fullname}</td>
+            <td style="text-align:center;">${icon(user.perms.checklists)}</td>
+            <td style="text-align:center;">${icon(user.perms.admin)}</td>
+            <td style="text-align:center;">${icon(user.perms.td)}</td>
+            <td style="text-align:center;">${icon(user.perms.users)}</td>
+            <td><button class="delete-btn" data-username="${user.username}">Verwijder</button></td>
+        `;
+        userBody.appendChild(tr);
     });
-    userBody.innerHTML = html;
 }
 function setupUserForm() {
-    const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
+    const form = document.getElementById("add-user-form");
     if (!form) return;
+
     form.addEventListener("submit", e => {
-        e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
+        e.preventDefault();
+
         const userData = {
             username: document.getElementById("new-username").value,
             fullname: document.getElementById("new-fullname").value,
             pincode: document.getElementById("new-pincode").value,
-            role: document.getElementById("new-role").value
+            perms: {
+                checklists: document.getElementById("perm-checklists").checked,
+                admin: document.getElementById("perm-admin").checked,
+                td: document.getElementById("perm-td").checked,
+                users: document.getElementById("perm-users").checked
+            }
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
             alert(result.message); form.reset(); fetchUsers();
@@ -157,11 +222,11 @@ function setupUserDeleteListener() {
 function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
-            if (statusDiv) statusDiv.style.display = "none"; 
-            
+            if (statusDiv) statusDiv.style.display = "none";
+
             // 1. Sla data op in cache
             alleAdminDefectenCache = result.data || [];
-            
+
             // 2. Roep filter aan (die roept daarna render aan)
             filterAdminDefecten();
         })
@@ -171,15 +236,15 @@ function fetchAlgemeenDefects() {
 function filterAdminDefecten() {
     const filterSelect = document.getElementById('admin-filter-locatie');
     const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
-    
+
     // Begin met alles
     let teTonen = alleAdminDefectenCache;
-    
+
     // Filteren als het niet 'alle' is
     if (gekozenLocatie !== 'alle') {
         teTonen = teTonen.filter(d => d.locatie === gekozenLocatie);
     }
-    
+
     // Renderen
     renderAlgemeenDefects(teTonen);
 }
@@ -371,20 +436,39 @@ function toonMooieModal(titel, bericht) {
 
 // --- API ---
 async function callApi(type, extraData = {}) {
-    const url = WEB_APP_URL + "?v=" + new Date().getTime();
+    const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
     let payload;
+
+    // Check of de functie wordt aangeroepen met een string (bijv: "GET_LOGS")
+    // of met een object (bijv: { type: "LOG_DATA", ... })
     if (typeof type === 'string') {
-        payload = { type: type, rol: ingelogdeRol, ...extraData };
+        payload = { type: type, ...extraData };
     } else {
         payload = type;
-        payload.rol = ingelogdeRol;
     }
+
+    // BELANGRIJK: Voeg de permissies toe aan elk verzoek
+    // Dit vervangt het oude 'rol' systeem
+    if (typeof ingelogdePermissies !== 'undefined') {
+        payload.perms = ingelogdePermissies;
+    } else {
+        console.warn("Let op: ingelogdePermissies is nog niet geladen.");
+    }
+
     const response = await fetch(url, {
-        method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
+        method: 'POST', 
+        body: JSON.stringify(payload), 
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+        mode: 'cors'
     });
+    
     const result = await response.json();
-    if (result.status === "success") { return result; }
-    else { throw new Error(result.message); }
+    
+    if (result.status === "success") { 
+        return result; 
+    } else { 
+        throw new Error(result.message); 
+    }
 }
 function handleError(error, prefix = "Fout: ") {
     console.error(prefix, error);

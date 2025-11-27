@@ -12,28 +12,41 @@ let alleDefecten = [];
 let alleAlgemeneDefectenData = [];
 
 // --- DEEL 1: DE "BEWAKER" & INIT ---
+let ingelogdePermissies = {}; // Globale variabele
+
 (function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
-    ingelogdeRol = localStorage.getItem('ingelogdeRol');
+    const rawPerms = localStorage.getItem('ingelogdePermissies');
 
     // 1. Login Check
-    if (!ingelogdeNaam || !ingelogdeRol) {
-        // Als we niet op de login pagina zijn, stuur terug
+    if (!ingelogdeNaam || !rawPerms) {
         if (!window.location.href.includes('login')) {
             window.location.href = "login/";
             return;
         }
+    } else {
+        // Parse de permissies
+        ingelogdePermissies = JSON.parse(rawPerms);
     }
 
-    // 2. Vul naam in op 'Algemeen' tab
+    // 2. Vul naam in
     const welkomNaam = document.getElementById('algemeen-welkom-naam');
     if (welkomNaam) welkomNaam.textContent = ingelogdeNaam;
 
-    // 3. Toon Admin & Manager functies
-    if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
+    // 3. TABBLADEN BEHEREN OP BASIS VAN VINKJES
+    // A. Checklists Tabblad
+    if (!ingelogdePermissies.checklists) {
+        // Verberg de knop in het menu
+        const checklistBtn = document.querySelector('.main-tab-link[data-tab="tab-checklists"]');
+        if (checklistBtn) checklistBtn.style.display = 'none';
+    }
+
+    // B. Admin Panel Link
+    // Toon link als je Admin OF TD OF Users rechten hebt
+    if (ingelogdePermissies.admin || ingelogdePermissies.td || ingelogdePermissies.users) {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
-        if (container) container.classList.add('is-manager'); // Voor knoppen in Kart Dashboard
+        if (container) container.classList.add('is-manager'); 
     }
 
     // 4. Start alle modules
@@ -43,19 +56,19 @@ let alleAlgemeneDefectenData = [];
 
     // Defecten modules
     vulKartMeldDropdown();
-    setupDefectForm(); // Kart defect
-    setupAlgemeenDefectForm(); // Algemeen defect
+    setupDefectForm(); 
+    setupAlgemeenDefectForm(); 
 
     // Dashboards laden
     laadDefectenDashboard();
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
-    fetchAlgemeneDefecten();
-    setupAlgemeenFilter();
+    fetchAlgemeneDefecten(); 
 
-    // 5. CRUCIAAL: Haal de checklists op uit de Spreadsheet
-    laadChecklistConfiguratie();
-
+    // 5. Checklists ophalen (Alleen als je rechten hebt, scheelt data)
+    if (ingelogdePermissies.checklists) {
+        laadChecklistConfiguratie();
+    }
 })();
 
 
@@ -114,7 +127,7 @@ function koppelListeners() {
 // --- API Helper ---
 async function callApi(payload) {
     // Voeg ALTIJD rol toe
-    payload.rol = ingelogdeRol;
+    payload.perms = ingelogdePermissies;
 
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
 

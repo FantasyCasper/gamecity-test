@@ -49,7 +49,7 @@
             <form id="add-user-form">
                 <div class="form-grid">
                     <div class="form-veld">
-                        <label for="new-username">Gebruikersnaam (inlog)</label>
+                        <label for="new-username">Gebruikersnaam</label>
                         <input type="text" id="new-username" required>
                     </div>
                     <div class="form-veld">
@@ -60,15 +60,32 @@
                         <label for="new-pincode">Pincode (4 cijfers)</label>
                         <input type="password" id="new-pincode" required maxlength="4">
                     </div>
-                    <div class="form-veld">
-                        <label for="new-role">Rol</label>
-                        <select id="new-role">
-                            <option value="medewerker" selected>Medewerker</option>
-                            <option value="manager">Manager</option>
-                            <option value="TD">TD</option>
-                        </select>
+                </div>
+
+                <div class="form-veld" style="margin-top: 15px;">
+                    <label style="margin-bottom: 10px; display:block;">Rechten:</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <input type="checkbox" id="perm-checklists">
+                            <label for="perm-checklists" style="display:inline; font-weight:normal;">Checklists</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="perm-admin">
+                            <label for="perm-admin" style="display:inline; font-weight:normal;">Admin Panel
+                                (Volledig)</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="perm-td">
+                            <label for="perm-td" style="display:inline; font-weight:normal;">TD (Alleen
+                                Defecten)</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="perm-users">
+                            <label for="perm-users" style="display:inline; font-weight:normal;">Gebruikersbeheer</label>
+                        </div>
                     </div>
                 </div>
+
                 <button type="submit" id="add-user-button">Gebruiker Toevoegen</button>
             </form>
 
@@ -76,9 +93,12 @@
             <table id="user-table">
                 <thead>
                     <tr>
-                        <th>Gebruikersnaam</th>
-                        <th>Volledige Naam</th>
-                        <th>Rol</th>
+                        <th>Gebruiker</th>
+                        <th>Naam</th>
+                        <th>Checklists</th>
+                        <th>Admin</th>
+                        <th>TD</th>
+                        <th>Users</th>
                         <th>Actie</th>
                     </tr>
                 </thead>
