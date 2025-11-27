@@ -293,7 +293,7 @@ function setupAlgemeenDefectForm() {
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-                laadAlgemeneDefecten();
+                fetchAlgemeneDefecten();
             })
             .catch(error => {
                 toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");

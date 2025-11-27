@@ -6,22 +6,23 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 
 const ingelogdeRol = localStorage.getItem('ingelogdeRol');
 const statusDiv = document.getElementById('status-message');
-let HUIDIGE_CHECKLIST_CONFIG = {}; 
+let HUIDIGE_CHECKLIST_CONFIG = {};
+let alleAdminDefectenCache = [];
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function() {
+(function () {
     if (ingelogdeRol !== 'manager' && ingelogdeRol !== 'TD') {
-        alert("Toegang geweigerd."); 
-        window.location.href = "../index.html"; 
-        return; 
+        alert("Toegang geweigerd.");
+        window.location.href = "../index.html";
+        return;
     }
-    
-    fetchAlgemeenDefects(); 
-    
+
+    fetchAlgemeenDefects();
+
     if (ingelogdeRol === 'manager') {
         fetchLogData();
         fetchUsers();
-        fetchChecklistConfig(); 
+        fetchChecklistConfig();
     }
 
     if (ingelogdeRol === 'TD') {
@@ -34,22 +35,22 @@ let HUIDIGE_CHECKLIST_CONFIG = {};
 
         document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        
+
         const defectBtn = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
         const defectContent = document.getElementById('tab-algemeen-defecten');
-        
+
         if (defectBtn) defectBtn.classList.add('active');
         if (defectContent) defectContent.classList.add('active');
     }
-    
+
     setupTabNavigation();
-    setupMobileMenu(); 
+    setupMobileMenu();
     setupUserForm();
     setupUserDeleteListener();
-    setupAlgemeenDefectListeners(); 
+    setupAlgemeenDefectListeners();
     setupChecklistEditor();
 
-})(); 
+})();
 
 // --- DEEL 2: NAVIGATIE ---
 function setupMobileMenu() {
@@ -66,7 +67,7 @@ function setupMobileMenu() {
         }
     }
 }
-function setupTabNavigation(){
+function setupTabNavigation() {
     document.querySelectorAll(".tab-link").forEach(button => {
         button.addEventListener("click", () => {
             document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
@@ -82,13 +83,13 @@ function setupTabNavigation(){
 }
 
 // --- DEEL 3: LOGBOEK ---
-function fetchLogData(){
+function fetchLogData() {
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
         statusDiv.style.display = "none"; renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
-function renderLogs(logs){
+function renderLogs(logs) {
     const logBody = document.getElementById("log-body");
     if (!logBody) return;
     if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return; }
@@ -101,10 +102,10 @@ function renderLogs(logs){
 }
 
 // --- DEEL 4: USERS ---
-function fetchUsers(){
+function fetchUsers() {
     callApi("GET_USERS").then(result => { renderUsers(result.data); }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
-function renderUsers(users){
+function renderUsers(users) {
     const userBody = document.getElementById("user-body");
     if (!userBody) return;
     userBody.innerHTML = "";
@@ -115,9 +116,9 @@ function renderUsers(users){
     });
     userBody.innerHTML = html;
 }
-function setupUserForm(){
+function setupUserForm() {
     const form = document.getElementById("add-user-form"), button = document.getElementById("add-user-button");
-    if (!form) return; 
+    if (!form) return;
     form.addEventListener("submit", e => {
         e.preventDefault(); button.disabled = true; button.textContent = "Bezig...";
         const userData = {
@@ -127,15 +128,15 @@ function setupUserForm(){
             role: document.getElementById("new-role").value
         };
         callApi("ADD_USER", { userData: userData }).then(result => {
-            alert(result.message); form.reset(); fetchUsers(); 
+            alert(result.message); form.reset(); fetchUsers();
         }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
             button.disabled = false; button.textContent = "Gebruiker Toevoegen";
         });
     });
 }
-function setupUserDeleteListener(){
+function setupUserDeleteListener() {
     const userTable = document.getElementById("user-table");
-    if (!userTable) return; 
+    if (!userTable) return;
     userTable.addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
@@ -157,15 +158,36 @@ function fetchAlgemeenDefects() {
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
             if (statusDiv) statusDiv.style.display = "none"; 
-            renderAlgemeenDefects(result.data);
+            
+            // 1. Sla data op in cache
+            alleAdminDefectenCache = result.data || [];
+            
+            // 2. Roep filter aan (die roept daarna render aan)
+            filterAdminDefecten();
         })
         .catch(error => handleError(error, "Fout bij laden algemene defecten: "));
+}
+
+function filterAdminDefecten() {
+    const filterSelect = document.getElementById('admin-filter-locatie');
+    const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
+    
+    // Begin met alles
+    let teTonen = alleAdminDefectenCache;
+    
+    // Filteren als het niet 'alle' is
+    if (gekozenLocatie !== 'alle') {
+        teTonen = teTonen.filter(d => d.locatie === gekozenLocatie);
+    }
+    
+    // Renderen
+    renderAlgemeenDefects(teTonen);
 }
 function renderAlgemeenDefects(defects) {
     const defectBody = document.getElementById('algemeen-defect-body');
     if (!defectBody) return;
     defectBody.innerHTML = '';
-    
+
     // --- HIER IS DE FIX: Filter verwijderde items eruit ---
     const zichtbareDefecten = defects.filter(d => d.status !== "Verwijderd");
 
@@ -173,7 +195,7 @@ function renderAlgemeenDefects(defects) {
         defectBody.innerHTML = '<tr><td colspan="6">Geen algemene defecten gevonden.</td></tr>';
         return;
     }
-    
+
     zichtbareDefecten.forEach(defect => {
         let ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const tr = document.createElement('tr');
@@ -181,10 +203,10 @@ function renderAlgemeenDefects(defects) {
             tr.classList.add('status-opgelost');
         }
         const isOpgelost = defect.status === 'Opgelost';
-        const actieKnop = isOpgelost 
+        const actieKnop = isOpgelost
             ? `<button class="delete-btn" data-row-id="${defect.rowId}">Verwijder</button>`
             : `<button class="action-btn" data-row-id="${defect.rowId}">Markeer Opgelost</button>`;
-        
+
         tr.innerHTML = `
             <td data-label="Tijdstip">${ts}</td>
             <td data-label="Gemeld door">${defect.medewerker}</td>
@@ -201,23 +223,28 @@ function setupAlgemeenDefectListeners() {
     if (!table) return;
     table.addEventListener('click', (e) => {
         const target = e.target;
-        if (target.classList.contains('action-btn')) { 
+        if (target.classList.contains('action-btn')) {
             const rowId = target.dataset.rowId;
             markeerAlgemeenDefect(rowId, "Opgelost", target);
         }
-        if (target.classList.contains('delete-btn')) { 
+        if (target.classList.contains('delete-btn')) {
             if (confirm('Weet je zeker dat je dit opgeloste defect permanent wilt verwijderen?')) {
                 const rowId = target.dataset.rowId;
-                markeerAlgemeenDefect(rowId, "Verwijderd", target); 
+                markeerAlgemeenDefect(rowId, "Verwijderd", target);
             }
         }
     });
+
+    const filterSelect = document.getElementById('admin-filter-locatie');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterAdminDefecten);
+    }
 }
 function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
     const payload = { type: "UPDATE_ALGEMEEN_DEFECT_STATUS", rol: ingelogdeRol, rowId: rowId, newStatus: newStatus };
     callApi("UPDATE_ALGEMEEN_DEFECT_STATUS", payload).then(result => {
-        fetchAlgemeenDefects(); 
+        fetchAlgemeenDefects();
     }).catch(error => {
         handleError(error, `Fout bij bijwerken: `);
         buttonEl.disabled = false;
@@ -238,14 +265,14 @@ function createTaakLi(taak) {
 function renderTaskList(listId, takenArray) {
     const ul = document.getElementById(listId);
     if (!ul) return;
-    ul.innerHTML = ''; 
+    ul.innerHTML = '';
     if (!takenArray) return;
     takenArray.forEach(taak => { ul.appendChild(createTaakLi(taak)); });
 }
 function setupChecklistEditor() {
     const activiteitSelect = document.getElementById('cl-activiteit');
     const saveButton = document.getElementById('checklist-save-button');
-    if (!activiteitSelect || !saveButton) return; 
+    if (!activiteitSelect || !saveButton) return;
 
     activiteitSelect.addEventListener('change', () => {
         const activiteit = activiteitSelect.value;
@@ -269,7 +296,7 @@ function setupChecklistEditor() {
                 const taakText = input.value.trim();
                 if (taakText) {
                     list.appendChild(createTaakLi(taakText));
-                    input.value = ''; input.focus(); 
+                    input.value = ''; input.focus();
                 }
             }
         });
@@ -292,15 +319,15 @@ function setupChecklistEditor() {
     saveButton.addEventListener('click', () => {
         const activiteit = activiteitSelect.value;
         if (!activiteit || activiteit === "") { alert("Selecteer eerst een activiteit."); return; }
-        
+
         const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span')).map(span => span.textContent);
         const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span')).map(span => span.textContent);
         saveButton.disabled = true; saveButton.textContent = "Opslaan...";
-        
+
         if (!HUIDIGE_CHECKLIST_CONFIG[activiteit]) HUIDIGE_CHECKLIST_CONFIG[activiteit] = {};
         HUIDIGE_CHECKLIST_CONFIG[activiteit].openen = takenOpenen;
         HUIDIGE_CHECKLIST_CONFIG[activiteit].sluiten = takenSluiten;
-        
+
         callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "openen", taken: takenOpenen })
             .then(result => {
                 return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "sluiten", taken: takenSluiten });
@@ -323,10 +350,10 @@ function toonMooieModal(titel, bericht) {
     const msgEl = document.getElementById('modal-message');
     const btn = document.getElementById('modal-ok-btn');
 
-    if(titleEl) titleEl.textContent = titel;
-    if(msgEl) msgEl.textContent = bericht;
+    if (titleEl) titleEl.textContent = titel;
+    if (msgEl) msgEl.textContent = bericht;
 
-    if(overlay && modal) {
+    if (overlay && modal) {
         overlay.style.display = 'block';
         modal.style.display = 'block';
     }
@@ -344,7 +371,7 @@ function toonMooieModal(titel, bericht) {
 
 // --- API ---
 async function callApi(type, extraData = {}) {
-    const url = WEB_APP_URL + "?v=" + new Date().getTime(); 
+    const url = WEB_APP_URL + "?v=" + new Date().getTime();
     let payload;
     if (typeof type === 'string') {
         payload = { type: type, rol: ingelogdeRol, ...extraData };
@@ -356,7 +383,7 @@ async function callApi(type, extraData = {}) {
         method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; } 
+    if (result.status === "success") { return result; }
     else { throw new Error(result.message); }
 }
 function handleError(error, prefix = "Fout: ") {
