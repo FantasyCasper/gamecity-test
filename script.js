@@ -361,11 +361,11 @@ function laadBijzonderhedenVanGisteren() {
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                    <td>${item.medewerker}</td>
-                    <td>${item.activiteit}</td>
-                    <td>${item.lijstnaam.replace("Checklist ", "")}</td>
-                    <td>${item.opmerking}</td>
-                `;
+                    <td data-label="Medewerker">${item.medewerker}</td>
+                    <td data-label="Activiteit">${item.activiteit}</td>
+                    <td data-label="Lijst">${item.lijstnaam.replace("Checklist ", "")}</td>
+                    <td data-label="Bijzonderheid">${item.opmerking}</td>
+                    `;
                     tabelBody.appendChild(tr);
                 });
             }
