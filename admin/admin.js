@@ -49,7 +49,7 @@ let localUsersCache = [];
     
     // B. Logs & Checklists (Alleen Admin)
     if (ingelogdePermissies.admin) {
-        fetchLogData();
+        renderLogs();
         fetchChecklistConfig(); 
         setupChecklistEditor();
     }
