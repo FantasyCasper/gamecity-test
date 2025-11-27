@@ -9,6 +9,7 @@ let CHECKLIST_DATA = {};
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
 let alleDefecten = [];
+let alleAlgemeneDefectenData = [];
 
 // --- DEEL 1: DE "BEWAKER" & INIT ---
 (function () {
@@ -50,6 +51,7 @@ let alleDefecten = [];
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
     fetchAlgemeneDefecten();
+    setupAlgemeenFilter();
 
     // 5. CRUCIAAL: Haal de checklists op uit de Spreadsheet
     laadChecklistConfiguratie();
@@ -301,54 +303,84 @@ function setupAlgemeenDefectForm() {
             });
     });
 }
+// --- DEEL 6: ALGEMEEN DASHBOARD (MET FILTER & GROEPERING) ---
 
-// --- NIEUWE FUNCTIES VOOR ALGEMEEN DASHBOARD ---
-
-function fetchAlgemeneDefecten() {
-  callApi({ type: "GET_PUBLIC_ALGEMEEN_DEFECTS" })
-    .then(result => {
-      laadAlgemeneDefecten(result.data);
-    })
-    .catch(error => {
-      console.error("Kon algemene defecten niet ophalen:", error);
-      const container = document.getElementById('algemeen-defecten-grid');
-      if (container) container.innerHTML = "<p>Kan lijst niet laden.</p>";
-    });
+function setupAlgemeenFilter() {
+    const filterSelect = document.getElementById('filter-algemeen-locatie');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterEnRenderDefecten);
+    }
 }
 
+function fetchAlgemeneDefecten() {
+    callApi({ type: "GET_PUBLIC_ALGEMEEN_DEFECTS" })
+        .then(result => {
+            // Sla de ruwe data op in onze globale variabele
+            alleAlgemeneDefectenData = result.data || [];
+            // Roep de filter-functie aan om ze te tonen
+            filterEnRenderDefecten();
+        })
+        .catch(error => {
+            console.error("Kon algemene defecten niet ophalen:", error);
+            const container = document.getElementById('algemeen-defecten-grid');
+            if (container) container.innerHTML = "<p>Kan lijst niet laden.</p>";
+        });
+}
+
+function filterEnRenderDefecten() {
+    const container = document.getElementById('algemeen-defecten-grid');
+    const filterSelect = document.getElementById('filter-algemeen-locatie');
+    
+    if (!container) return;
+    
+    // Welke locatie wil de gebruiker zien?
+    const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
+    
+    // 1. Begin met alle data
+    let teTonenLijst = alleAlgemeneDefectenData;
+    
+    // 2. Filteren (als er niet 'alle' is gekozen)
+    if (gekozenLocatie !== 'alle') {
+        teTonenLijst = teTonenLijst.filter(d => d.locatie === gekozenLocatie);
+    }
+
+    // 3. Renderen (deze functie zorgt ook voor het sorteren/groeperen)
+    laadAlgemeneDefecten(teTonenLijst);
+}
 
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
 
-    if (!defecten) {
-        console.warn("Geen defecten data ontvangen van server.");
-        container.innerHTML = "<p>Kan lijst niet laden.</p>";
-        return;
-    }
+    if (!defecten) return; // Gebeurt alleen bij ernstige fout
 
-    // 1. Filter alleen de 'Open' defecten (Opgelost/Verwijderd hoeven we hier niet te zien)
+    // Filter alleen 'Open' status (voor de zekerheid)
     const openDefecten = defecten.filter(d => d.status === 'Open');
 
     if (openDefecten.length === 0) {
-        container.innerHTML = "<p>Geen openstaande defecten. Alles werkt!</p>";
+        container.innerHTML = "<p>Geen openstaande defecten voor deze selectie.</p>";
         return;
     }
 
-    // 2. Sorteer op Locatie (zodat Baan bij Baan staat, etc.)
-    openDefecten.sort((a, b) => a.locatie.localeCompare(b.locatie));
+    // Sorteer op Locatie (Groepeer), daarna op Tijd (nieuwste eerst)
+    openDefecten.sort((a, b) => {
+        // Eerst sorteren op locatie (alfabetisch)
+        if (a.locatie < b.locatie) return -1;
+        if (a.locatie > b.locatie) return 1;
+        // Als locatie hetzelfde is, sorteer op tijd (nieuwste bovenaan)
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
 
-    // 3. Bouw de HTML Kaartjes (deze classes komen uit style.css van het kart dashboard)
+    // Bouw de kaartjes
     openDefecten.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
 
         const card = document.createElement('div');
-        card.className = 'defect-card'; // We gebruiken dezelfde stijl als de karts
+        card.className = 'defect-card';
 
-        // We voegen een gekleurd randje toe op basis van locatie (optioneel, voor herkenbaarheid)
-        let borderClass = "";
-        // Je zou hier in CSS specifieke kleuren kunnen maken, 
-        // maar standaard rood (.defect-card) is ook prima.
+        // Visuele hint: Voeg de locatienaam toe als class (bijv. 'locatie-baan')
+        // Hiermee zou je later in CSS specifieke kleuren kunnen geven
+        card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
         card.innerHTML = `
             <h3>${defect.locatie}</h3>
@@ -357,8 +389,7 @@ function laadAlgemeneDefecten(defecten) {
                 <span class="meta-item">Op: ${ts}</span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
-            `;
-
+        `;
         container.appendChild(card);
     });
 }

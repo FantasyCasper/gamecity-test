@@ -371,8 +371,11 @@ input[type="checkbox"]:checked+label { text-decoration: line-through; color: #88
 #filter-wissen-btn:hover { background-color: #218838; }
 .problem-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Maak kolommen van 350px, maar laat ze niet groeien (geen 1fr) */
+    grid-template-columns: repeat(auto-fit, 350px);
     gap: 15px;
+    /* Optioneel: centreer de kaarten als er lege ruimte is */
+    /* justify-content: center; */
 }
 .defect-card {
     background-color: #2a2a2a;
