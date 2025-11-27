@@ -316,3 +316,20 @@ h2 {
 #modal-ok-btn:hover {
     background-color: #218838;
 }
+
+/* ===============================
+   CENTREREN VAN DEFECTEN TABBLAD
+   =============================== */
+
+/* 1. Centreer de titels en teksten in dit specifieke tabblad */
+#tab-algemeen-defecten {
+    text-align: center;
+}
+
+/* 2. Centreer het filter-blokje zelf */
+/* We gebruiken !important om de inline-style (max-width) aan te vullen */
+#tab-algemeen-defecten .form-veld {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left; /* Zorgt dat het label binnen het blokje wel netjes links staat */
+}
