@@ -49,6 +49,7 @@ let alleDefecten = [];
     laadDefectenDashboard(); 
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
+    laadAlgemeneDefecten();
     
     // 5. CRUCIAAL: Haal de checklists op uit de Spreadsheet
     laadChecklistConfiguratie();
@@ -290,6 +291,7 @@ function setupAlgemeenDefectForm() {
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
+                laadAlgemeneDefecten();
             })
             .catch(error => {
                 toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
@@ -297,6 +299,61 @@ function setupAlgemeenDefectForm() {
             .finally(() => {
                 button.disabled = false; button.textContent = "Meld Algemeen Defect";
             });
+    });
+}
+
+// --- NIEUWE FUNCTIES VOOR ALGEMEEN DASHBOARD ---
+
+function laadAlgemeneDefecten() {
+    const container = document.getElementById('algemeen-defecten-grid');
+    if (!container) return;
+
+    callApi("GET_ALGEMEEN_DEFECTS")
+        .then(result => {
+            renderAlgemeneDefectenCards(result.data);
+        })
+        .catch(error => {
+            container.innerHTML = `<p style="color: #e74c3c;">Kon defecten niet laden: ${error.message}</p>`;
+        });
+}
+
+function laadAlgemeneDefecten(defecten) {
+    const container = document.getElementById('algemeen-defecten-grid');
+    container.innerHTML = "";
+
+    // 1. Filter alleen de 'Open' defecten (Opgelost/Verwijderd hoeven we hier niet te zien)
+    const openDefecten = defecten.filter(d => d.status === 'Open');
+
+    if (openDefecten.length === 0) {
+        container.innerHTML = "<p>Geen openstaande defecten. Alles werkt!</p>";
+        return;
+    }
+
+    // 2. Sorteer op Locatie (zodat Baan bij Baan staat, etc.)
+    openDefecten.sort((a, b) => a.locatie.localeCompare(b.locatie));
+
+    // 3. Bouw de HTML Kaartjes (deze classes komen uit style.css van het kart dashboard)
+    openDefecten.forEach(defect => {
+        const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
+        
+        const card = document.createElement('div');
+        card.className = 'defect-card'; // We gebruiken dezelfde stijl als de karts
+        
+        // We voegen een gekleurd randje toe op basis van locatie (optioneel, voor herkenbaarheid)
+        let borderClass = ""; 
+        // Je zou hier in CSS specifieke kleuren kunnen maken, 
+        // maar standaard rood (.defect-card) is ook prima.
+
+        card.innerHTML = `
+            <h3>${defect.locatie}</h3>
+            <div class="meta">
+                <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
+                <span class="meta-item">Op: ${ts}</span>
+            </div>
+            <p class="omschrijving">${defect.defect}</p>
+            `;
+        
+        container.appendChild(card);
     });
 }
 
