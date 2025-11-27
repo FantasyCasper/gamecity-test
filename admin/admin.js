@@ -192,36 +192,42 @@ function renderUsers(users) {
     if(!userBody) return;
     userBody.innerHTML = "";
     
+    // Haal de huidige ingelogde gebruiker op
     const ingelogdeGebruiker = localStorage.getItem('ingelogdeMedewerker') || "";
 
     users.forEach(user => {
+        // Check of dit de regel is van de persoon die nu kijkt
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruiker.toLowerCase());
         
         // Helper om een checkbox te maken
+        // AANPASSING: Als isSelf waar is, zijn ALLE vinkjes disabled.
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
                    class="perm-checkbox" 
                    data-username="${user.username}" 
                    data-type="${type}" 
                    ${value ? 'checked' : ''} 
-                   ${isSelf && type === 'users' ? 'disabled' : ''}> `;
+                   ${isSelf ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
+        `;
 
         const tr = document.createElement('tr');
+        // Geef de eigen rij een subtiele kleur zodat je hem herkent
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
+
         tr.innerHTML = `
-            <td>${user.username}</td>
+            <td>${user.username} ${isSelf ? ' (Jij)' : ''}</td>
             <td>${user.fullname}</td>
             <td style="text-align:center;">${createCheckbox('checklists', user.perms.checklists)}</td>
             <td style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
             <td style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
             <td style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
             <td>
-                ${!isSelf ? `<button class="delete-btn" data-username="${user.username}">Verwijder</button>` : '<span style="color:#aaa; font-size:0.8em;">(Jijzelf)</span>'}
+                ${!isSelf ? `<button class="delete-btn" data-username="${user.username}">Verwijder</button>` : '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar</span>'}
             </td>
         `;
         userBody.appendChild(tr);
     });
 }
-
 function setupUserForm(){
     const form = document.getElementById("add-user-form");
     const button = document.getElementById("add-user-button");
