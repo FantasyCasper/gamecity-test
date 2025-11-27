@@ -49,7 +49,7 @@ let alleDefecten = [];
     laadDefectenDashboard();
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
-    laadAlgemeneDefecten();
+    fetchAlgemeneDefecten();
 
     // 5. CRUCIAAL: Haal de checklists op uit de Spreadsheet
     laadChecklistConfiguratie();
@@ -304,6 +304,17 @@ function setupAlgemeenDefectForm() {
 
 // --- NIEUWE FUNCTIES VOOR ALGEMEEN DASHBOARD ---
 
+function fetchAlgemeneDefecten() {
+    callApi({ type: "GET_ALGEMEEN_DEFECTS" })
+        .then(result => {
+            laadAlgemeneDefecten(result.data);
+        })
+        .catch(error => {
+            console.error("Kon algemene defecten niet ophalen:", error);
+            const container = document.getElementById('algemeen-defecten-grid');
+            if (container) container.innerHTML = "<p>Kan lijst niet laden.</p>";
+        });
+}
 
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
