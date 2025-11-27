@@ -135,7 +135,7 @@ function setupTabNavigation() {
 function fetchLogData() {
     statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading";
     callApi("GET_LOGS").then(result => {
-        statusDiv.style.display = "none"; renderLogs(result.data);
+        statusDiv.style.display = "none"; renderUsers(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
 function renderUsers(users) {
