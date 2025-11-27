@@ -1,25 +1,23 @@
 /* ===============================
-   VOLLEDIGE SCRIPT.JS (DYNAMISCHE CHECKLISTS)
+   VOLLEDIGE SCRIPT.JS (MET PERMISSIES, PROGRESS BARS & FILTERS)
    =============================== */
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
-// Start leeg. Deze wordt gevuld door de server (spreadsheet).
+// Globale Variabelen
 let CHECKLIST_DATA = {};
-
 let ingelogdeNaam = "";
-let ingelogdeRol = "";
-let alleDefecten = [];
-let alleAlgemeneDefectenData = [];
+let ingelogdePermissies = {};
+let alleAlgemeneDefectenData = []; // Cache voor het filteren
 
 // --- DEEL 1: DE "BEWAKER" & INIT ---
-let ingelogdePermissies = {}; // Globale variabele
-
 (function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     const rawPerms = localStorage.getItem('ingelogdePermissies');
 
     // 1. Login Check
     if (!ingelogdeNaam || !rawPerms) {
+        // Als we niet op de login pagina zijn, stuur terug
         if (!window.location.href.includes('login')) {
             window.location.href = "login/";
             return;
@@ -29,24 +27,23 @@ let ingelogdePermissies = {}; // Globale variabele
         ingelogdePermissies = JSON.parse(rawPerms);
     }
 
-    // 2. Vul naam in
+    // 2. Vul naam in op 'Algemeen' tab
     const welkomNaam = document.getElementById('algemeen-welkom-naam');
     if (welkomNaam) welkomNaam.textContent = ingelogdeNaam;
 
     // 3. TABBLADEN BEHEREN OP BASIS VAN VINKJES
+    
     // A. Checklists Tabblad
     if (!ingelogdePermissies.checklists) {
-        // Verberg de knop in het menu
         const checklistBtn = document.querySelector('.main-tab-link[data-tab="tab-checklists"]');
         if (checklistBtn) checklistBtn.style.display = 'none';
     }
 
-    // B. Admin Panel Link
-    // Toon link als je Admin OF TD OF Users rechten hebt
+    // B. Admin Panel Link (Toon als je Admin OF TD OF Users rechten hebt)
     if (ingelogdePermissies.admin || ingelogdePermissies.td || ingelogdePermissies.users) {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
-        if (container) container.classList.add('is-manager');
+        if (container) container.classList.add('is-manager'); 
     }
 
     // 4. Start alle modules
@@ -56,19 +53,23 @@ let ingelogdePermissies = {}; // Globale variabele
 
     // Defecten modules
     vulKartMeldDropdown();
-    setupDefectForm();
-    setupAlgemeenDefectForm();
+    setupDefectForm(); 
+    setupAlgemeenDefectForm(); 
 
     // Dashboards laden
-    laadDefectenDashboard();
-    setupKartFilter();
+    laadDefectenDashboard(); 
+    setupKartFilter();       
     laadBijzonderhedenVanGisteren();
-    fetchAlgemeneDefecten();
+    
+    // Nieuw Dashboard met Filter
+    fetchAlgemeneDefecten(); 
+    setupAlgemeenFilter();
 
-    // 5. Checklists ophalen (Alleen als je rechten hebt, scheelt data)
+    // 5. Checklists ophalen (Alleen als je rechten hebt)
     if (ingelogdePermissies.checklists) {
         laadChecklistConfiguratie();
     }
+
 })();
 
 
@@ -124,10 +125,12 @@ function koppelListeners() {
     });
 }
 
-// --- API Helper ---
+// --- API Helper (Met Permissies) ---
 async function callApi(payload) {
-    // Voeg ALTIJD rol toe
-    payload.perms = ingelogdePermissies;
+    // Stuur de permissies mee, de backend checkt of het mag
+    if (typeof ingelogdePermissies !== 'undefined') {
+        payload.perms = ingelogdePermissies;
+    }
 
     const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache-buster
 
@@ -148,21 +151,19 @@ async function callApi(payload) {
 }
 
 
-// --- DEEL 3: CHECKLIST FUNCTIES (DYNAMISCH) ---
+// --- DEEL 3: CHECKLIST FUNCTIES ---
 
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
     callApi({ type: "GET_CHECKLIST_CONFIG" })
         .then(result => {
             console.log("Checklists geladen:", result.data);
-            CHECKLIST_DATA = result.data; // Vul de variabele
+            CHECKLIST_DATA = result.data;
 
             // Vul de dropdown
             const activiteitSelect = document.getElementById('activiteit-select');
             if (activiteitSelect) {
-                // Leegmaken (behalve eerste optie)
                 while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-
                 for (const activiteit in CHECKLIST_DATA) {
                     activiteitSelect.add(new Option(activiteit, activiteit));
                 }
@@ -174,53 +175,8 @@ function laadChecklistConfiguratie() {
         });
 }
 
-// 1. De functie die de balk berekent
-function updateProgress() {
-    // Zoek alle checkboxes in het checklist-tabblad
-    const checkboxes = document.querySelectorAll('#tab-checklists input[type="checkbox"]');
-    const total = checkboxes.length;
-
-    // Tel hoeveel er aangevinkt zijn
-    const checked = document.querySelectorAll('#tab-checklists input[type="checkbox"]:checked').length;
-
-    const container = document.getElementById('progress-container');
-    const bar = document.getElementById('progress-bar');
-    const text = document.getElementById('progress-text');
-
-    // Alleen tonen als er daadwerkelijk taken zijn
-    if (total > 0 && container) {
-        container.style.display = 'block';
-
-        const percentage = Math.round((checked / total) * 100);
-
-        // Update de breedte en tekst
-        bar.style.width = percentage + "%";
-        text.textContent = percentage + "%";
-
-        // Leuke extra: Maak hem Goud/Blauw als hij 100% is!
-        if (percentage === 100) {
-            bar.style.backgroundColor = "#00d2d3"; // Of goud: #ffd700
-            text.style.color = "#00d2d3";
-        } else {
-            bar.style.backgroundColor = "#28a745"; // Terug naar groen
-            text.style.color = "#fff";
-        }
-    } else if (container) {
-        container.style.display = 'none';
-    }
-}
-
-// 2. Luisteren naar klikken (Event Listener)
-// We voegen dit toe aan de hele pagina, maar filteren op checkboxes
-document.addEventListener('change', function (e) {
-    // Als het veranderde element een checkbox is binnen het checklist tabblad...
-    if (e.target.type === 'checkbox' && e.target.closest('#tab-checklists')) {
-        updateProgress();
-    }
-});
-
 function updateChecklists(activiteit) {
-    const container = document.querySelector('.container'); // Of specifieker: #tab-checklists
+    const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
 
@@ -251,11 +207,13 @@ function updateChecklists(activiteit) {
         }
 
         if (container) container.classList.add('checklists-zichtbaar');
+        
+        // UPDATE PROGRESS BAR BIJ LADEN
+        updateProgress();
+
     } else {
         if (container) container.classList.remove('checklists-zichtbaar');
     }
-    updateProgress();
-
 }
 
 function verstuurData(lijstNaam) {
@@ -292,6 +250,7 @@ function verstuurData(lijstNaam) {
             toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
             resetCheckboxes(listId);
             document.getElementById(bijzonderhedenId).value = '';
+            updateProgress(); // Reset ook de balk
             knop.disabled = false;
             knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
         })
@@ -303,7 +262,55 @@ function verstuurData(lijstNaam) {
 }
 
 
-// --- DEEL 4: ALGEMEEN TAB (BIJZONDERHEDEN) ---
+// --- DEEL 4: PROGRESS BAR FUNCTIES (GESPLITST) ---
+
+function updateProgress() {
+    updateSingleProgress('lijst-openen', 'progress-container-openen', 'progress-bar-openen', 'progress-text-openen');
+    updateSingleProgress('lijst-sluiten', 'progress-container-sluiten', 'progress-bar-sluiten', 'progress-text-sluiten');
+}
+
+function updateSingleProgress(listId, containerId, barId, textId) {
+    const list = document.getElementById(listId);
+    const container = document.getElementById(containerId);
+    const bar = document.getElementById(barId);
+    const text = document.getElementById(textId);
+
+    if (!list || !container || !bar || !text) return;
+
+    const checkboxes = list.querySelectorAll('input[type="checkbox"]');
+    const total = checkboxes.length;
+    const checked = list.querySelectorAll('input[type="checkbox"]:checked').length;
+
+    if (total > 0) {
+        container.style.display = 'block';
+        const percentage = Math.round((checked / total) * 100);
+
+        bar.style.width = percentage + "%";
+        text.textContent = percentage + "%";
+
+        // Kleurverandering bij 100%
+        if (percentage === 100) {
+            bar.style.backgroundColor = "#00d2d3"; // Cyaan/Blauw
+            text.style.color = "#00d2d3";
+        } else {
+            bar.style.backgroundColor = "#28a745"; // Groen
+            text.style.color = "#fff";
+        }
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// Luisteraar voor checkboxes
+document.addEventListener('change', function(e) {
+    if (e.target.type === 'checkbox' && e.target.closest('#tab-checklists')) {
+        updateProgress();
+    }
+});
+
+
+// --- DEEL 5: ALGEMEEN TAB (BIJZONDERHEDEN) ---
+
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
     if (!tabelBody) return;
@@ -332,7 +339,8 @@ function laadBijzonderhedenVanGisteren() {
 }
 
 
-// --- DEEL 5: ALGEMEEN DEFECT MELDEN ---
+// --- DEEL 6: ALGEMEEN DEFECT MELDEN ---
+
 function setupAlgemeenDefectForm() {
     const form = document.getElementById('algemeen-defect-form');
     if (!form) return;
@@ -353,7 +361,8 @@ function setupAlgemeenDefectForm() {
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-                fetchAlgemeneDefecten();
+                // Herlaad de data voor het dashboard (via cache update)
+                fetchAlgemeneDefecten(); 
             })
             .catch(error => {
                 toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
@@ -363,7 +372,9 @@ function setupAlgemeenDefectForm() {
             });
     });
 }
-// --- DEEL 6: ALGEMEEN DASHBOARD (MET FILTER & GROEPERING) ---
+
+
+// --- DEEL 7: ALGEMEEN DASHBOARD (MET FILTER & GROEPERING) ---
 
 function setupAlgemeenFilter() {
     const filterSelect = document.getElementById('filter-algemeen-locatie');
@@ -375,9 +386,7 @@ function setupAlgemeenFilter() {
 function fetchAlgemeneDefecten() {
     callApi({ type: "GET_PUBLIC_ALGEMEEN_DEFECTS" })
         .then(result => {
-            // Sla de ruwe data op in onze globale variabele
             alleAlgemeneDefectenData = result.data || [];
-            // Roep de filter-functie aan om ze te tonen
             filterEnRenderDefecten();
         })
         .catch(error => {
@@ -390,21 +399,16 @@ function fetchAlgemeneDefecten() {
 function filterEnRenderDefecten() {
     const container = document.getElementById('algemeen-defecten-grid');
     const filterSelect = document.getElementById('filter-algemeen-locatie');
-
+    
     if (!container) return;
-
-    // Welke locatie wil de gebruiker zien?
+    
     const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
-
-    // 1. Begin met alle data
     let teTonenLijst = alleAlgemeneDefectenData;
-
-    // 2. Filteren (als er niet 'alle' is gekozen)
+    
     if (gekozenLocatie !== 'alle') {
         teTonenLijst = teTonenLijst.filter(d => d.locatie === gekozenLocatie);
     }
 
-    // 3. Renderen (deze functie zorgt ook voor het sorteren/groeperen)
     laadAlgemeneDefecten(teTonenLijst);
 }
 
@@ -412,9 +416,9 @@ function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
 
-    if (!defecten) return; // Gebeurt alleen bij ernstige fout
+    if (!defecten) return; 
 
-    // Filter alleen 'Open' status (voor de zekerheid)
+    // Filter alleen 'Open' status
     const openDefecten = defecten.filter(d => d.status === 'Open');
 
     if (openDefecten.length === 0) {
@@ -422,24 +426,17 @@ function laadAlgemeneDefecten(defecten) {
         return;
     }
 
-    // Sorteer op Locatie (Groepeer), daarna op Tijd (nieuwste eerst)
+    // Sorteer op Locatie, daarna op Tijd
     openDefecten.sort((a, b) => {
-        // Eerst sorteren op locatie (alfabetisch)
         if (a.locatie < b.locatie) return -1;
         if (a.locatie > b.locatie) return 1;
-        // Als locatie hetzelfde is, sorteer op tijd (nieuwste bovenaan)
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
 
-    // Bouw de kaartjes
     openDefecten.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
-
         const card = document.createElement('div');
         card.className = 'defect-card';
-
-        // Visuele hint: Voeg de locatienaam toe als class (bijv. 'locatie-baan')
-        // Hiermee zou je later in CSS specifieke kleuren kunnen geven
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
         card.innerHTML = `
@@ -455,61 +452,53 @@ function laadAlgemeneDefecten(defecten) {
 }
 
 
-// --- DEEL 6: KART DASHBOARD FUNCTIES (Lege placeholders) ---
-// (Deze functies worden geladen door kart-dashboard/script.js als je daar bent, 
-// maar hier definiëren we ze leeg om errors in de console te voorkomen op de hoofdpagina)
+// --- DEEL 8: KART DASHBOARD PLACEHOLDERS ---
 function vulKartMeldDropdown() { }
 function setupDefectForm() { }
 function laadDefectenDashboard() { }
 function setupKartFilter() { }
 
 
-// --- STATUS HELPERS ---
+// --- DEEL 9: STATUS HELPERS (VERBETERD) ---
+
 let statusTimeout;
+let algemeenDefectTimeout;
+let defectTimeout;
 
 function toonStatus(bericht, type) {
-    var statusDiv = document.getElementById('status-message');
+    toonMeldingOpElement('status-message', bericht, type, statusTimeout, (t) => statusTimeout = t);
+}
 
+function toonAlgemeenDefectStatus(bericht, type) {
+    toonMeldingOpElement('algemeen-defect-status', bericht, type, algemeenDefectTimeout, (t) => algemeenDefectTimeout = t);
+}
+
+function toonDefectStatus(bericht, type) {
+    toonMeldingOpElement('status-message-defect', bericht, type, defectTimeout, (t) => defectTimeout = t);
+}
+
+function toonMeldingOpElement(elementId, bericht, type, currentTimeout, setTimeoutCallback) {
+    var statusDiv = document.getElementById(elementId);
     if (statusDiv) {
-        // 1. Reset eventuele vorige timers, zodat hij niet te vroeg verdwijnt
-        if (statusTimeout) {
-            clearTimeout(statusTimeout);
-        }
-
-        // 2. Reset de weergave even om de animatie opnieuw te kunnen starten
+        if (currentTimeout) clearTimeout(currentTimeout);
+        
         statusDiv.style.display = 'none';
-        void statusDiv.offsetWidth; // Dit trucje forceert de browser om te 'verversen'
+        void statusDiv.offsetWidth; // Reset animatie
 
-        // 3. Vul de inhoud en class
         var icon = type === 'success' ? '✅ ' : '⚠️ ';
         statusDiv.textContent = icon + bericht;
         statusDiv.className = 'status-bericht ' + type;
-
-        // 4. Toon de melding
+        
         statusDiv.style.display = 'block';
 
-        // 5. Start de nieuwe timer van 4 seconden
-        statusTimeout = setTimeout(() => {
+        const t = setTimeout(() => {
             statusDiv.style.display = 'none';
         }, 4000);
+        
+        setTimeoutCallback(t);
     }
 }
-function toonAlgemeenDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('algemeen-defect-status');
-    if (statusDiv) {
-        statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
-        statusDiv.style.display = 'block';
-        setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-    }
-}
-function toonDefectStatus(bericht, type) {
-    var statusDiv = document.getElementById('status-message-defect');
-    if (statusDiv) {
-        statusDiv.textContent = bericht; statusDiv.className = `status-bericht ${type}`;
-        statusDiv.style.display = 'block';
-        setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-    }
-}
+
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
 }

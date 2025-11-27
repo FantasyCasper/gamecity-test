@@ -30,9 +30,9 @@
 
             <p>Dit is de algemene informatiepagina.</p>
             <ul>
-                <li>Ga naar het "Checklists" tabblad voor de open-sluit lijsten.</li>
-                <li>Meld alle defecten (excl. karts) via het "Meld Defect" tabblad.</li>
-                <li>Meld defecten aan de karts via het "Kart Dashboard" tabblad.</li>
+                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
+                <li>Meld eventuele defecten aan de karts via het "Kart Dashboard" tabblad.</li>
+                <li>Meld alle overige defecten via het "Meld Defect" tabblad.</li>
             </ul>
 
             <div id="bijzonderheden-container">
@@ -64,22 +64,29 @@
                     </select>
                 </div>
             </div>
+            
             <div id="status-message"></div>
-            <div id="progress-container" style="display:none; margin-bottom: 20px;">
-                <span style="font-weight:bold; font-size:0.9em; color:#aaa;">Voortgang: <span
-                        id="progress-text">0%</span></span>
-                <div style="background:#333; height:10px; border-radius:5px; margin-top:5px; overflow:hidden;">
-                    <div id="progress-bar" style="width:0%; height:100%; background:#28a745; transition: width 0.3s;">
-                    </div>
-                </div>
-            </div>
+
             <div class="checklist-section" id="sectie-openen">
                 <button class="collapsible">Checklist Openen</button>
                 <div class="content">
+                    
+                    <div id="progress-container-openen" style="display:none; margin: 10px 0; background-color: #222; padding: 10px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight:bold; font-size:0.8em; color:#aaa;">Voortgang Openen:</span>
+                            <span id="progress-text-openen" style="font-weight:bold; color: #fff; font-size:0.8em;">0%</span>
+                        </div>
+                        <div style="background:#444; height:8px; border-radius:4px; overflow:hidden;">
+                            <div id="progress-bar-openen" style="width:0%; height:100%; background:#28a745; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+
                     <ul id="lijst-openen"></ul>
+                    
                     <label for="bijzonderheden-openen" class="bijzonderheden-label">Bijzonderheden:</label>
                     <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3"
                         placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    
                     <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen
                         Voltooid & Verzenden</button>
                 </div>
@@ -88,15 +95,29 @@
             <div class="checklist-section" id="sectie-sluiten">
                 <button class="collapsible">Checklist Sluiten</button>
                 <div class="content">
+                    
+                    <div id="progress-container-sluiten" style="display:none; margin: 10px 0; background-color: #222; padding: 10px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight:bold; font-size:0.8em; color:#aaa;">Voortgang Sluiten:</span>
+                            <span id="progress-text-sluiten" style="font-weight:bold; color: #fff; font-size:0.8em;">0%</span>
+                        </div>
+                        <div style="background:#444; height:8px; border-radius:4px; overflow:hidden;">
+                            <div id="progress-bar-sluiten" style="width:0%; height:100%; background:#28a745; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+
                     <ul id="lijst-sluiten"></ul>
+                    
                     <label for="bijzonderheden-sluiten" class="bijzonderheden-label">Bijzonderheden:</label>
                     <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3"
                         placeholder="Typ hier eventuele opmerkingen..."></textarea>
+                    
                     <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten
                         Voltooid & Verzenden</button>
                 </div>
             </div>
         </div>
+
         <div id="tab-algemeen-defect" class="tab-content">
             <h1>Algemeen Defect Melden</h1>
             <p>Meld hier defecten voor locaties (Baan, Lasergame, etc.)</p>
@@ -124,8 +145,9 @@
             </form>
 
             <hr style="border: 0; border-top: 1px solid #444; margin: 30px 0;">
+            
             <h2>Huidige Defecten</h2>
-
+            
             <div class="form-bar user-info" style="margin-bottom: 20px; background-color: #222;">
                 <span>Toon:</span>
                 <select id="filter-algemeen-locatie">
