@@ -1,5 +1,5 @@
 /* ===============================
-   VOLLEDIGE ADMIN.JS (MET PERMISSIES & FILTERS)
+   VOLLEDIGE ADMIN.JS (MET ALLES EROP EN ERAAN)
    =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
@@ -7,8 +7,8 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 const statusDiv = document.getElementById('status-message');
 let ingelogdePermissies = {};
 let HUIDIGE_CHECKLIST_CONFIG = {}; 
-let alleAdminDefectenCache = [];
-let localUsersCache = [];
+let alleAdminDefectenCache = []; // Opslag voor filteren defecten
+let localUsersCache = []; // Opslag voor optimistic UI gebruikers
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
@@ -49,7 +49,7 @@ let localUsersCache = [];
     
     // B. Logs & Checklists (Alleen Admin)
     if (ingelogdePermissies.admin) {
-        renderLogs();
+        fetchLogData();
         fetchChecklistConfig(); 
         setupChecklistEditor();
     }
@@ -59,7 +59,7 @@ let localUsersCache = [];
         fetchUsers();
         setupUserForm();
         setupUserDeleteListener();
-        setupUserPermListeners(); // De nieuwe interactieve vinkjes
+        setupUserPermListeners(); 
     }
 
 })(); 
@@ -162,9 +162,21 @@ function toonMooieModal(titel, bericht) {
 
 
 // --- DEEL 3: LOGBOEK (Admin Only) ---
+function fetchLogData(){
+    if(statusDiv) { statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading"; }
+    callApi("GET_LOGS").then(result => {
+        if(statusDiv) statusDiv.style.display = "none"; 
+        renderLogs(result.data);
+    }).catch(error => handleError(error, "Fout bij laden logboek: "));
+}
+
 function renderLogs(logs){
     const logBody = document.getElementById("log-body");
     if (!logBody) return;
+
+    // SAFETY CHECK
+    if (!logs) logs = [];
+
     if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return; }
     let html = "";
     logs.forEach(log => {
@@ -178,7 +190,7 @@ function renderLogs(logs){
 // --- DEEL 4: USERS (Users Recht) ---
 function fetchUsers(){
     callApi("GET_USERS").then(result => { 
-        localUsersCache = result.data; // <--- SLA OP
+        localUsersCache = result.data || []; // Cache bijwerken
         renderUsers(localUsersCache); 
     }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
@@ -188,15 +200,16 @@ function renderUsers(users) {
     if(!userBody) return;
     userBody.innerHTML = "";
     
-    // Haal de huidige ingelogde gebruiker op
-    const ingelogdeGebruiker = localStorage.getItem('ingelogdeUsername') || "";
+    // SAFETY CHECK
+    if (!users) users = [];
+
+    const ingelogdeGebruikersnaam = localStorage.getItem('ingelogdeUsername') || "";
 
     users.forEach(user => {
-        // Check of dit de regel is van de persoon die nu kijkt
-        const isSelf = (user.username.toLowerCase() === ingelogdeGebruiker.toLowerCase());
+        // Appels met appels vergelijken (username)
+        const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
         
         // Helper om een checkbox te maken
-        // AANPASSING: Als isSelf waar is, zijn ALLE vinkjes disabled.
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
                    class="perm-checkbox" 
@@ -207,7 +220,6 @@ function renderUsers(users) {
         `;
 
         const tr = document.createElement('tr');
-        // Geef de eigen rij een subtiele kleur zodat je hem herkent
         if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
 
         tr.innerHTML = `
@@ -224,6 +236,7 @@ function renderUsers(users) {
         userBody.appendChild(tr);
     });
 }
+
 function setupUserForm(){
     const form = document.getElementById("add-user-form");
     const button = document.getElementById("add-user-button");
@@ -245,36 +258,27 @@ function setupUserForm(){
             }
         };
 
-        // 2. OPTIMISTIC UI: Voeg direct toe aan de lokale lijst en teken opnieuw
-        // We faken even dat het gelukt is voor de gebruiker
+        // 2. OPTIMISTIC UI: Direct toevoegen aan cache en renderen
         localUsersCache.push(userData); 
         renderUsers(localUsersCache);
         
-        // Reset formulier direct
         form.reset();
         toonMooieModal("Bezig...", "Gebruiker wordt op de achtergrond opgeslagen.");
+        button.disabled = true;
 
-        // 3. Stuur nu pas naar de server (op de achtergrond)
-        button.disabled = true; // Even blokkeren om dubbel klikken te voorkomen
-        
-        callApi("ADD_USER", { userData: userData })
-            .then(result => {
-                console.log("Server bevestigt: gebruiker opgeslagen.");
-                // Optioneel: We kunnen stiekem nog eens fetchen om zeker te zijn
-                // fetchUsers(); 
-            })
-            .catch(error => {
-                // Oei, het ging mis. Draai de wijziging terug!
-                console.error("Fout bij opslaan:", error);
-                alert("Er ging iets mis! De gebruiker wordt weer verwijderd.");
-                
-                // Verwijder de laatste toevoeging uit de lokale cache
-                localUsersCache = localUsersCache.filter(u => u.username !== userData.username);
-                renderUsers(localUsersCache);
-            })
-            .finally(() => {
-                button.disabled = false;
-            });
+        // 3. API Aanroep
+        callApi("ADD_USER", { userData: userData }).then(result => {
+            console.log("Gebruiker succesvol opgeslagen op server");
+            // Optioneel: fetchUsers(); om te syncen
+        }).catch(error => {
+            console.error(error);
+            alert("Fout bij opslaan! De gebruiker wordt weer verwijderd.");
+            // Rollback
+            localUsersCache = localUsersCache.filter(u => u.username !== userData.username);
+            renderUsers(localUsersCache);
+        }).finally(() => {
+            button.disabled = false; 
+        });
     });
 }
 
@@ -285,6 +289,7 @@ function setupUserDeleteListener(){
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
             if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
+                // Optimistic UI zou hier ook kunnen, maar verwijderen is riskant, dus we wachten even of doen button status
                 button.disabled = true; button.textContent = "Bezig...";
                 callApi("DELETE_USER", { username: username }).then(result => {
                     toonMooieModal("Succes", result.message); 
@@ -318,7 +323,6 @@ function setupUserPermListeners() {
                 newValue: newValue 
             })
             .then(result => {
-                // Stil succes, of eventueel een kleine toast
                 console.log(`Rechten voor ${username} bijgewerkt.`);
             })
             .catch(error => {
@@ -355,7 +359,7 @@ function filterAdminDefecten() {
     
     let teTonen = alleAdminDefectenCache;
     
-    // Filter ook hier "Verwijderd" eruit voor de zekerheid, tenzij je die wilt zien
+    // Filter "Verwijderd" eruit
     teTonen = teTonen.filter(d => d.status !== "Verwijderd");
 
     if (gekozenLocatie !== 'alle') {
@@ -369,6 +373,9 @@ function renderAlgemeenDefects(defects) {
     const defectBody = document.getElementById('algemeen-defect-body');
     if (!defectBody) return;
     defectBody.innerHTML = '';
+
+    // SAFETY CHECK
+    if (!defects) defects = [];
     
     if (defects.length === 0) {
         defectBody.innerHTML = '<tr><td colspan="6">Geen defecten gevonden voor deze selectie.</td></tr>';
