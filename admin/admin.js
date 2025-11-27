@@ -193,7 +193,7 @@ function renderUsers(users) {
     userBody.innerHTML = "";
     
     // Haal de huidige ingelogde gebruiker op
-    const ingelogdeGebruiker = localStorage.getItem('ingelogdeMedewerker') || "";
+    const ingelogdeGebruiker = localStorage.getItem('ingelogdeUsername') || "";
 
     users.forEach(user => {
         // Check of dit de regel is van de persoon die nu kijkt
