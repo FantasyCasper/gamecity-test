@@ -46,7 +46,7 @@ let ingelogdePermissies = {}; // Globale variabele
     if (ingelogdePermissies.admin || ingelogdePermissies.td || ingelogdePermissies.users) {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
-        if (container) container.classList.add('is-manager'); 
+        if (container) container.classList.add('is-manager');
     }
 
     // 4. Start alle modules
@@ -56,14 +56,14 @@ let ingelogdePermissies = {}; // Globale variabele
 
     // Defecten modules
     vulKartMeldDropdown();
-    setupDefectForm(); 
-    setupAlgemeenDefectForm(); 
+    setupDefectForm();
+    setupAlgemeenDefectForm();
 
     // Dashboards laden
     laadDefectenDashboard();
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
-    fetchAlgemeneDefecten(); 
+    fetchAlgemeneDefecten();
 
     // 5. Checklists ophalen (Alleen als je rechten hebt, scheelt data)
     if (ingelogdePermissies.checklists) {
@@ -174,6 +174,51 @@ function laadChecklistConfiguratie() {
         });
 }
 
+// 1. De functie die de balk berekent
+function updateProgress() {
+    // Zoek alle checkboxes in het checklist-tabblad
+    const checkboxes = document.querySelectorAll('#tab-checklists input[type="checkbox"]');
+    const total = checkboxes.length;
+
+    // Tel hoeveel er aangevinkt zijn
+    const checked = document.querySelectorAll('#tab-checklists input[type="checkbox"]:checked').length;
+
+    const container = document.getElementById('progress-container');
+    const bar = document.getElementById('progress-bar');
+    const text = document.getElementById('progress-text');
+
+    // Alleen tonen als er daadwerkelijk taken zijn
+    if (total > 0 && container) {
+        container.style.display = 'block';
+
+        const percentage = Math.round((checked / total) * 100);
+
+        // Update de breedte en tekst
+        bar.style.width = percentage + "%";
+        text.textContent = percentage + "%";
+
+        // Leuke extra: Maak hem Goud/Blauw als hij 100% is!
+        if (percentage === 100) {
+            bar.style.backgroundColor = "#00d2d3"; // Of goud: #ffd700
+            text.style.color = "#00d2d3";
+        } else {
+            bar.style.backgroundColor = "#28a745"; // Terug naar groen
+            text.style.color = "#fff";
+        }
+    } else if (container) {
+        container.style.display = 'none';
+    }
+}
+
+// 2. Luisteren naar klikken (Event Listener)
+// We voegen dit toe aan de hele pagina, maar filteren op checkboxes
+document.addEventListener('change', function (e) {
+    // Als het veranderde element een checkbox is binnen het checklist tabblad...
+    if (e.target.type === 'checkbox' && e.target.closest('#tab-checklists')) {
+        updateProgress();
+    }
+});
+
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container'); // Of specifieker: #tab-checklists
     const openLijstUL = document.getElementById('lijst-openen');
@@ -209,6 +254,8 @@ function updateChecklists(activiteit) {
     } else {
         if (container) container.classList.remove('checklists-zichtbaar');
     }
+    updateProgress();
+
 }
 
 function verstuurData(lijstNaam) {
@@ -343,15 +390,15 @@ function fetchAlgemeneDefecten() {
 function filterEnRenderDefecten() {
     const container = document.getElementById('algemeen-defecten-grid');
     const filterSelect = document.getElementById('filter-algemeen-locatie');
-    
+
     if (!container) return;
-    
+
     // Welke locatie wil de gebruiker zien?
     const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
-    
+
     // 1. Begin met alle data
     let teTonenLijst = alleAlgemeneDefectenData;
-    
+
     // 2. Filteren (als er niet 'alle' is gekozen)
     if (gekozenLocatie !== 'alle') {
         teTonenLijst = teTonenLijst.filter(d => d.locatie === gekozenLocatie);
