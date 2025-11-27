@@ -1,335 +1,212 @@
-/* ===============================
-   VOLLEDIGE ADMIN.CSS (DESIGN UPDATE)
-   =============================== */
+/* ==========================================================================
+   GAMECITY ADMIN STYLES (admin/admin.css)
+   Bevat: Admin Navigatie, Tabellen, User Management, Modals
+   ========================================================================== */
 
+/* --- 1. BASIS & LAYOUT --- */
 body {
-    padding-top: 20px;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 15px;
+    padding-top: 70px;
 }
+
 .container {
     max-width: 1200px;
-}
-@media (min-width: 1400px) {
-    .container { max-width: 90%; }
+    margin: 0 auto;
 }
 
-/* --- NAVIGATIE --- */
-#back-button {
-    padding: 14px 18px;
-    background-color: #555;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-bottom: 4px solid transparent;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-}
-#back-button:hover { background-color: #777; }
+h2 { border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 30px; text-align: center; }
+
+/* --- 2. ADMIN NAVIGATIE --- */
 .tab-nav {
-    display: flex;
-    border-bottom: 2px solid #555;
-    flex-wrap: wrap; 
     background-color: #2a2a2a;
-    border-radius: 8px 8px 0 0; 
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     overflow: hidden;
+    margin-bottom: 20px;
 }
-.tab-link {
-    padding: 14px 18px;
-    cursor: pointer;
+
+/* De knoppen */
+.tab-link, #back-button {
+    padding: 15px 20px;
     background: none;
     border: none;
     color: #aaa;
-    font-size: 1.1em;
     font-weight: bold;
-    border-bottom: 3px solid transparent;
+    font-size: 1em;
+    cursor: pointer;
+    flex-grow: 1;
+    text-align: center;
     text-decoration: none;
-    display: inline-block;
+    border-bottom: 3px solid transparent;
+    transition: background 0.2s;
 }
-.tab-link.active {
-    color: #fff;
-    border-bottom-color: #007bff;
-}
-.tab-link:hover { background-color: #333; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+
+.tab-link:hover, #back-button:hover { background-color: #333; color: white; }
+.tab-link.active { background-color: #222; color: white; border-bottom-color: #007bff; }
+#back-button { background-color: #444; flex-grow: 0; }
+
 #mobile-menu-toggle {
-    display: none; 
-    background-color: #2a2a2a;
-    color: #fff;
+    display: none; /* Alleen mobiel */
+    width: 100%;
+    padding: 15px;
+    background: #2a2a2a;
+    color: white;
+    border: none;
     font-size: 1.2em;
     font-weight: bold;
-    padding: 14px 18px;
+    text-align: left;
     cursor: pointer;
-    border: none;
-    text-align: left;
-    width: 100%;
-    border-bottom: 4px solid #007bff;
-}
-
-/* --- ALGEMEEN --- */
-h2 {
-    margin-top: 30px;
     border-bottom: 1px solid #444;
-    padding-bottom: 10px;
 }
 
-/* --- TABELLEN --- */
-#log-table, #user-table, #algemeen-defect-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-#log-table th, #log-table td,
-#user-table th, #user-table td,
-#algemeen-defect-table th, #algemeen-defect-table td {
-    padding: 12px;
-    border-bottom: 1px solid #444;
-    text-align: left;
-    color: #e0e0e0;
-    font-size: 0.9em;
-    vertical-align: middle;
-}
-#log-table th, #user-table th, #algemeen-defect-table th {
-    background-color: #333;
-    font-size: 1em;
-    font-weight: bold;
-}
-#log-table tbody tr:hover, #user-table tbody tr:hover, #algemeen-defect-table tbody tr:hover {
-    background-color: #2a2a2a;
-}
-.status-opgelost { opacity: 0.5; background-color: #222; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* --- FORMULIEREN (Algemeen) --- */
+/* --- 3. FORMULIEREN (Users & Checklists) --- */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
     margin-bottom: 20px;
 }
-.form-veld label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-.form-veld input[type="text"],
-.form-veld input[type="password"],
-.form-veld select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #e0e0e0;
-    border-radius: 5px;
-    font-size: 1em;
+
+.form-veld { margin-bottom: 15px; }
+.form-veld label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
+
+input[type="text"], input[type="password"], select {
+    width: 100%; padding: 10px;
+    background: #333; border: 1px solid #555;
+    border-radius: 5px; color: white;
     box-sizing: border-box;
 }
 
-/* --- KNOPPEN --- */
-#add-user-button, #checklist-save-button {
+button {
     padding: 12px 20px;
-    background-color: #28a745; /* Groen */
-    color: white;
-    border: none;
-    border-radius: 5px;
+    border-radius: 5px; border: none;
+    font-weight: bold; cursor: pointer;
     font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
+}
+#add-user-button, #checklist-save-button {
+    background-color: #28a745; color: white; width: 100%;
+}
+#add-user-button:hover { background-color: #218838; }
+
+/* --- 4. TABELLEN (Logs & Users) --- */
+table {
     width: 100%;
-    margin-top: 10px;
+    border-collapse: collapse;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 15px;
 }
-#add-user-button:hover, #checklist-save-button:hover { background-color: #218838; }
-.delete-btn, .action-btn {
-    padding: 8px 12px;
-    background-color: #dc3545; 
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
 }
-.action-btn { background-color: #28a745; }
-.delete-btn:hover { background-color: #c82333; }
-.action-btn:hover { background-color: #218838; }
+th { background-color: #333; color: white; font-weight: bold; }
+tr:hover { background-color: #333; }
 
-/* --- NIEUWE STIJLEN VOOR CHECKLIST BEHEER (STAP 1) --- */
+/* Checkboxes in tabel groter maken */
+input.perm-checkbox {
+    width: 20px; height: 20px; cursor: pointer; accent-color: #007bff;
+}
+input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 
-/* De container voor de lijst (Donkerder en ronder) */
+/* Actie knoppen in tabel */
+.delete-btn { background-color: #dc3545; color: white; padding: 6px 12px; font-size: 0.9em; }
+.action-btn { background-color: #28a745; color: white; padding: 6px 12px; font-size: 0.9em; }
+
+/* --- 5. CHECKLIST EDITOR (Lijstjes maken) --- */
 .list-builder {
-    border: 1px solid #444;
-    border-radius: 8px;
-    background-color: #2a2a2a;
-    overflow: hidden; /* Zorgt dat inhoud binnen de bochten blijft */
-    display: flex;
-    flex-direction: column;
-    height: 300px; /* Vaste hoogte */
+    border: 1px solid #444; background: #222;
+    border-radius: 8px; height: 300px;
+    display: flex; flex-direction: column; overflow: hidden;
 }
-
-/* De lijst met taken (scrollbaar) */
 .task-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    overflow-y: auto;
-    flex-grow: 1; /* Vult de ruimte boven de input */
+    flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0;
 }
-
 .task-list li {
-    padding: 10px 15px;
-    border-bottom: 1px solid #444;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #333; /* Iets lichter dan container */
-    transition: background-color 0.2s;
+    padding: 10px; border-bottom: 1px solid #333;
+    display: flex; justify-content: space-between; align-items: center;
 }
-.task-list li:last-child { border-bottom: none; }
-.task-list li:hover { background-color: #3a3a3a; }
-.task-list li span { word-break: break-word; }
+.add-task-form { display: flex; border-top: 1px solid #444; }
+.add-task-form input { border: none; border-radius: 0; }
+.add-task-btn { width: 50px; background: #28a745; color: white; border-radius: 0; }
 
-/* De kleine verwijder-knop (X) */
-.delete-task-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    width: 28px;
-    height: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.delete-task-btn:hover { background-color: #c82333; }
-
-/* Het invoerveld en knop onderaan */
-.add-task-form {
-    display: flex;
-    border-top: 1px solid #555;
-    background-color: #222;
-    padding: 5px;
-}
-.add-task-form input {
-    flex-grow: 1;
-    border: 1px solid #444;
-    background-color: #333;
-    border-radius: 4px;
-    padding: 10px;
-    color: #e0e0e0;
-    margin-right: 5px;
-}
-.add-task-form input:focus { outline: none; border-color: #666; }
-
-/* De groene '+' knop */
-.add-task-btn {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    width: 45px;
-}
-.add-task-btn:hover { background-color: #218838; }
-
-
-/* --- RESPONSIVE --- */
-@media (max-width: 720px) {
-    #mobile-menu-toggle { display: block; }
-    .tab-nav { flex-direction: column; border-radius: 8px; }
-    .tab-link, #back-button { display: none; }
-    .tab-nav.is-open .tab-link, .tab-nav.is-open #back-button {
-        display: block; width: 100%; box-sizing: border-box; border-bottom: 1px solid #444;
-    }
-    .tab-link.active { border-bottom-color: transparent; }
-    
-    /* Tabel headers verbergen op mobiel */
-    #log-table thead, #user-table thead, #algemeen-defect-table thead { display: none; }
-    
-    /* Tabel rijen als blokken */
-    #log-table tr, #user-table tr, #algemeen-defect-table tr {
-        display: block; border: 1px solid #555; margin-bottom: 15px;
-    }
-    #log-table td, #user-table td, #algemeen-defect-table td {
-        display: block; text-align: right; border-bottom: 1px dotted #444;
-    }
-    #log-table td:last-child { border-bottom: none; }
-    #log-table td:before, #user-table td:before, #algemeen-defect-table td:before {
-        content: attr(data-label); float: left; font-weight: bold; color: #fff;
-    }
-    #user-table td[data-label="Actie"] { text-align: center; }
-    #user-table td[data-label="Actie"]::before { display: none; }
-}
-
-/* --- CUSTOM MODAL STIJLEN --- */
-.modal-overlay {
-    display: none; /* Standaard verborgen */
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Dimt de achtergrond */
-    z-index: 2000;
-}
-
+/* --- 6. MODALS & TOASTS (Kopie van Main CSS voor consistentie) --- */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
 .modal-box {
-    display: none; /* Standaard verborgen */
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    z-index: 2001;
-    width: 90%;
-    max-width: 400px;
-    padding: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-    text-align: center;
-    border: 1px solid #444;
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #2a2a2a; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px;
+    text-align: center; border: 1px solid #444; z-index: 2001;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
+#modal-ok-btn { background: #28a745; color: white; width: 100%; margin-top: 15px; }
 
-.modal-box h3 {
-    margin-top: 0;
-    color: #fff;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-}
+/* --- 7. RESPONSIVE ADMIN (De Fix) --- */
+@media (max-width: 768px) {
+    #mobile-menu-toggle { display: block; }
 
-.modal-box p {
-    color: #e0e0e0;
-    font-size: 1.1em;
-    margin: 20px 0;
-}
+    .tab-nav {
+        flex-direction: column;
+        height: auto;
+    }
 
-#modal-ok-btn {
-    background-color: #28a745; /* Gamecity Groen */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 25px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-}
+    /* CRUCIAAL: Verberg items met !important zodat ze echt weg zijn */
+    .tab-link, #back-button {
+        display: none !important;
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px solid #444;
+    }
 
-#modal-ok-btn:hover {
-    background-color: #218838;
-}
+    /* Toon items ALLEEN als .is-open class op parent staat */
+    .tab-nav.is-open .tab-link,
+    .tab-nav.is-open #back-button {
+        display: block !important;
+    }
 
-/* ===============================
-   CENTREREN VAN DEFECTEN TABBLAD
-   =============================== */
-
-/* 1. Centreer de titels en teksten in dit specifieke tabblad */
-#tab-algemeen-defecten {
-    text-align: center;
-}
-
-/* 2. Centreer het filter-blokje zelf */
-/* We gebruiken !important om de inline-style (max-width) aan te vullen */
-#tab-algemeen-defecten .form-veld {
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left; /* Zorgt dat het label binnen het blokje wel netjes links staat */
+    /* Tabel Card View op Mobiel */
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    
+    tr { margin-bottom: 15px; border: 1px solid #444; background: #2a2a2a; border-radius: 8px; }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #333;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+    
+    td:before {
+        position: absolute;
+        top: 12px; left: 10px;
+        width: 45%; padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: #aaa;
+        content: attr(data-label);
+    }
+    
+    /* Vinkjes centreren in mobiele view */
+    td[data-label="Checklists"], td[data-label="Admin"], td[data-label="TD"], td[data-label="Users"] {
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    td[data-label="Checklists"]:before { position: static; }
 }
