@@ -4,26 +4,26 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 // Start leeg. Deze wordt gevuld door de server (spreadsheet).
-let CHECKLIST_DATA = {}; 
+let CHECKLIST_DATA = {};
 
 let ingelogdeNaam = "";
 let ingelogdeRol = "";
-let alleDefecten = []; 
+let alleDefecten = [];
 
 // --- DEEL 1: DE "BEWAKER" & INIT ---
-(function() {
+(function () {
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     ingelogdeRol = localStorage.getItem('ingelogdeRol');
-    
+
     // 1. Login Check
     if (!ingelogdeNaam || !ingelogdeRol) {
         // Als we niet op de login pagina zijn, stuur terug
         if (!window.location.href.includes('login')) {
-             window.location.href = "login/"; 
-             return;
+            window.location.href = "login/";
+            return;
         }
-    } 
-    
+    }
+
     // 2. Vul naam in op 'Algemeen' tab
     const welkomNaam = document.getElementById('algemeen-welkom-naam');
     if (welkomNaam) welkomNaam.textContent = ingelogdeNaam;
@@ -32,29 +32,29 @@ let alleDefecten = [];
     if (ingelogdeRol === 'manager' || ingelogdeRol === 'TD') {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
-        if(container) container.classList.add('is-manager'); // Voor knoppen in Kart Dashboard
+        if (container) container.classList.add('is-manager'); // Voor knoppen in Kart Dashboard
     }
-    
+
     // 4. Start alle modules
     koppelListeners();
     setupMainTabs();
-    setupMobileMenu(); 
-    
+    setupMobileMenu();
+
     // Defecten modules
-    vulKartMeldDropdown(); 
+    vulKartMeldDropdown();
     setupDefectForm(); // Kart defect
     setupAlgemeenDefectForm(); // Algemeen defect
-    
+
     // Dashboards laden
-    laadDefectenDashboard(); 
+    laadDefectenDashboard();
     setupKartFilter();
     laadBijzonderhedenVanGisteren();
     laadAlgemeneDefecten();
-    
+
     // 5. CRUCIAAL: Haal de checklists op uit de Spreadsheet
     laadChecklistConfiguratie();
 
-})(); 
+})();
 
 
 // --- DEEL 2: ALGEMENE FUNCTIES ---
@@ -74,7 +74,7 @@ function setupMainTabs() {
     document.querySelectorAll('.main-tab-link[data-tab]').forEach(button => {
         button.addEventListener('click', (e) => {
             if (button.tagName === 'BUTTON') {
-                e.preventDefault(); 
+                e.preventDefault();
                 document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
                 document.querySelectorAll('.main-tab-link').forEach(link => link.classList.remove('active'));
                 const tabId = button.getAttribute('data-tab');
@@ -88,20 +88,20 @@ function setupMainTabs() {
 function koppelListeners() {
     const logoutBtn = document.getElementById('logout-button');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
+        logoutBtn.addEventListener('click', function () {
             if (confirm('Weet je zeker dat je wilt uitloggen?')) {
                 localStorage.clear(); window.location.href = 'login/';
             }
         });
     }
-    
+
     const actSelect = document.getElementById('activiteit-select');
     if (actSelect) {
         actSelect.addEventListener('change', (e) => updateChecklists(e.target.value));
     }
 
     document.querySelectorAll(".collapsible").forEach(coll => {
-        coll.addEventListener("click", function() {
+        coll.addEventListener("click", function () {
             this.classList.toggle("active");
             var content = this.parentElement.querySelector('.content');
             content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
@@ -138,106 +138,106 @@ async function callApi(payload) {
 function laadChecklistConfiguratie() {
     console.log("Checklists ophalen...");
     callApi({ type: "GET_CHECKLIST_CONFIG" })
-    .then(result => {
-        console.log("Checklists geladen:", result.data);
-        CHECKLIST_DATA = result.data; // Vul de variabele
-        
-        // Vul de dropdown
-        const activiteitSelect = document.getElementById('activiteit-select');
-        if (activiteitSelect) {
-            // Leegmaken (behalve eerste optie)
-            while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-            
-            for (const activiteit in CHECKLIST_DATA) {
-                activiteitSelect.add(new Option(activiteit, activiteit));
+        .then(result => {
+            console.log("Checklists geladen:", result.data);
+            CHECKLIST_DATA = result.data; // Vul de variabele
+
+            // Vul de dropdown
+            const activiteitSelect = document.getElementById('activiteit-select');
+            if (activiteitSelect) {
+                // Leegmaken (behalve eerste optie)
+                while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
+
+                for (const activiteit in CHECKLIST_DATA) {
+                    activiteitSelect.add(new Option(activiteit, activiteit));
+                }
             }
-        }
-    })
-    .catch(error => {
-        console.error("Fout:", error);
-        toonStatus("Kon checklists niet laden.", "error");
-    });
+        })
+        .catch(error => {
+            console.error("Fout:", error);
+            toonStatus("Kon checklists niet laden.", "error");
+        });
 }
 
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container'); // Of specifieker: #tab-checklists
     const openLijstUL = document.getElementById('lijst-openen');
     const sluitLijstUL = document.getElementById('lijst-sluiten');
-    
+
     if (!openLijstUL || !sluitLijstUL) return;
 
-    openLijstUL.innerHTML = ''; 
+    openLijstUL.innerHTML = '';
     sluitLijstUL.innerHTML = '';
-    
+
     // Reset panels
     document.querySelectorAll(".collapsible").forEach(coll => {
         coll.classList.remove("active");
         const content = coll.nextElementSibling;
         if (content) content.style.maxHeight = null;
     });
-    
+
     if (activiteit && CHECKLIST_DATA[activiteit]) {
         const data = CHECKLIST_DATA[activiteit];
-        
+
         if (data.openen) {
-            data.openen.forEach((item, i) => { 
-                openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`; 
+            data.openen.forEach((item, i) => {
+                openLijstUL.innerHTML += `<li><input type="checkbox" id="open-${i}"><label for="open-${i}">${item}</label></li>`;
             });
         }
         if (data.sluiten) {
-            data.sluiten.forEach((item, i) => { 
-                sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`; 
+            data.sluiten.forEach((item, i) => {
+                sluitLijstUL.innerHTML += `<li><input type="checkbox" id="sluit-${i}"><label for="sluit-${i}">${item}</label></li>`;
             });
         }
-        
-        if(container) container.classList.add('checklists-zichtbaar');
+
+        if (container) container.classList.add('checklists-zichtbaar');
     } else {
-        if(container) container.classList.remove('checklists-zichtbaar');
+        if (container) container.classList.remove('checklists-zichtbaar');
     }
 }
 
 function verstuurData(lijstNaam) {
     const activiteit = document.getElementById('activiteit-select').value;
     if (!activiteit) { toonStatus("Fout: Kies een activiteit.", "error"); return; }
-    
+
     var listId, buttonId, bijzonderhedenId;
     if (lijstNaam === 'Checklist Openen') {
         listId = 'lijst-openen'; buttonId = 'btn-openen'; bijzonderhedenId = 'bijzonderheden-openen';
     } else {
         listId = 'lijst-sluiten'; buttonId = 'btn-sluiten'; bijzonderhedenId = 'bijzonderheden-sluiten';
     }
-    
+
     var knop = document.getElementById(buttonId);
     knop.disabled = true; knop.textContent = "Bezig...";
-    
+
     var bijzonderhedenText = document.getElementById(bijzonderhedenId).value.trim();
     var items = [];
     document.querySelectorAll("#" + listId + " li").forEach(li => {
         items.push({ label: li.querySelector('label').textContent, checked: li.querySelector('input').checked });
     });
-    
-    var dataPayload = { 
-        type: "LOG_DATA", 
-        lijstNaam: lijstNaam, 
-        items: items, 
-        medewerker: ingelogdeNaam, 
-        activiteit: activiteit, 
-        bijzonderheden: bijzonderhedenText 
+
+    var dataPayload = {
+        type: "LOG_DATA",
+        lijstNaam: lijstNaam,
+        items: items,
+        medewerker: ingelogdeNaam,
+        activiteit: activiteit,
+        bijzonderheden: bijzonderhedenText
     };
-    
+
     callApi(dataPayload)
-    .then(data => {
-        toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
-        resetCheckboxes(listId);
-        document.getElementById(bijzonderhedenId).value = ''; 
-        knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    })
-    .catch(error => {
-        toonStatus(error.message || "Failed to fetch", "error");
-        knop.disabled = false;
-        knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
-    });
+        .then(data => {
+            toonStatus("'" + lijstNaam + "' is succesvol opgeslagen!", "success");
+            resetCheckboxes(listId);
+            document.getElementById(bijzonderhedenId).value = '';
+            knop.disabled = false;
+            knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+        })
+        .catch(error => {
+            toonStatus(error.message || "Failed to fetch", "error");
+            knop.disabled = false;
+            knop.textContent = lijstNaam.replace("Checklist ", "") + " Voltooid & Verzenden";
+        });
 }
 
 
@@ -245,28 +245,28 @@ function verstuurData(lijstNaam) {
 function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
     if (!tabelBody) return;
-    
+
     callApi({ type: "GET_YESTERDAYS_BIJZONDERHEDDEN" })
-    .then(result => {
-        tabelBody.innerHTML = ''; 
-        if (result.data.length === 0) {
-            tabelBody.innerHTML = '<tr><td colspan="4">Geen bijzonderheden gemeld gisteren.</td></tr>';
-        } else {
-            result.data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+        .then(result => {
+            tabelBody.innerHTML = '';
+            if (result.data.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="4">Geen bijzonderheden gemeld gisteren.</td></tr>';
+            } else {
+                result.data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
                     <td>${item.medewerker}</td>
                     <td>${item.activiteit}</td>
                     <td>${item.lijstnaam.replace("Checklist ", "")}</td>
                     <td>${item.opmerking}</td>
                 `;
-                tabelBody.appendChild(tr);
-            });
-        }
-    })
-    .catch(error => {
-        tabelBody.innerHTML = `<tr><td colspan="4" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
-    });
+                    tabelBody.appendChild(tr);
+                });
+            }
+        })
+        .catch(error => {
+            tabelBody.innerHTML = `<tr><td colspan="4" style="color: #e74c3c;">Kon bijzonderheden niet laden: ${error.message}</td></tr>`;
+        });
 }
 
 
@@ -275,17 +275,17 @@ function setupAlgemeenDefectForm() {
     const form = document.getElementById('algemeen-defect-form');
     if (!form) return;
     const button = document.getElementById('algemeen-defect-submit');
-    
-    form.addEventListener('submit', function(e) {
+
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
         const locatie = document.getElementById('locatie-select').value;
         const omschrijving = document.getElementById('algemeen-defect-omschrijving').value.trim();
-        
+
         if (locatie === "" || omschrijving === "") {
             toonAlgemeenDefectStatus("Selecteer een locatie en vul een omschrijving in.", "error"); return;
         }
         button.disabled = true; button.textContent = "Bezig met melden...";
-        
+
         const payload = { type: "LOG_ALGEMEEN_DEFECT", medewerker: ingelogdeNaam, locatie: locatie, defect: omschrijving };
         callApi(payload)
             .then(data => {
@@ -309,6 +309,12 @@ function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
 
+    if (!defecten) {
+        console.warn("Geen defecten data ontvangen van server.");
+        container.innerHTML = "<p>Kan lijst niet laden.</p>";
+        return;
+    }
+
     // 1. Filter alleen de 'Open' defecten (Opgelost/Verwijderd hoeven we hier niet te zien)
     const openDefecten = defecten.filter(d => d.status === 'Open');
 
@@ -323,12 +329,12 @@ function laadAlgemeneDefecten(defecten) {
     // 3. Bouw de HTML Kaartjes (deze classes komen uit style.css van het kart dashboard)
     openDefecten.forEach(defect => {
         const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
-        
+
         const card = document.createElement('div');
         card.className = 'defect-card'; // We gebruiken dezelfde stijl als de karts
-        
+
         // We voegen een gekleurd randje toe op basis van locatie (optioneel, voor herkenbaarheid)
-        let borderClass = ""; 
+        let borderClass = "";
         // Je zou hier in CSS specifieke kleuren kunnen maken, 
         // maar standaard rood (.defect-card) is ook prima.
 
@@ -340,7 +346,7 @@ function laadAlgemeneDefecten(defecten) {
             </div>
             <p class="omschrijving">${defect.defect}</p>
             `;
-        
+
         container.appendChild(card);
     });
 }
@@ -349,18 +355,18 @@ function laadAlgemeneDefecten(defecten) {
 // --- DEEL 6: KART DASHBOARD FUNCTIES (Lege placeholders) ---
 // (Deze functies worden geladen door kart-dashboard/script.js als je daar bent, 
 // maar hier definiëren we ze leeg om errors in de console te voorkomen op de hoofdpagina)
-function vulKartMeldDropdown() {}
-function setupDefectForm() {}
-function laadDefectenDashboard() {}
-function setupKartFilter() {}
+function vulKartMeldDropdown() { }
+function setupDefectForm() { }
+function laadDefectenDashboard() { }
+function setupKartFilter() { }
 
 
 // --- STATUS HELPERS ---
-let statusTimeout; 
+let statusTimeout;
 
 function toonStatus(bericht, type) {
     var statusDiv = document.getElementById('status-message');
-    
+
     if (statusDiv) {
         // 1. Reset eventuele vorige timers, zodat hij niet te vroeg verdwijnt
         if (statusTimeout) {
@@ -375,13 +381,13 @@ function toonStatus(bericht, type) {
         var icon = type === 'success' ? '✅ ' : '⚠️ ';
         statusDiv.textContent = icon + bericht;
         statusDiv.className = 'status-bericht ' + type;
-        
+
         // 4. Toon de melding
         statusDiv.style.display = 'block';
-        
+
         // 5. Start de nieuwe timer van 4 seconden
-        statusTimeout = setTimeout(() => { 
-            statusDiv.style.display = 'none'; 
+        statusTimeout = setTimeout(() => {
+            statusDiv.style.display = 'none';
         }, 4000);
     }
 }
