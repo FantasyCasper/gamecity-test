@@ -7,7 +7,8 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 const statusDiv = document.getElementById('status-message');
 let ingelogdePermissies = {};
 let HUIDIGE_CHECKLIST_CONFIG = {}; 
-let alleAdminDefectenCache = []; // Opslag voor filteren
+let alleAdminDefectenCache = [];
+let localUsersCache = [];
 
 // --- DEEL 1: BEWAKER & INIT ---
 (function() {
@@ -161,12 +162,11 @@ function toonMooieModal(titel, bericht) {
 
 
 // --- DEEL 3: LOGBOEK (Admin Only) ---
-function fetchLogData(){
-    if(statusDiv) { statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading"; }
-    callApi("GET_LOGS").then(result => {
-        if(statusDiv) statusDiv.style.display = "none"; 
-        renderLogs(result.data);
-    }).catch(error => handleError(error, "Fout bij laden logboek: "));
+function fetchUsers(){
+    callApi("GET_USERS").then(result => { 
+        localUsersCache = result.data; // <--- SLA OP
+        renderUsers(localUsersCache); 
+    }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 
 function renderLogs(logs){
@@ -235,11 +235,10 @@ function setupUserForm(){
     
     form.addEventListener("submit", e => {
         e.preventDefault(); 
-        button.disabled = true; button.textContent = "Bezig...";
         
-        // Checkboxes ophalen uit het formulier
+        // 1. Data verzamelen
         const userData = {
-            username: document.getElementById("new-username").value,
+            username: document.getElementById("new-username").value.toLowerCase(),
             fullname: document.getElementById("new-fullname").value,
             pincode: document.getElementById("new-pincode").value,
             perms: {
@@ -249,14 +248,37 @@ function setupUserForm(){
                 users: document.getElementById("perm-users").checked
             }
         };
+
+        // 2. OPTIMISTIC UI: Voeg direct toe aan de lokale lijst en teken opnieuw
+        // We faken even dat het gelukt is voor de gebruiker
+        localUsersCache.push(userData); 
+        renderUsers(localUsersCache);
         
-        callApi("ADD_USER", { userData: userData }).then(result => {
-            toonMooieModal("Succes", result.message); 
-            form.reset(); 
-            fetchUsers(); 
-        }).catch(error => handleError(error, "Fout bij toevoegen: ")).finally(() => {
-            button.disabled = false; button.textContent = "Gebruiker Toevoegen";
-        });
+        // Reset formulier direct
+        form.reset();
+        toonMooieModal("Bezig...", "Gebruiker wordt op de achtergrond opgeslagen.");
+
+        // 3. Stuur nu pas naar de server (op de achtergrond)
+        button.disabled = true; // Even blokkeren om dubbel klikken te voorkomen
+        
+        callApi("ADD_USER", { userData: userData })
+            .then(result => {
+                console.log("Server bevestigt: gebruiker opgeslagen.");
+                // Optioneel: We kunnen stiekem nog eens fetchen om zeker te zijn
+                // fetchUsers(); 
+            })
+            .catch(error => {
+                // Oei, het ging mis. Draai de wijziging terug!
+                console.error("Fout bij opslaan:", error);
+                alert("Er ging iets mis! De gebruiker wordt weer verwijderd.");
+                
+                // Verwijder de laatste toevoeging uit de lokale cache
+                localUsersCache = localUsersCache.filter(u => u.username !== userData.username);
+                renderUsers(localUsersCache);
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
     });
 }
 

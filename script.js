@@ -32,7 +32,7 @@ let alleAlgemeneDefectenData = []; // Cache voor het filteren
     if (welkomNaam) welkomNaam.textContent = ingelogdeNaam;
 
     // 3. TABBLADEN BEHEREN OP BASIS VAN VINKJES
-    
+
     // A. Checklists Tabblad
     if (!ingelogdePermissies.checklists) {
         const checklistBtn = document.querySelector('.main-tab-link[data-tab="tab-checklists"]');
@@ -43,7 +43,7 @@ let alleAlgemeneDefectenData = []; // Cache voor het filteren
     if (ingelogdePermissies.admin || ingelogdePermissies.td || ingelogdePermissies.users) {
         document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
-        if (container) container.classList.add('is-manager'); 
+        if (container) container.classList.add('is-manager');
     }
 
     // 4. Start alle modules
@@ -53,16 +53,21 @@ let alleAlgemeneDefectenData = []; // Cache voor het filteren
 
     // Defecten modules
     vulKartMeldDropdown();
-    setupDefectForm(); 
-    setupAlgemeenDefectForm(); 
+    setupDefectForm();
+    setupAlgemeenDefectForm();
 
     // Dashboards laden
-    laadDefectenDashboard(); 
-    setupKartFilter();       
-    laadBijzonderhedenVanGisteren();
-    
+    setTimeout(() => laadDefectenDashboard(), 10);
+    setTimeout(() => laadBijzonderhedenVanGisteren(), 20);
+    setTimeout(() => fetchAlgemeneDefecten(), 30);
+
+    // Checklists heeft prioriteit, die doen we direct
+    if (ingelogdePermissies.checklists) {
+        laadChecklistConfiguratie();
+    }
+
     // Nieuw Dashboard met Filter
-    fetchAlgemeneDefecten(); 
+    fetchAlgemeneDefecten();
     setupAlgemeenFilter();
 
     // 5. Checklists ophalen (Alleen als je rechten hebt)
@@ -154,27 +159,59 @@ async function callApi(payload) {
 // --- DEEL 3: CHECKLIST FUNCTIES ---
 
 function laadChecklistConfiguratie() {
-    console.log("Checklists ophalen...");
+    console.log("Checklists laden...");
+
+    // 1. EERST: Kijk of we nog data van vorige keer hebben
+    const cachedData = localStorage.getItem('CHECKLIST_CACHE');
+    if (cachedData) {
+        console.log("Cache gevonden! Direct tonen.");
+        CHECKLIST_DATA = JSON.parse(cachedData);
+        vulActiviteitDropdown(); // Hulpfunctie om dubbele code te voorkomen
+
+        // Als we cache hebben, hoeven we de gebruiker niet te laten wachten.
+        // We doen wel een 'silent update' op de achtergrond.
+    }
+
+    // 2. DAARNA: Haal verse data van de server (Silent update)
     callApi({ type: "GET_CHECKLIST_CONFIG" })
         .then(result => {
-            console.log("Checklists geladen:", result.data);
-            CHECKLIST_DATA = result.data;
+            console.log("Verse data ontvangen van server");
 
-            // Vul de dropdown
-            const activiteitSelect = document.getElementById('activiteit-select');
-            if (activiteitSelect) {
-                while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
-                for (const activiteit in CHECKLIST_DATA) {
-                    activiteitSelect.add(new Option(activiteit, activiteit));
+            // Is de data anders dan wat we hadden?
+            if (JSON.stringify(result.data) !== cachedData) {
+                CHECKLIST_DATA = result.data;
+                localStorage.setItem('CHECKLIST_CACHE', JSON.stringify(CHECKLIST_DATA));
+
+                // Alleen dropdown verversen als we nog geen cache hadden 
+                // OF als de gebruiker nog niks aan het doen is (om verspringen te voorkomen)
+                if (!cachedData) {
+                    vulActiviteitDropdown();
                 }
             }
         })
         .catch(error => {
-            console.error("Fout:", error);
-            toonStatus("Kon checklists niet laden.", "error");
+            console.error("Kon server niet bereiken, we draaien op cache als die er is.");
+            if (!cachedData) toonStatus("Kon checklists niet laden.", "error");
         });
 }
 
+// Haal dit stukje logica uit de oude functie en zet het apart, 
+// zodat we het op twee plekken kunnen aanroepen
+function vulActiviteitDropdown() {
+    const activiteitSelect = document.getElementById('activiteit-select');
+    if (activiteitSelect) {
+        // Huidige selectie onthouden
+        const currentVal = activiteitSelect.value;
+
+        while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
+        for (const activiteit in CHECKLIST_DATA) {
+            activiteitSelect.add(new Option(activiteit, activiteit));
+        }
+
+        // Probeer selectie te herstellen
+        if (currentVal) activiteitSelect.value = currentVal;
+    }
+}
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
@@ -207,7 +244,7 @@ function updateChecklists(activiteit) {
         }
 
         if (container) container.classList.add('checklists-zichtbaar');
-        
+
         // UPDATE PROGRESS BAR BIJ LADEN
         updateProgress();
 
@@ -302,7 +339,7 @@ function updateSingleProgress(listId, containerId, barId, textId) {
 }
 
 // Luisteraar voor checkboxes
-document.addEventListener('change', function(e) {
+document.addEventListener('change', function (e) {
     if (e.target.type === 'checkbox' && e.target.closest('#tab-checklists')) {
         updateProgress();
     }
@@ -362,7 +399,7 @@ function setupAlgemeenDefectForm() {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
                 // Herlaad de data voor het dashboard (via cache update)
-                fetchAlgemeneDefecten(); 
+                fetchAlgemeneDefecten();
             })
             .catch(error => {
                 toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
@@ -399,12 +436,12 @@ function fetchAlgemeneDefecten() {
 function filterEnRenderDefecten() {
     const container = document.getElementById('algemeen-defecten-grid');
     const filterSelect = document.getElementById('filter-algemeen-locatie');
-    
+
     if (!container) return;
-    
+
     const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
     let teTonenLijst = alleAlgemeneDefectenData;
-    
+
     if (gekozenLocatie !== 'alle') {
         teTonenLijst = teTonenLijst.filter(d => d.locatie === gekozenLocatie);
     }
@@ -416,7 +453,7 @@ function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
 
-    if (!defecten) return; 
+    if (!defecten) return;
 
     // Filter alleen 'Open' status
     const openDefecten = defecten.filter(d => d.status === 'Open');
@@ -481,20 +518,20 @@ function toonMeldingOpElement(elementId, bericht, type, currentTimeout, setTimeo
     var statusDiv = document.getElementById(elementId);
     if (statusDiv) {
         if (currentTimeout) clearTimeout(currentTimeout);
-        
+
         statusDiv.style.display = 'none';
         void statusDiv.offsetWidth; // Reset animatie
 
         var icon = type === 'success' ? '✅ ' : '⚠️ ';
         statusDiv.textContent = icon + bericht;
         statusDiv.className = 'status-bericht ' + type;
-        
+
         statusDiv.style.display = 'block';
 
         const t = setTimeout(() => {
             statusDiv.style.display = 'none';
         }, 4000);
-        
+
         setTimeoutCallback(t);
     }
 }
