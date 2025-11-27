@@ -304,18 +304,6 @@ function setupAlgemeenDefectForm() {
 
 // --- NIEUWE FUNCTIES VOOR ALGEMEEN DASHBOARD ---
 
-function laadAlgemeneDefecten() {
-    const container = document.getElementById('algemeen-defecten-grid');
-    if (!container) return;
-
-    callApi("GET_ALGEMEEN_DEFECTS")
-        .then(result => {
-            renderAlgemeneDefectenCards(result.data);
-        })
-        .catch(error => {
-            container.innerHTML = `<p style="color: #e74c3c;">Kon defecten niet laden: ${error.message}</p>`;
-        });
-}
 
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
