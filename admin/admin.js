@@ -162,13 +162,6 @@ function toonMooieModal(titel, bericht) {
 
 
 // --- DEEL 3: LOGBOEK (Admin Only) ---
-function fetchUsers(){
-    callApi("GET_USERS").then(result => { 
-        localUsersCache = result.data; // <--- SLA OP
-        renderUsers(localUsersCache); 
-    }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
-}
-
 function renderLogs(logs){
     const logBody = document.getElementById("log-body");
     if (!logBody) return;
@@ -184,7 +177,10 @@ function renderLogs(logs){
 
 // --- DEEL 4: USERS (Users Recht) ---
 function fetchUsers(){
-    callApi("GET_USERS").then(result => { renderUsers(result.data); }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
+    callApi("GET_USERS").then(result => { 
+        localUsersCache = result.data; // <--- SLA OP
+        renderUsers(localUsersCache); 
+    }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 
 function renderUsers(users) {
