@@ -530,24 +530,30 @@ input[type="checkbox"]:checked+label {
 
 /* --- 9. RESPONSIVE MEDIA QUERIES (Mobiel) --- */
 @media (max-width: 768px) {
-
-    /* Mobiel Menu Toggle knop */
-    #mobile-menu-toggle {
-        display: block;
+    
+    /* 1. MENU KNOP CENTREREN */
+    #mobile-menu-toggle { 
+        display: block; 
+        text-align: center; /* Was left, nu center voor consistentie */
     }
-
+    
     .main-nav {
         flex-direction: column;
     }
-
-    /* 1. VERBERG STANDAARD ALLE LINKS (OOK ADMIN!) */
-    /* We gebruiken !important om zeker te weten dat we de desktop-regels overschrijven */
+    
+    /* 2. DE FIX VOOR HET SCHEVE MENU */
     .main-tab-link,
     .admin-tab.zichtbaar {
         display: none !important;
         width: 100%;
         text-align: center;
         border-bottom: 1px solid #444;
+        
+        /* DE BELANGRIJKSTE REGEL: */
+        /* Zorgt dat padding NIET bij de breedte wordt opgeteld */
+        box-sizing: border-box; 
+        padding-left: 0;  /* Reset eventuele padding die het scheef duwt */
+        padding-right: 0;
     }
 
     /* 2. TOON LINKS ALLEEN ALS MENU OPEN IS */
