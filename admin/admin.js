@@ -164,6 +164,9 @@ function toonMooieModal(titel, bericht) {
 // --- DEEL 3: LOGBOEK (Admin Only) ---
 function fetchLogData(){
     if(statusDiv) { statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading"; }
+    
+    toonSkeletonRijen('algemeen-defect-body', 5, 7);
+    
     callApi("GET_LOGS").then(result => {
         if(statusDiv) statusDiv.style.display = "none"; 
         renderLogs(result.data);
@@ -340,6 +343,9 @@ function setupUserPermListeners() {
 
 // --- DEEL 5: ALGEMEEN DEFECTEN (Admin & TD) ---
 function fetchAlgemeenDefects() {
+    // NIEUWE REGEL: Toon 5 neppe rijen met 6 kolommen (want je tabel heeft 6 headers)
+    toonSkeletonRijen('algemeen-defect-body', 5, 6);
+
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
             if (statusDiv) statusDiv.style.display = "none"; 
@@ -551,6 +557,20 @@ async function callApi(type, extraData = {}) {
     const result = await response.json();
     if (result.status === "success") { return result; } 
     else { throw new Error(result.message); }
+}
+
+function toonSkeletonRijen(bodyId, aantalRijen, aantalKolommen) {
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    let html = '';
+    for (let i = 0; i < aantalRijen; i++) {
+        html += `<tr class="skeleton-row">`;
+        for (let j = 0; j < aantalKolommen; j++) {
+            html += `<td><div></div></td>`;
+        }
+        html += `</tr>`;
+    }
+    body.innerHTML = html;
 }
 
 function handleError(error, prefix = "Fout: ") {

@@ -421,6 +421,9 @@ function setupAlgemeenFilter() {
 }
 
 function fetchAlgemeneDefecten() {
+    // NIEUWE REGEL: Toon eerst 3 lege kaarten
+    toonSkeletonKaarten('algemeen-defecten-grid', 3);
+
     callApi({ type: "GET_PUBLIC_ALGEMEEN_DEFECTS" })
         .then(result => {
             alleAlgemeneDefectenData = result.data || [];
@@ -556,4 +559,14 @@ function tijdGeleden(dateString) {
     if (interval > 1) return Math.floor(interval) + " min geleden";
     
     return "Zojuist";
+}
+
+function toonSkeletonKaarten(containerId, aantal) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    let html = '';
+    for (let i = 0; i < aantal; i++) {
+        html += `<div class="defect-card skeleton-card skeleton"></div>`;
+    }
+    container.innerHTML = html;
 }

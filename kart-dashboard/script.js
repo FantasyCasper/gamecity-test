@@ -88,6 +88,9 @@ function setupDefectForm() { // Kart defect
 }
 
 function laadDefectenDashboard() {
+    // NIEUWE REGEL:
+    toonSkeletonKaarten('defect-card-container', 4);
+
     callApi({ type: "GET_DEFECTS" })
         .then(result => {
             alleDefecten = result.data;
@@ -376,4 +379,14 @@ function tijdGeleden(dateString) {
     if (interval > 1) return Math.floor(interval) + " min geleden";
 
     return "Zojuist";
+}
+
+function toonSkeletonKaarten(containerId, aantal) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    let html = '';
+    for (let i = 0; i < aantal; i++) {
+        html += `<div class="defect-card skeleton-card skeleton"></div>`;
+    }
+    container.innerHTML = html;
 }

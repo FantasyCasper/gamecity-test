@@ -672,3 +672,47 @@ input[type="checkbox"]:checked+label {
 #tab-algemeen-defect p {
     text-align: center;
 }
+
+/* ===============================
+   SKELETON LOADING ANIMATIE
+   =============================== */
+
+@keyframes skeleton-pulse {
+    0% { background-color: #333; }
+    50% { background-color: #444; }
+    100% { background-color: #333; }
+}
+
+.skeleton {
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+    background-color: #333;
+    border-radius: 4px;
+    color: transparent !important; /* Verbergt eventuele tekst */
+    pointer-events: none; /* Voorkomt klikken tijdens laden */
+    border: none !important; /* Geen borders tijdens laden */
+    box-shadow: none !important;
+}
+
+/* Specifieke vormen */
+.skeleton-text {
+    height: 1em;
+    width: 70%;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.skeleton-card {
+    height: 180px; /* Hoogte van een gemiddeld kaartje */
+    width: 100%;
+}
+
+.skeleton-row td {
+    padding: 15px;
+}
+.skeleton-row div {
+    height: 20px;
+    width: 100%;
+    border-radius: 4px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+    background-color: #333;
+}
