@@ -480,7 +480,7 @@ function laadAlgemeneDefecten(defecten) {
             <h3>${defect.locatie}</h3>
             <div class="meta">
                 <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
-                <span class="meta-item">Op: ${ts}</span>
+                <span class="meta-item">Gemeld: ${ts}</span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
         `;

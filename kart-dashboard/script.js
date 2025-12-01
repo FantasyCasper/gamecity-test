@@ -168,7 +168,7 @@ function renderDefectCards(defects) {
             <h3>Kart ${defect.kartNummer}</h3>
             <div class="meta">
                 <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
-                <span class="meta-item">Op: ${ts}</span>
+                <span class="meta-item">Gemeld: ${ts}</span>
                 <span class="meta-item">Status: <strong>${defect.status}</strong></span>
             </div>
             <p class="omschrijving">${defect.defect}</p>

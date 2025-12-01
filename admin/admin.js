@@ -180,7 +180,7 @@ function renderLogs(logs){
     if (logs.length === 0) { logBody.innerHTML = '<tr><td colspan="7">Nog geen logs gevonden.</td></tr>'; return; }
     let html = "";
     logs.forEach(log => {
-        let ts = tijdGeleden(defect.timestamp);
+        let ts = new Date(log.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
         html += `<tr><td data-label="Tijdstip">${ts}</td><td data-label="Medewerker">${log.medewerker}</td><td data-label="Activiteit">${log.activiteit}</td><td data-label="Lijst">${log.lijstnaam}</td><td data-label="Voltooid">${log.voltooid}</td><td data-label="Gemist">${log.gemist}</td><td data-label="Bijzonderheden">${log.bijzonderheden || ""}</td></tr>`;
     });
     logBody.innerHTML = html;
@@ -562,22 +562,4 @@ function handleError(error, prefix = "Fout: ") {
     } else {
         alert(prefix + error.message);
     }
-}
-
-function tijdGeleden(dateString) {
-    const date = new Date(dateString);
-    const seconds = Math.floor((new Date() - date) / 1000);
-
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " jaar geleden";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " maanden geleden";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " dagen geleden";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " uur geleden";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " min geleden";
-    
-    return "Zojuist";
 }
