@@ -702,8 +702,9 @@ input[type="checkbox"]:checked+label {
 }
 
 .skeleton-card {
-    height: 180px; /* Hoogte van een gemiddeld kaartje */
+    height: 180px;
     width: 100%;
+    max-width: 350px; /* <--- DEZE REGEL TOEVOEGEN */
 }
 
 .skeleton-row td {
