@@ -22,6 +22,7 @@
             <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
             <button class="tab-link" data-tab="tab-checklists">Checklist Beheer</button>
             <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button>
+            <button class="tab-link" data-tab="tab-stats">Statistieken</button>
         </div>
 
         <div id="status-message">Laden...</div>
@@ -184,6 +185,58 @@
                 <tbody id="algemeen-defect-body">
                 </tbody>
             </table>
+        </div>
+        <div id="tab-stats" class="tab-content">
+            <h2>Statistieken & Rapportages</h2>
+
+            <div class="stat-box-grid">
+                <div class="stat-box" style="border-bottom: 4px solid #007bff;">
+                    <span id="stat-total-count">0</span>Totaal Gemeld
+                </div>
+                <div class="stat-box" style="border-bottom: 4px solid #2ecc71;">
+                    <span id="stat-solved-percentage">0%</span>Opgelost
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-top: 30px;">
+                <div class="form-veld" style="background: #2a2a2a; padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top:0;">🏆 Top 5 "Probleem Karts"</h3>
+                    <p style="color:#aaa; font-size:0.9em;">Karts met de meeste meldingen ooit.</p>
+                    <table style="width:100%; margin-top:15px;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Kart #</th>
+                                <th style="text-align:right;">Meldingen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-karts-tbody">
+                            <tr>
+                                <td colspan="2">Laden...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-veld" style="background: #2a2a2a; padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top:0;">📊 Status Verdeling</h3>
+                    <p style="color:#aaa; font-size:0.9em;">Verhouding Open vs Opgelost.</p>
+
+                    <div
+                        style="margin-top: 40px; height: 30px; background: #444; border-radius: 15px; overflow: hidden; display: flex;">
+                        <div id="bar-solved"
+                            style="width: 50%; background: #2ecc71; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.8em;">
+                            50%</div>
+                        <div id="bar-open"
+                            style="width: 50%; background: #e74c3c; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.8em;">
+                            50%</div>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.9em; color: #ccc;">
+                        <span>✅ Opgelost</span>
+                        <span>⚠️ Open</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>

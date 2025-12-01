@@ -72,11 +72,13 @@ function manageTabVisibility() {
     const userTab = document.querySelector('.tab-link[data-tab="tab-users"]');
     const checkTab = document.querySelector('.tab-link[data-tab="tab-checklists"]');
     const defectTab = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
+    const statsTab = document.querySelector('.tab-link[data-tab="tab-stats"]'); // NIEUW
 
     if(logTab) logTab.style.display = 'none';
     if(userTab) userTab.style.display = 'none';
     if(checkTab) checkTab.style.display = 'none';
     if(defectTab) defectTab.style.display = 'none';
+    if(statsTab) statsTab.style.display = 'none'; // NIEUW
 
     // 2. Toon wat mag
     let firstVisibleTab = null;
@@ -85,6 +87,7 @@ function manageTabVisibility() {
         if(logTab) logTab.style.display = 'inline-block';
         if(checkTab) checkTab.style.display = 'inline-block';
         if(defectTab) defectTab.style.display = 'inline-block'; 
+        if(statsTab) statsTab.style.display = 'inline-block'; // NIEUW: Admin mag stats zien
         if(!firstVisibleTab) firstVisibleTab = 'tab-logs';
     }
 
@@ -95,6 +98,7 @@ function manageTabVisibility() {
 
     if (ingelogdePermissies.td) {
         if(defectTab) defectTab.style.display = 'inline-block';
+        if(statsTab) statsTab.style.display = 'inline-block'; // NIEUW: TD mag stats zien
         if(!firstVisibleTab) firstVisibleTab = 'tab-algemeen-defecten';
     }
 
@@ -562,4 +566,68 @@ function handleError(error, prefix = "Fout: ") {
     } else {
         alert(prefix + error.message);
     }
+}
+
+// --- DEEL 7: STATISTIEKEN ---
+function fetchStats() {
+    // Alleen ophalen als we Admin of TD zijn
+    if (!ingelogdePermissies.admin && !ingelogdePermissies.td) return;
+
+    callApi("GET_STATS").then(result => {
+        renderStats(result.data);
+    }).catch(error => handleError(error, "Fout bij laden statistieken: "));
+}
+
+function renderStats(data) {
+    // 1. De teller blokken
+    document.getElementById('stat-total-count').textContent = data.statusCounts.Totaal;
+    
+    // Bereken percentage
+    const perc = data.statusCounts.Totaal > 0 
+        ? Math.round((data.statusCounts.Opgelost / data.statusCounts.Totaal) * 100) 
+        : 0;
+    document.getElementById('stat-solved-percentage').textContent = perc + "%";
+
+    // 2. De progress bar updaten
+    const barSolved = document.getElementById('bar-solved');
+    const barOpen = document.getElementById('bar-open');
+    
+    if (data.statusCounts.Totaal > 0) {
+        const openPerc = 100 - perc;
+        barSolved.style.width = perc + "%";
+        barSolved.textContent = perc > 10 ? perc + "%" : ""; // Verberg tekst als balk te klein is
+        
+        barOpen.style.width = openPerc + "%";
+        barOpen.textContent = openPerc > 10 ? openPerc + "%" : "";
+    }
+
+    // 3. De Top 5 tabel
+    const tbody = document.getElementById('top-karts-tbody');
+    tbody.innerHTML = "";
+    
+    if (data.topKarts.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='2'>Nog geen data.</td></tr>";
+        return;
+    }
+
+    // Wat is het hoogste aantal? (Voor een leuk balkje in de tabel)
+    const maxVal = data.topKarts[0].count;
+
+    data.topKarts.forEach(item => {
+        // Maak een mini staafdiagrammetje IN de tabelrij met CSS linear-gradient
+        // Dit zorgt ervoor dat de cel een achtergrondbalkje krijgt op basis van de score
+        const widthPerc = Math.round((item.count / maxVal) * 100);
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight:bold;">Kart ${item.kart}</td>
+            <td>
+                <div style="background: rgba(231, 76, 60, 0.2); width: 100%; border-radius: 4px; position: relative;">
+                    <div style="background: #e74c3c; width: ${widthPerc}%; height: 24px; border-radius: 4px;"></div>
+                    <span style="position: absolute; top: 2px; right: 5px; color: #fff; font-weight: bold;">${item.count}</span>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
