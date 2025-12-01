@@ -349,6 +349,9 @@ document.addEventListener('change', function (e) {
 // --- DEEL 5: ALGEMEEN TAB (BIJZONDERHEDEN) ---
 
 function laadBijzonderhedenVanGisteren() {
+    // NIEUW: Overschrijf de "Laden..." tekst direct met 3 skeleton rijen (4 kolommen breed)
+    toonSkeletonRijen('bijzonderheden-body', 3, 4);
+
     const tabelBody = document.getElementById('bijzonderheden-body');
     if (!tabelBody) return;
 
@@ -569,4 +572,18 @@ function toonSkeletonKaarten(containerId, aantal) {
         html += `<div class="defect-card skeleton-card skeleton"></div>`;
     }
     container.innerHTML = html;
+}
+
+function toonSkeletonRijen(bodyId, aantalRijen, aantalKolommen) {
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    let html = '';
+    for (let i = 0; i < aantalRijen; i++) {
+        html += `<tr class="skeleton-row">`;
+        for (let j = 0; j < aantalKolommen; j++) {
+            html += `<td><div></div></td>`;
+        }
+        html += `</tr>`;
+    }
+    body.innerHTML = html;
 }
