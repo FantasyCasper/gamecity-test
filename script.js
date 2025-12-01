@@ -355,7 +355,7 @@ function laadBijzonderhedenVanGisteren() {
     const tabelBody = document.getElementById('bijzonderheden-body');
     if (!tabelBody) return;
 
-    callApi({ type: "GET_YESTERDAYS_BIJZONDERHEDDEN" })
+    callApi({ type: "GET_YESTERDAYS_BIJZONDERHEDEN" })
         .then(result => {
             tabelBody.innerHTML = '';
             if (result.data.length === 0) {
@@ -560,7 +560,7 @@ function tijdGeleden(dateString) {
     if (interval > 1) return Math.floor(interval) + " uur geleden";
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + " min geleden";
-    
+
     return "Zojuist";
 }
 

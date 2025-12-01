@@ -703,8 +703,8 @@ input[type="checkbox"]:checked+label {
 
 .skeleton-card {
     height: 180px;
-    width: 100%;
-    max-width: 350px; /* <--- DEZE REGEL TOEVOEGEN */
+    width: 350px;        /* VERPLICHT exact zoals de echte kaarten */
+    max-width: 350px;
 }
 
 .skeleton-row td {
