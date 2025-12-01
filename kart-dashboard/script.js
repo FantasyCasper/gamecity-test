@@ -15,18 +15,18 @@ let alleDefecten = [];
 
     // 1. Login Check
     if (!ingelogdeNaam || !rawPerms) {
-        alert("Je bent niet ingelogd."); 
-        window.location.href = "../login/"; 
+        alert("Je bent niet ingelogd.");
+        window.location.href = "../login/";
         return;
     }
-    
+
     // Parse de permissies
     ingelogdePermissies = JSON.parse(rawPerms);
 
     // 2. Bepaal of we 'Manager' knoppen (Oplossen/Verwijderen) mogen zien
     // Dit mag als je 'Admin' OF 'TD' rechten hebt.
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
-        document.body.classList.add('is-manager'); 
+        document.body.classList.add('is-manager');
     }
 
     // 3. Start modules
@@ -69,7 +69,7 @@ function setupDefectForm() { // Kart defect
             toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error"); return;
         }
         defectButton.disabled = true; defectButton.textContent = "Bezig...";
-        
+
         // Let op: type is "LOG_DEFECT"
         const payload = { type: "LOG_DEFECT", medewerker: ingelogdeNaam, kartNummer: kartNummer, defect: omschrijving };
 
@@ -142,7 +142,7 @@ function renderDefectCards(defects) {
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
     actieveDefecten.forEach(defect => {
-        const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
+        const ts = tijdGeleden(defect.timestamp);
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
@@ -202,10 +202,10 @@ function setupDashboardListeners() {
 function markeerDefectOpgelost(rowId, buttonEl) {
     if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
-    
+
     // API Call update: we sturen nu impliciet permissies mee via callApi
     const payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Opgelost" };
-    
+
     callApi(payload)
         .then(result => {
             toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
@@ -274,7 +274,7 @@ function setupEditModal() {
             const payload = {
                 type: "UPDATE_DEFECT_STATUS",
                 rowId: rowId,
-                newStatus: "Verwijderd" 
+                newStatus: "Verwijderd"
             };
 
             callApi(payload)
@@ -302,10 +302,10 @@ function openEditModal(rowId, kartNummer, omschrijving) {
     document.getElementById('edit-row-id').value = rowId;
     document.getElementById('edit-kart-select').value = kartNummer;
     document.getElementById('edit-defect-omschrijving').value = omschrijving;
-    
+
     const modal = document.getElementById('edit-modal');
     const overlay = document.getElementById('modal-overlay');
-    
+
     if (modal && overlay) {
         modal.style.display = 'block';
         overlay.style.display = 'block';
@@ -315,7 +315,7 @@ function openEditModal(rowId, kartNummer, omschrijving) {
 function closeEditModal() {
     const modal = document.getElementById('edit-modal');
     const overlay = document.getElementById('modal-overlay');
-    
+
     if (modal && overlay) {
         modal.style.display = 'none';
         overlay.style.display = 'none';
@@ -334,7 +334,7 @@ function toonDefectStatus(bericht, type) {
 
 // --- ALGEMENE API CALL (AANGEPAST VOOR PERMISSIES) ---
 async function callApi(type, extraData = {}) {
-    const url = WEB_APP_URL + "?v=" + new Date().getTime(); 
+    const url = WEB_APP_URL + "?v=" + new Date().getTime();
     let payload;
 
     // Support voor beide aanroep-stijlen (string of object)
@@ -358,4 +358,22 @@ async function callApi(type, extraData = {}) {
     const result = await response.json();
     if (result.status === "success") { return result; }
     else { throw new Error(result.message); }
+}
+
+function tijdGeleden(dateString) {
+    const date = new Date(dateString);
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " jaar geleden";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " maanden geleden";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " dagen geleden";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " uur geleden";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " min geleden";
+
+    return "Zojuist";
 }

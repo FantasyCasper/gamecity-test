@@ -471,7 +471,7 @@ function laadAlgemeneDefecten(defecten) {
     });
 
     openDefecten.forEach(defect => {
-        const ts = new Date(defect.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" });
+        const ts = tijdGeleden(defect.timestamp);
         const card = document.createElement('div');
         card.className = 'defect-card';
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
@@ -538,4 +538,22 @@ function toonMeldingOpElement(elementId, bericht, type, currentTimeout, setTimeo
 
 function resetCheckboxes(listId) {
     document.querySelectorAll("#" + listId + " li input").forEach(cb => { cb.checked = false; });
+}
+
+function tijdGeleden(dateString) {
+    const date = new Date(dateString);
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " jaar geleden";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " maanden geleden";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " dagen geleden";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " uur geleden";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " min geleden";
+    
+    return "Zojuist";
 }
