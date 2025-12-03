@@ -6,25 +6,25 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 
 const statusDiv = document.getElementById('status-message');
 let ingelogdePermissies = {};
-let HUIDIGE_CHECKLIST_CONFIG = {}; 
+let HUIDIGE_CHECKLIST_CONFIG = {};
 let alleAdminDefectenCache = []; // Opslag voor filteren defecten
 let localUsersCache = []; // Opslag voor optimistic UI gebruikers
 
 // --- DEEL 1: BEWAKER & INIT ---
-(function() {
+(function () {
     const rawPerms = localStorage.getItem('ingelogdePermissies');
-    
+
     // 1. Login Check
     if (!rawPerms) {
-        window.location.href = "../index.html"; 
-        return; 
+        window.location.href = "../index.html";
+        return;
     }
     ingelogdePermissies = JSON.parse(rawPerms);
 
     // 2. Beveiliging: Heb je uberhaupt iets te zoeken hier?
     if (!ingelogdePermissies.admin && !ingelogdePermissies.td && !ingelogdePermissies.users) {
         alert("Geen toegang tot Admin Panel.");
-        window.location.href = "../index.html"; 
+        window.location.href = "../index.html";
         return;
     }
 
@@ -34,35 +34,35 @@ let localUsersCache = []; // Opslag voor optimistic UI gebruikers
     setupTabNavigation();
 
     // 4. Data ophalen & Listeners starten op basis van rechten
-    
+
     // A. Defecten (Admin & TD)
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
-        fetchAlgemeenDefects(); 
+        fetchAlgemeenDefects();
         setupAlgemeenDefectListeners();
-        
+
         // Filter listener
         const filterSelect = document.getElementById('admin-filter-locatie');
         if (filterSelect) {
             filterSelect.addEventListener('change', filterAdminDefecten);
         }
     }
-    
+
     // B. Logs & Checklists (Alleen Admin)
     if (ingelogdePermissies.admin) {
         fetchLogData();
-        fetchChecklistConfig(); 
+        fetchChecklistConfig();
         setupChecklistEditor();
     }
-    
+
     // C. Gebruikers (Alleen Users recht)
     if (ingelogdePermissies.users) {
         fetchUsers();
         setupUserForm();
         setupUserDeleteListener();
-        setupUserPermListeners(); 
+        setupUserPermListeners();
     }
 
-})(); 
+})();
 
 // --- DEEL 2: NAVIGATIE & UI ---
 
@@ -73,35 +73,35 @@ function manageTabVisibility() {
     const checkTab = document.querySelector('.tab-link[data-tab="tab-checklists"]');
     const defectTab = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
 
-    if(logTab) logTab.style.display = 'none';
-    if(userTab) userTab.style.display = 'none';
-    if(checkTab) checkTab.style.display = 'none';
-    if(defectTab) defectTab.style.display = 'none';
+    if (logTab) logTab.style.display = 'none';
+    if (userTab) userTab.style.display = 'none';
+    if (checkTab) checkTab.style.display = 'none';
+    if (defectTab) defectTab.style.display = 'none';
 
     // 2. Toon wat mag
     let firstVisibleTab = null;
 
     if (ingelogdePermissies.admin) {
-        if(logTab) logTab.style.display = 'inline-block';
-        if(checkTab) checkTab.style.display = 'inline-block';
-        if(defectTab) defectTab.style.display = 'inline-block'; 
-        if(!firstVisibleTab) firstVisibleTab = 'tab-logs';
+        if (logTab) logTab.style.display = 'inline-block';
+        if (checkTab) checkTab.style.display = 'inline-block';
+        if (defectTab) defectTab.style.display = 'inline-block';
+        if (!firstVisibleTab) firstVisibleTab = 'tab-logs';
     }
 
     if (ingelogdePermissies.users) {
-        if(userTab) userTab.style.display = 'inline-block';
-        if(!firstVisibleTab) firstVisibleTab = 'tab-users';
+        if (userTab) userTab.style.display = 'inline-block';
+        if (!firstVisibleTab) firstVisibleTab = 'tab-users';
     }
 
     if (ingelogdePermissies.td) {
-        if(defectTab) defectTab.style.display = 'inline-block';
-        if(!firstVisibleTab) firstVisibleTab = 'tab-algemeen-defecten';
+        if (defectTab) defectTab.style.display = 'inline-block';
+        if (!firstVisibleTab) firstVisibleTab = 'tab-algemeen-defecten';
     }
 
     // 3. Open het eerste tabblad dat mag
     if (firstVisibleTab) {
         const tabBtn = document.querySelector(`.tab-link[data-tab="${firstVisibleTab}"]`);
-        if(tabBtn) tabBtn.click();
+        if (tabBtn) tabBtn.click();
     }
 }
 
@@ -120,7 +120,7 @@ function setupMobileMenu() {
     }
 }
 
-function setupTabNavigation(){
+function setupTabNavigation() {
     document.querySelectorAll(".tab-link").forEach(button => {
         button.addEventListener("click", () => {
             document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
@@ -143,10 +143,10 @@ function toonMooieModal(titel, bericht) {
     const msgEl = document.getElementById('modal-message');
     const btn = document.getElementById('modal-ok-btn');
 
-    if(titleEl) titleEl.textContent = titel;
-    if(msgEl) msgEl.textContent = bericht;
+    if (titleEl) titleEl.textContent = titel;
+    if (msgEl) msgEl.textContent = bericht;
 
-    if(overlay && modal) {
+    if (overlay && modal) {
         overlay.style.display = 'block';
         modal.style.display = 'block';
     }
@@ -156,24 +156,24 @@ function toonMooieModal(titel, bericht) {
         modal.style.display = 'none';
     }
 
-    if(btn) btn.onclick = sluitModal;
-    if(overlay) overlay.onclick = sluitModal;
+    if (btn) btn.onclick = sluitModal;
+    if (overlay) overlay.onclick = sluitModal;
 }
 
 
 // --- DEEL 3: LOGBOEK (Admin Only) ---
-function fetchLogData(){
-    if(statusDiv) { statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading"; }
-    
+function fetchLogData() {
+    if (statusDiv) { statusDiv.textContent = "Logboek laden..."; statusDiv.className = "loading"; }
+
     toonSkeletonRijen('algemeen-defect-body', 5, 7);
-    
+
     callApi("GET_LOGS").then(result => {
-        if(statusDiv) statusDiv.style.display = "none"; 
+        if (statusDiv) statusDiv.style.display = "none";
         renderLogs(result.data);
     }).catch(error => handleError(error, "Fout bij laden logboek: "));
 }
 
-function renderLogs(logs){
+function renderLogs(logs) {
     const logBody = document.getElementById("log-body");
     if (!logBody) return;
 
@@ -191,18 +191,18 @@ function renderLogs(logs){
 
 
 // --- DEEL 4: USERS (Users Recht) ---
-function fetchUsers(){
-    callApi("GET_USERS").then(result => { 
+function fetchUsers() {
+    callApi("GET_USERS").then(result => {
         localUsersCache = result.data || []; // Cache bijwerken
-        renderUsers(localUsersCache); 
+        renderUsers(localUsersCache);
     }).catch(error => handleError(error, "Fout bij laden gebruikers: "));
 }
 
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if(!userBody) return;
+    if (!userBody) return;
     userBody.innerHTML = "";
-    
+
     // SAFETY CHECK
     if (!users) users = [];
 
@@ -211,7 +211,10 @@ function renderUsers(users) {
     users.forEach(user => {
         // Appels met appels vergelijken (username)
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
-        
+
+        // NIEUW: Is dit de Super Admin? (moet matchen met wat je in Code.gs hebt gezet)
+        const isSuperAdmin = (user.username.toLowerCase() === 'admin');
+
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
@@ -223,7 +226,18 @@ function renderUsers(users) {
         `;
 
         const tr = document.createElement('tr');
-        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+
+        // Logica voor de verwijderknop:
+        // Niet tonen als het jezelf is OF als het de admin is
+        let deleteKnopActie = '';
+        if (isSelf) {
+            deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
+        } else if (isSuperAdmin) {
+            deleteKnopActie = '<span style="color:#e74c3c; font-size:0.8em; font-weight:bold;">SUPER ADMIN</span>';
+        } else {
+            deleteKnopActie = `<button class="delete-btn" data-username="${user.username}">Verwijder</button>`;
+        }
 
         tr.innerHTML = `
             <td>${user.username} ${isSelf ? ' (Jij)' : ''}</td>
@@ -232,22 +246,20 @@ function renderUsers(users) {
             <td style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
             <td style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
             <td style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
-            <td>
-                ${!isSelf ? `<button class="delete-btn" data-username="${user.username}">Verwijder</button>` : '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar</span>'}
-            </td>
+            <td>${deleteKnopActie}</td>
         `;
         userBody.appendChild(tr);
     });
 }
 
-function setupUserForm(){
+function setupUserForm() {
     const form = document.getElementById("add-user-form");
     const button = document.getElementById("add-user-button");
-    if (!form) return; 
-    
+    if (!form) return;
+
     form.addEventListener("submit", e => {
-        e.preventDefault(); 
-        
+        e.preventDefault();
+
         // 1. Data verzamelen
         const userData = {
             username: document.getElementById("new-username").value.toLowerCase(),
@@ -262,9 +274,9 @@ function setupUserForm(){
         };
 
         // 2. OPTIMISTIC UI: Direct toevoegen aan cache en renderen
-        localUsersCache.push(userData); 
+        localUsersCache.push(userData);
         renderUsers(localUsersCache);
-        
+
         form.reset();
         toonMooieModal("Bezig...", "Gebruiker wordt op de achtergrond opgeslagen.");
         button.disabled = true;
@@ -280,14 +292,14 @@ function setupUserForm(){
             localUsersCache = localUsersCache.filter(u => u.username !== userData.username);
             renderUsers(localUsersCache);
         }).finally(() => {
-            button.disabled = false; 
+            button.disabled = false;
         });
     });
 }
 
-function setupUserDeleteListener(){
+function setupUserDeleteListener() {
     const userTable = document.getElementById("user-table");
-    if (!userTable) return; 
+    if (!userTable) return;
     userTable.addEventListener("click", e => {
         if (e.target.classList.contains("delete-btn")) {
             const button = e.target, username = button.dataset.username;
@@ -295,7 +307,7 @@ function setupUserDeleteListener(){
                 // Optimistic UI zou hier ook kunnen, maar verwijderen is riskant, dus we wachten even of doen button status
                 button.disabled = true; button.textContent = "Bezig...";
                 callApi("DELETE_USER", { username: username }).then(result => {
-                    toonMooieModal("Succes", result.message); 
+                    toonMooieModal("Succes", result.message);
                     fetchUsers();
                 }).catch(error => {
                     handleError(error, "Fout bij verwijderen: ");
@@ -320,22 +332,22 @@ function setupUserPermListeners() {
             checkbox.disabled = true;
             document.body.style.cursor = 'wait';
 
-            callApi("UPDATE_USER_PERMS", { 
-                targetUser: username, 
-                permType: permType, 
-                newValue: newValue 
+            callApi("UPDATE_USER_PERMS", {
+                targetUser: username,
+                permType: permType,
+                newValue: newValue
             })
-            .then(result => {
-                console.log(`Rechten voor ${username} bijgewerkt.`);
-            })
-            .catch(error => {
-                checkbox.checked = !newValue; // Terugzetten bij fout
-                toonMooieModal("Fout", "Kon rechten niet aanpassen: " + error.message);
-            })
-            .finally(() => {
-                checkbox.disabled = false;
-                document.body.style.cursor = 'default';
-            });
+                .then(result => {
+                    console.log(`Rechten voor ${username} bijgewerkt.`);
+                })
+                .catch(error => {
+                    checkbox.checked = !newValue; // Terugzetten bij fout
+                    toonMooieModal("Fout", "Kon rechten niet aanpassen: " + error.message);
+                })
+                .finally(() => {
+                    checkbox.disabled = false;
+                    document.body.style.cursor = 'default';
+                });
         }
     });
 }
@@ -348,11 +360,11 @@ function fetchAlgemeenDefects() {
 
     callApi("GET_ALGEMEEN_DEFECTS")
         .then(result => {
-            if (statusDiv) statusDiv.style.display = "none"; 
-            
+            if (statusDiv) statusDiv.style.display = "none";
+
             // 1. Sla data op in cache
             alleAdminDefectenCache = result.data || [];
-            
+
             // 2. Filter en render
             filterAdminDefecten();
         })
@@ -362,16 +374,16 @@ function fetchAlgemeenDefects() {
 function filterAdminDefecten() {
     const filterSelect = document.getElementById('admin-filter-locatie');
     const gekozenLocatie = filterSelect ? filterSelect.value : 'alle';
-    
+
     let teTonen = alleAdminDefectenCache;
-    
+
     // Filter "Verwijderd" eruit
     teTonen = teTonen.filter(d => d.status !== "Verwijderd");
 
     if (gekozenLocatie !== 'alle') {
         teTonen = teTonen.filter(d => d.locatie === gekozenLocatie);
     }
-    
+
     renderAlgemeenDefects(teTonen);
 }
 
@@ -382,12 +394,12 @@ function renderAlgemeenDefects(defects) {
 
     // SAFETY CHECK
     if (!defects) defects = [];
-    
+
     if (defects.length === 0) {
         defectBody.innerHTML = '<tr><td colspan="6">Geen defecten gevonden voor deze selectie.</td></tr>';
         return;
     }
-    
+
     defects.forEach(defect => {
         let ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const tr = document.createElement('tr');
@@ -395,10 +407,10 @@ function renderAlgemeenDefects(defects) {
             tr.classList.add('status-opgelost');
         }
         const isOpgelost = defect.status === 'Opgelost';
-        const actieKnop = isOpgelost 
+        const actieKnop = isOpgelost
             ? `<button class="delete-btn" data-row-id="${defect.rowId}">Verwijder</button>`
             : `<button class="action-btn" data-row-id="${defect.rowId}">Markeer Opgelost</button>`;
-        
+
         tr.innerHTML = `
             <td data-label="Tijdstip">${ts}</td>
             <td data-label="Gemeld door">${defect.medewerker}</td>
@@ -416,14 +428,14 @@ function setupAlgemeenDefectListeners() {
     if (!table) return;
     table.addEventListener('click', (e) => {
         const target = e.target;
-        if (target.classList.contains('action-btn')) { 
+        if (target.classList.contains('action-btn')) {
             const rowId = target.dataset.rowId;
             markeerAlgemeenDefect(rowId, "Opgelost", target);
         }
-        if (target.classList.contains('delete-btn')) { 
+        if (target.classList.contains('delete-btn')) {
             if (confirm('Weet je zeker dat je dit opgeloste defect permanent wilt verwijderen?')) {
                 const rowId = target.dataset.rowId;
-                markeerAlgemeenDefect(rowId, "Verwijderd", target); 
+                markeerAlgemeenDefect(rowId, "Verwijderd", target);
             }
         }
     });
@@ -433,7 +445,7 @@ function markeerAlgemeenDefect(rowId, newStatus, buttonEl) {
     buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
     const payload = { type: "UPDATE_ALGEMEEN_DEFECT_STATUS", rowId: rowId, newStatus: newStatus };
     callApi("UPDATE_ALGEMEEN_DEFECT_STATUS", payload).then(result => {
-        fetchAlgemeenDefects(); 
+        fetchAlgemeenDefects();
     }).catch(error => {
         handleError(error, `Fout bij bijwerken: `);
         buttonEl.disabled = false;
@@ -450,13 +462,13 @@ function fetchChecklistConfig() {
 
 function createTaakLi(taak) {
     const li = document.createElement('li');
-    
+
     // MAAK HET ITEM SLEEPBAAR
     li.classList.add('draggable');
     li.setAttribute('draggable', 'true');
-    
+
     li.innerHTML = `<span>${taak}</span><button class="delete-task-btn">X</button>`;
-    
+
     // Events voor het starten en stoppen met slepen
     li.addEventListener('dragstart', () => {
         li.classList.add('dragging');
@@ -472,7 +484,7 @@ function createTaakLi(taak) {
 function renderTaskList(listId, takenArray) {
     const ul = document.getElementById(listId);
     if (!ul) return;
-    ul.innerHTML = ''; 
+    ul.innerHTML = '';
     if (!takenArray) return;
     takenArray.forEach(taak => { ul.appendChild(createTaakLi(taak)); });
 }
@@ -480,7 +492,7 @@ function renderTaskList(listId, takenArray) {
 function setupChecklistEditor() {
     const activiteitSelect = document.getElementById('cl-activiteit');
     const saveButton = document.getElementById('checklist-save-button');
-    if (!activiteitSelect || !saveButton) return; 
+    if (!activiteitSelect || !saveButton) return;
 
     activiteitSelect.addEventListener('change', () => {
         const activiteit = activiteitSelect.value;
@@ -504,7 +516,7 @@ function setupChecklistEditor() {
                 const taakText = input.value.trim();
                 if (taakText) {
                     list.appendChild(createTaakLi(taakText));
-                    input.value = ''; input.focus(); 
+                    input.value = ''; input.focus();
                 }
             }
         });
@@ -527,15 +539,15 @@ function setupChecklistEditor() {
     saveButton.addEventListener('click', () => {
         const activiteit = activiteitSelect.value;
         if (!activiteit || activiteit === "") { alert("Selecteer eerst een activiteit."); return; }
-        
+
         const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span')).map(span => span.textContent);
         const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span')).map(span => span.textContent);
         saveButton.disabled = true; saveButton.textContent = "Opslaan...";
-        
+
         if (!HUIDIGE_CHECKLIST_CONFIG[activiteit]) HUIDIGE_CHECKLIST_CONFIG[activiteit] = {};
         HUIDIGE_CHECKLIST_CONFIG[activiteit].openen = takenOpenen;
         HUIDIGE_CHECKLIST_CONFIG[activiteit].sluiten = takenSluiten;
-        
+
         callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "openen", taken: takenOpenen })
             .then(result => {
                 return callApi({ type: "SET_CHECKLIST_CONFIG", activiteit: activiteit, onderdeel: "sluiten", taken: takenSluiten });
@@ -555,10 +567,10 @@ function setupChecklistEditor() {
     lists.forEach(list => {
         list.addEventListener('dragover', e => {
             e.preventDefault(); // Nodig om te mogen droppen
-            
+
             const afterElement = getDragAfterElement(list, e.clientY);
             const draggable = document.querySelector('.dragging');
-            
+
             if (afterElement == null) {
                 list.appendChild(draggable);
             } else {
@@ -572,7 +584,7 @@ function setupChecklistEditor() {
 
 // --- API HELPER (MET PERMISSIES) ---
 async function callApi(type, extraData = {}) {
-    const url = WEB_APP_URL + "?v=" + new Date().getTime(); 
+    const url = WEB_APP_URL + "?v=" + new Date().getTime();
     let payload;
 
     if (typeof type === 'string') {
@@ -589,7 +601,7 @@ async function callApi(type, extraData = {}) {
         method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, mode: 'cors'
     });
     const result = await response.json();
-    if (result.status === "success") { return result; } 
+    if (result.status === "success") { return result; }
     else { throw new Error(result.message); }
 }
 
