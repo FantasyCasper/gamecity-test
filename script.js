@@ -203,15 +203,32 @@ function vulActiviteitDropdown() {
         // Huidige selectie onthouden
         const currentVal = activiteitSelect.value;
 
+        // Reset de dropdown (laat de eerste 'Selecteer' optie staan)
         while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
+
+        // --- HIER BEPALEN WE DE VASTE VOLGORDE ---
+        const vasteVolgorde = ["Baan", "Lasergame", "Prison Island", "Minigolf"];
+
+        // 1. Loop door de vaste volgorde en voeg toe als de data bestaat
+        vasteVolgorde.forEach(naam => {
+            if (CHECKLIST_DATA[naam]) {
+                activiteitSelect.add(new Option(naam, naam));
+            }
+        });
+
+        // 2. Vangnet: Voeg eventuele nieuwe/andere activiteiten toe die NIET in je vaste lijstje staan
+        // (Bijvoorbeeld als je later "Bowling" toevoegt in Excel, verschijnt die toch onderaan)
         for (const activiteit in CHECKLIST_DATA) {
-            activiteitSelect.add(new Option(activiteit, activiteit));
+            if (!vasteVolgorde.includes(activiteit)) {
+                activiteitSelect.add(new Option(activiteit, activiteit));
+            }
         }
 
         // Probeer selectie te herstellen
         if (currentVal) activiteitSelect.value = currentVal;
     }
 }
+
 function updateChecklists(activiteit) {
     const container = document.querySelector('.container');
     const openLijstUL = document.getElementById('lijst-openen');
