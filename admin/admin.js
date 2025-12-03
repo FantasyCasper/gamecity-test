@@ -222,12 +222,11 @@ function renderUsers(users) {
                    data-username="${user.username}" 
                    data-type="${type}" 
                    ${value ? 'checked' : ''} 
-                   ${isSelf ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
+                   ${isSelf & isSuperAdmin ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
         `;
 
         const tr = document.createElement('tr');
         if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
-        if (isSuperAdmin) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 
         // Logica voor de verwijderknop
         let deleteKnopActie = '';
