@@ -450,7 +450,22 @@ function fetchChecklistConfig() {
 
 function createTaakLi(taak) {
     const li = document.createElement('li');
+    
+    // MAAK HET ITEM SLEEPBAAR
+    li.classList.add('draggable');
+    li.setAttribute('draggable', 'true');
+    
     li.innerHTML = `<span>${taak}</span><button class="delete-task-btn">X</button>`;
+    
+    // Events voor het starten en stoppen met slepen
+    li.addEventListener('dragstart', () => {
+        li.classList.add('dragging');
+    });
+
+    li.addEventListener('dragend', () => {
+        li.classList.remove('dragging');
+    });
+
     return li;
 }
 
@@ -533,6 +548,25 @@ function setupChecklistEditor() {
                 saveButton.disabled = false; saveButton.textContent = "Checklist Opslaan";
             });
     });
+
+    // --- DRAG & DROP LOGICA ---
+    const lists = document.querySelectorAll('.task-list');
+
+    lists.forEach(list => {
+        list.addEventListener('dragover', e => {
+            e.preventDefault(); // Nodig om te mogen droppen
+            
+            const afterElement = getDragAfterElement(list, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            
+            if (afterElement == null) {
+                list.appendChild(draggable);
+            } else {
+                list.insertBefore(draggable, afterElement);
+            }
+        });
+    });
+
 }
 
 
@@ -582,4 +616,22 @@ function handleError(error, prefix = "Fout: ") {
     } else {
         alert(prefix + error.message);
     }
+}
+
+// Hulpfunctie voor Drag & Drop: Bepaalt onder welk element we zitten
+function getDragAfterElement(container, y) {
+    // Selecteer alle items behalve degene die we nu slepen
+    const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2; // Afstand tot het midden van het item
+
+        // We zoeken het item waar we NET boven zitten (offset is negatief maar dichtbij 0)
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
 }

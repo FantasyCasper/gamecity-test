@@ -222,3 +222,24 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     }
     td[data-label="Checklists"]:before { position: static; }
 }
+
+/* ===============================
+   DRAG & DROP STYLING
+   =============================== */
+
+/* De items in de lijst die versleepbaar zijn */
+.task-list li.draggable {
+    cursor: grab;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.task-list li.draggable:active {
+    cursor: grabbing;
+}
+
+/* De stijl van het item terwijl je het sleept */
+.task-list li.dragging {
+    opacity: 0.5;
+    background-color: #444;
+    border: 1px dashed #777;
+}
