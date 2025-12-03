@@ -217,10 +217,30 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     }
     
     /* Vinkjes centreren in mobiele view */
-    td[data-label="Checklists"], td[data-label="Admin"], td[data-label="TD"], td[data-label="Users"] {
-        display: flex; justify-content: space-between; align-items: center;
+/* FIX: Vinkjes en labels netjes uitlijnen op mobiel */
+    td[data-label="Checklists"], 
+    td[data-label="Admin"], 
+    td[data-label="TD"], 
+    td[data-label="Users"] {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        
+        /* BELANGRIJK: Reset de standaard mobiele tabel-stijl */
+        padding-left: 15px !important; /* Haal de 50% padding weg */
+        text-align: left;
     }
-    td[data-label="Checklists"]:before { position: static; }
+
+    /* Zorg dat het label (::before) gewoon links staat en niet zweeft */
+    td[data-label="Checklists"]:before,
+    td[data-label="Admin"]:before,
+    td[data-label="TD"]:before,
+    td[data-label="Users"]:before {
+        position: static; /* Zet hem terug in de normale flow */
+        width: auto;      /* Geen vaste breedte meer */
+        padding-right: 0;
+        margin-right: auto; /* Duw het vinkje naar rechts */
+    }
 }
 
 /* ===============================
@@ -242,4 +262,20 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     opacity: 0.5;
     background-color: #444;
     border: 1px dashed #777;
+}
+
+/* "Sleep Hendel" Icoontje */
+.drag-handle {
+    cursor: grab;
+    font-size: 1.5em; /* Iets groter voor dikke vingers */
+    color: #666;
+    padding: 0 15px 0 5px; /* Ruimte rondom het icoon */
+    user-select: none; /* Voorkom tekst selecteren */
+}
+
+/* Zorg dat de elementen netjes naast elkaar staan */
+.task-list li {
+    display: flex;
+    align-items: center; 
+    /* Zorg dat de tekst alle ruimte pakt tussen hendel en knop */
 }

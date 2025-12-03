@@ -200,9 +200,9 @@ function fetchUsers() {
 
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if(!userBody) return;
+    if (!userBody) return;
     userBody.innerHTML = "";
-    
+
     // SAFETY CHECK
     if (!users) users = [];
 
@@ -211,9 +211,9 @@ function renderUsers(users) {
     users.forEach(user => {
         // Appels met appels vergelijken (username)
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
-        
+
         // Super Admin check (moet matchen met wat je in Code.gs hebt gezet)
-        const isSuperAdmin = (user.username.toLowerCase() === 'admin'); 
+        const isSuperAdmin = (user.username.toLowerCase() === 'admin');
 
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
@@ -226,7 +226,8 @@ function renderUsers(users) {
         `;
 
         const tr = document.createElement('tr');
-        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+        if (isSuperAdmin) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 
         // Logica voor de verwijderknop
         let deleteKnopActie = '';
@@ -465,37 +466,54 @@ function createTaakLi(taak) {
     
     // MAAK HET ITEM SLEEPBAAR
     li.classList.add('draggable');
-    li.setAttribute('draggable', 'true');
+    li.setAttribute('draggable', 'true'); // Voor desktop
     
-    li.innerHTML = `<span>${taak}</span><button class="delete-task-btn">X</button>`;
+    // NIEUWE HTML: Met een Sleep Hendel (☰)
+    // We geven de tekst 'flex-grow: 1' zodat hij de ruimte opvult en de delete-knop naar rechts duwt
+    li.innerHTML = `
+        <span class="drag-handle">☰</span>
+        <span style="flex-grow: 1;">${taak}</span>
+        <button class="delete-task-btn">X</button>
+    `;
     
-    // --- DESKTOP (Muis) ---
+    // --- 1. DESKTOP (Muis) ---
+    // Werkt zoals voorheen, sleep gewoon het hele ding
     li.addEventListener('dragstart', () => { li.classList.add('dragging'); });
     li.addEventListener('dragend', () => { li.classList.remove('dragging'); });
 
-    // --- MOBIEL (Aanraking) ---
-    // 1. Start aanraking
+    // --- 2. MOBIEL (Aanraking - HIER ZIT DE FIX) ---
+    
+    // START SLEPEN
     li.addEventListener('touchstart', (e) => {
-        li.classList.add('dragging');
-        // Stop scrollen van de pagina, zodat we kunnen slepen
-        document.body.style.overflow = 'hidden'; 
+        // BELANGRIJK: Raakten we de hendel aan?
+        if (e.target.classList.contains('drag-handle')) {
+            // JA: Blokkeer scrollen en start slepen
+            e.preventDefault(); 
+            li.classList.add('dragging');
+            document.body.style.overflow = 'hidden'; // Stop pagina scroll
+        }
+        // NEE (je raakte de tekst): Doe niks, laat de browser gewoon scrollen!
     }, {passive: false});
 
-    // 2. Stop aanraking
+    // STOP SLEPEN
     li.addEventListener('touchend', (e) => {
-        li.classList.remove('dragging');
-        // Scrollen weer aanzetten
-        document.body.style.overflow = ''; 
+        // Alleen actie ondernemen als we echt aan het slepen waren
+        if (li.classList.contains('dragging')) {
+            li.classList.remove('dragging');
+            document.body.style.overflow = ''; // Scrollen weer aanzetten
+        }
     });
 
-    // 3. Bewegen met vinger
+    // BEWEGEN
     li.addEventListener('touchmove', (e) => {
-        e.preventDefault(); // Zorg dat het scherm niet scrolt
-        
-        const touch = e.touches[0]; // Waar is de vinger?
+        // Als we NIET aan het slepen zijn (dus we waren aan het scrollen), stop hier.
+        if (!li.classList.contains('dragging')) return;
+
+        // Als we WEL aan het slepen zijn: voer de logica uit
+        e.preventDefault(); 
+        const touch = e.touches[0]; 
         const container = li.parentElement;
         
-        // Gebruik onze bestaande rekenfunctie
         const afterElement = getDragAfterElement(container, touch.clientY);
         
         if (afterElement == null) {
