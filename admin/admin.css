@@ -279,3 +279,49 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     align-items: center; 
     /* Zorg dat de tekst alle ruimte pakt tussen hendel en knop */
 }
+
+/* ===============================
+   NIEUWE LAYOUT GEBRUIKER TOEVOEGEN
+   =============================== */
+
+/* Container voor de vinkjes: laat het lijken op een input veld */
+.rechten-container {
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column; /* Zet ze onder elkaar */
+    gap: 5px;
+    min-height: 42px; /* Zelfde hoogte als inputs ongeveer */
+    box-sizing: border-box;
+}
+
+/* De losse regels met vinkjes */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.checkbox-label:hover {
+    color: #fff;
+}
+
+/* Zorg dat het vinkje zelf niet te groot is en ruimte heeft */
+.checkbox-label input[type="checkbox"] {
+    width: auto; /* Reset breedte */
+    margin-right: 10px;
+    margin-bottom: 0; /* Reset margin */
+}
+
+/* Responsive aanpassing:
+   Op hele brede schermen (desktop) mag het grid 4 kolommen zijn.
+   De standaard .form-grid doet dit al automatisch, maar we kunnen het finetunen. */
+@media (min-width: 1200px) {
+    .form-grid {
+        grid-template-columns: 1fr 1fr 1fr 1fr; /* Forceer 4 kolommen op grote schermen */
+    }
+}

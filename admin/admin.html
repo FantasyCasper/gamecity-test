@@ -50,43 +50,39 @@
                 <div class="form-grid">
                     <div class="form-veld">
                         <label for="new-username">Gebruikersnaam</label>
-                        <input type="text" id="new-username" required>
+                        <input type="text" id="new-username" required placeholder="bv. jan">
                     </div>
+
                     <div class="form-veld">
                         <label for="new-fullname">Volledige Naam</label>
-                        <input type="text" id="new-fullname" required>
+                        <input type="text" id="new-fullname" required placeholder="bv. Jan Jansen">
                     </div>
+
                     <div class="form-veld">
                         <label for="new-pincode">Pincode (4 cijfers)</label>
-                        <input type="password" id="new-pincode" required maxlength="4">
+                        <input type="password" id="new-pincode" required maxlength="4" placeholder="****">
                     </div>
-                </div>
 
-                <div class="form-veld" style="margin-top: 15px;">
-                    <label style="margin-bottom: 10px; display:block;">Rechten:</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                        <div>
-                            <input type="checkbox" id="perm-checklists">
-                            <label for="perm-checklists" style="display:inline; font-weight:normal;">Checklists</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="perm-admin">
-                            <label for="perm-admin" style="display:inline; font-weight:normal;">Admin Panel
-                                (Volledig)</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="perm-td">
-                            <label for="perm-td" style="display:inline; font-weight:normal;">TD (Alleen
-                                Defecten)</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="perm-users">
-                            <label for="perm-users" style="display:inline; font-weight:normal;">Gebruikersbeheer</label>
+                    <div class="form-veld">
+                        <label>Rechten Selecteren</label>
+                        <div class="rechten-container">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-checklists"> Checklists
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-admin"> Admin (Volledig)
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-td"> TD (Defecten)
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-users"> Gebruikersbeheer
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" id="add-user-button">Gebruiker Toevoegen</button>
+                <button type="submit" id="add-user-button" style="margin-top: 20px;">Gebruiker Toevoegen</button>
             </form>
 
             <h2 class="user-list-header">Bestaande Gebruikers</h2>
