@@ -65,19 +65,18 @@
 
                     <div class="form-veld">
                         <label>Rechten Selecteren</label>
-                        <div class="rechten-container">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="perm-checklists"> Checklists
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="perm-admin"> Admin (Volledig)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="perm-td"> TD (Defecten)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="perm-users"> Gebruikersbeheer
-                            </label>
+                        <div class="custom-dropdown" id="rechten-dropdown">
+                            <div class="dropdown-btn" id="dropdown-btn">
+                                <span id="dropdown-text">Selecteer rechten...</span>
+                                <span class="arrow">▼</span>
+                            </div>
+
+                            <div class="dropdown-content" id="dropdown-list">
+                                <label><input type="checkbox" id="perm-checklists"> Checklists</label>
+                                <label><input type="checkbox" id="perm-admin"> Admin (Volledig)</label>
+                                <label><input type="checkbox" id="perm-td"> TD (Defecten)</label>
+                                <label><input type="checkbox" id="perm-users"> Gebruikersbeheer</label>
+                            </div>
                         </div>
                     </div>
                 </div>

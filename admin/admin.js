@@ -691,3 +691,68 @@ function getDragAfterElement(container, y) {
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+/* ===============================
+   MULTI-SELECT DROPDOWN LOGICA
+   =============================== */
+
+(function setupDropdown() {
+    const dropdown = document.getElementById('rechten-dropdown');
+    const btn = document.getElementById('dropdown-btn');
+    const list = document.getElementById('dropdown-list');
+    const textSpan = document.getElementById('dropdown-text');
+    const checkboxes = list.querySelectorAll('input[type="checkbox"]');
+
+    if (!dropdown || !btn || !list) return;
+
+    // 1. Toggle open/dicht
+    btn.addEventListener('click', (e) => {
+        dropdown.classList.toggle('active');
+        e.stopPropagation(); // Voorkom dat window click hem direct weer sluit
+    });
+
+    // 2. Sluit als je ergens anders klikt
+    window.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // 3. Update de tekst in de knop als je vinkjes zet
+    checkboxes.forEach(box => {
+        box.addEventListener('change', updateDropdownText);
+    });
+
+    function updateDropdownText() {
+        // Verzamel de namen van alle aangevinkte boxen
+        let selected = [];
+        checkboxes.forEach(box => {
+            if (box.checked) {
+                // Haal de tekst uit de <label> (de tekst node naast de input)
+                selected.push(box.parentElement.textContent.trim());
+            }
+        });
+
+        if (selected.length === 0) {
+            textSpan.textContent = "Selecteer rechten...";
+            btn.classList.remove('has-selection');
+        } else if (selected.length <= 2) {
+            // Bij 1 of 2 keuzes: toon de namen (bv: "Admin, TD")
+            textSpan.textContent = selected.join(', ');
+            btn.classList.add('has-selection');
+        } else {
+            // Bij veel keuzes: toon aantal (bv: "3 rechten geselecteerd")
+            textSpan.textContent = `${selected.length} rechten geselecteerd`;
+            btn.classList.add('has-selection');
+        }
+    }
+    
+    // Reset tekst ook na succesvol opslaan (kan gekoppeld worden aan je form submit)
+    const form = document.getElementById("add-user-form");
+    if(form) {
+        form.addEventListener('reset', () => {
+             // Wacht heel even tot de browser de vinkjes heeft weggehaald
+             setTimeout(updateDropdownText, 10);
+        });
+    }
+})();

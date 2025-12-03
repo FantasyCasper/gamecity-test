@@ -325,3 +325,93 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
         grid-template-columns: 1fr 1fr 1fr 1fr; /* Forceer 4 kolommen op grote schermen */
     }
 }
+
+/* ===============================
+   MULTI-SELECT DROPDOWN STYLING
+   =============================== */
+
+.custom-dropdown {
+    position: relative; /* Zorgt dat de lijst hieraan vastzit */
+    width: 100%;
+    user-select: none;
+}
+
+/* De "Knop" (ziet eruit als een input veld) */
+.dropdown-btn {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px 12px;
+    color: #aaa; /* Standaard tekstkleur */
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 42px; /* Zelfde hoogte als andere inputs */
+    box-sizing: border-box;
+}
+
+.dropdown-btn:hover {
+    border-color: #777;
+}
+
+/* Als er iets geselecteerd is, maken we de tekst wit */
+.dropdown-btn.has-selection {
+    color: #fff;
+}
+
+/* De pijl rechts */
+.arrow {
+    font-size: 0.8em;
+    transition: transform 0.3s;
+}
+
+/* Draai de pijl als menu open is */
+.custom-dropdown.active .arrow {
+    transform: rotate(180deg);
+}
+
+/* De uitklaplijst (standaard verborgen) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 105%; /* Ietsjes onder de knop */
+    left: 0;
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 100; /* Zweef boven alles */
+    max-height: 200px;
+    overflow-y: auto; /* Scrollen als het te lang wordt */
+}
+
+/* Toon lijst als class 'active' aanwezig is */
+.custom-dropdown.active .dropdown-content {
+    display: block;
+}
+
+/* De items in de lijst */
+.dropdown-content label {
+    display: block;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    color: #e0e0e0;
+    margin-bottom: 0; /* Reset standaard label margin */
+}
+
+.dropdown-content label:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content label:hover {
+    background-color: #333;
+}
+
+.dropdown-content input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+    vertical-align: middle;
+}
