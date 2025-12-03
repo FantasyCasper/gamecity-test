@@ -200,9 +200,9 @@ function fetchUsers() {
 
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if (!userBody) return;
+    if(!userBody) return;
     userBody.innerHTML = "";
-
+    
     // SAFETY CHECK
     if (!users) users = [];
 
@@ -211,9 +211,9 @@ function renderUsers(users) {
     users.forEach(user => {
         // Appels met appels vergelijken (username)
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
-
-        // NIEUW: Is dit de Super Admin? (moet matchen met wat je in Code.gs hebt gezet)
-        const isSuperAdmin = (user.username.toLowerCase() === 'admin');
+        
+        // Super Admin check (moet matchen met wat je in Code.gs hebt gezet)
+        const isSuperAdmin = (user.username.toLowerCase() === 'admin'); 
 
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
@@ -226,27 +226,27 @@ function renderUsers(users) {
         `;
 
         const tr = document.createElement('tr');
-        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
 
-        // Logica voor de verwijderknop:
-        // Niet tonen als het jezelf is OF als het de admin is
+        // Logica voor de verwijderknop
         let deleteKnopActie = '';
         if (isSelf) {
             deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
         } else if (isSuperAdmin) {
-            deleteKnopActie = '<span style="color:#e74c3c; font-size:0.8em; font-weight:bold;">SUPER ADMIN</span>';
+            deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
         } else {
             deleteKnopActie = `<button class="delete-btn" data-username="${user.username}">Verwijder</button>`;
         }
 
+        // HIER IS DE FIX: data-label="..." toegevoegd aan elke <td>
         tr.innerHTML = `
-            <td>${user.username} ${isSelf ? ' (Jij)' : ''}</td>
-            <td>${user.fullname}</td>
-            <td style="text-align:center;">${createCheckbox('checklists', user.perms.checklists)}</td>
-            <td style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
-            <td style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
-            <td style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
-            <td>${deleteKnopActie}</td>
+            <td data-label="Gebruiker">${user.username} ${isSelf ? ' (Jij)' : ''}</td>
+            <td data-label="Naam">${user.fullname}</td>
+            <td data-label="Checklists" style="text-align:center;">${createCheckbox('checklists', user.perms.checklists)}</td>
+            <td data-label="Admin" style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
+            <td data-label="TD" style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
+            <td data-label="Users" style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
+            <td data-label="Actie">${deleteKnopActie}</td>
         `;
         userBody.appendChild(tr);
     });
@@ -462,21 +462,48 @@ function fetchChecklistConfig() {
 
 function createTaakLi(taak) {
     const li = document.createElement('li');
-
+    
     // MAAK HET ITEM SLEEPBAAR
     li.classList.add('draggable');
     li.setAttribute('draggable', 'true');
-
+    
     li.innerHTML = `<span>${taak}</span><button class="delete-task-btn">X</button>`;
+    
+    // --- DESKTOP (Muis) ---
+    li.addEventListener('dragstart', () => { li.classList.add('dragging'); });
+    li.addEventListener('dragend', () => { li.classList.remove('dragging'); });
 
-    // Events voor het starten en stoppen met slepen
-    li.addEventListener('dragstart', () => {
+    // --- MOBIEL (Aanraking) ---
+    // 1. Start aanraking
+    li.addEventListener('touchstart', (e) => {
         li.classList.add('dragging');
+        // Stop scrollen van de pagina, zodat we kunnen slepen
+        document.body.style.overflow = 'hidden'; 
+    }, {passive: false});
+
+    // 2. Stop aanraking
+    li.addEventListener('touchend', (e) => {
+        li.classList.remove('dragging');
+        // Scrollen weer aanzetten
+        document.body.style.overflow = ''; 
     });
 
-    li.addEventListener('dragend', () => {
-        li.classList.remove('dragging');
-    });
+    // 3. Bewegen met vinger
+    li.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Zorg dat het scherm niet scrolt
+        
+        const touch = e.touches[0]; // Waar is de vinger?
+        const container = li.parentElement;
+        
+        // Gebruik onze bestaande rekenfunctie
+        const afterElement = getDragAfterElement(container, touch.clientY);
+        
+        if (afterElement == null) {
+            container.appendChild(li);
+        } else {
+            container.insertBefore(li, afterElement);
+        }
+    }, {passive: false});
 
     return li;
 }
