@@ -200,21 +200,23 @@ function fetchUsers() {
 
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if (!userBody) return;
+    if(!userBody) return;
     userBody.innerHTML = "";
-
+    
     // SAFETY CHECK
     if (!users) users = [];
 
     const ingelogdeGebruikersnaam = localStorage.getItem('ingelogdeUsername') || "";
 
     users.forEach(user => {
+        // 1. CHECK: Is dit de Super Admin?
+        if (user.username.toLowerCase() === 'admin') {
+            return; // STOP! Toon deze gebruiker NIET in de lijst.
+        }
+
         // Appels met appels vergelijken (username)
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
-
-        // Super Admin check (moet matchen met wat je in Code.gs hebt gezet)
-        const isSuperAdmin = (user.username.toLowerCase() === 'admin');
-
+        
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
@@ -222,23 +224,21 @@ function renderUsers(users) {
                    data-username="${user.username}" 
                    data-type="${type}" 
                    ${value ? 'checked' : ''} 
-                   ${isSelf & isSuperAdmin ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
+                   ${isSelf ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
         `;
 
         const tr = document.createElement('tr');
-        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
 
-        // Logica voor de verwijderknop
+        // Logica voor de verwijderknop (Admin is hierboven al gefilterd, dus die logica kan simpeler)
         let deleteKnopActie = '';
         if (isSelf) {
-            deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
-        } else if (isSuperAdmin) {
             deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
         } else {
             deleteKnopActie = `<button class="delete-btn" data-username="${user.username}">Verwijder</button>`;
         }
 
-        // HIER IS DE FIX: data-label="..." toegevoegd aan elke <td>
+        // De rij opbouwen
         tr.innerHTML = `
             <td data-label="Gebruiker">${user.username} ${isSelf ? ' (Jij)' : ''}</td>
             <td data-label="Naam">${user.fullname}</td>
