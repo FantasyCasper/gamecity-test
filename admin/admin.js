@@ -52,6 +52,8 @@ let localUsersCache = []; // Opslag voor optimistic UI gebruikers
         fetchLogData();
         fetchChecklistConfig();
         setupChecklistEditor();
+        fetchSettings();
+        setupSettingsForm();
     }
 
     // C. Gebruikers (Alleen Users recht)
@@ -72,11 +74,13 @@ function manageTabVisibility() {
     const userTab = document.querySelector('.tab-link[data-tab="tab-users"]');
     const checkTab = document.querySelector('.tab-link[data-tab="tab-checklists"]');
     const defectTab = document.querySelector('.tab-link[data-tab="tab-algemeen-defecten"]');
+    const settingsTab = document.querySelector('.tab-link[data-tab="tab-settings"]');
 
     if (logTab) logTab.style.display = 'none';
     if (userTab) userTab.style.display = 'none';
     if (checkTab) checkTab.style.display = 'none';
     if (defectTab) defectTab.style.display = 'none';
+    if (settingsTab) settingsTab.style.display = 'none';
 
     // 2. Toon wat mag
     let firstVisibleTab = null;
@@ -85,6 +89,7 @@ function manageTabVisibility() {
         if (logTab) logTab.style.display = 'inline-block';
         if (checkTab) checkTab.style.display = 'inline-block';
         if (defectTab) defectTab.style.display = 'inline-block';
+        if (settingsTab) settingsTab.style.display = 'inline-block';
         if (!firstVisibleTab) firstVisibleTab = 'tab-logs';
     }
 
@@ -756,3 +761,39 @@ function getDragAfterElement(container, y) {
         });
     }
 })();
+
+// --- DEEL 7: INSTELLINGEN (Admin Only) ---
+
+function fetchSettings() {
+    callApi("GET_SETTINGS").then(result => {
+        const settings = result.data;
+        // Vul de velden als de data bestaat
+        if (settings['totaal_karts']) {
+            document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
+        }
+    }).catch(error => handleError(error, "Kon instellingen niet laden: "));
+}
+
+function setupSettingsForm() {
+    const form = document.getElementById('settings-form');
+    const btn = document.getElementById('save-settings-btn');
+
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        btn.disabled = true; btn.textContent = "Opslaan...";
+
+        const karts = document.getElementById('setting-totaal-karts').value;
+
+        // We slaan ze één voor één op (of je bouwt een bulk-save in de toekomst)
+        callApi({ type: "SAVE_SETTING", key: "totaal_karts", value: karts })
+            .then(result => {
+                toonMooieModal("Succes", "Instellingen zijn bijgewerkt.");
+            })
+            .catch(error => handleError(error, "Fout bij opslaan: "))
+            .finally(() => {
+                btn.disabled = false; btn.textContent = "Instellingen Opslaan";
+            });
+    });
+}

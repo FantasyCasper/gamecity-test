@@ -27,6 +27,8 @@
                     Beheer</button>
                 <button class="tab-link"
                     data-tab="tab-algemeen-defecten">Defecten</button>
+                <button class="tab-link"
+                    data-tab="tab-settings">Instellingen</button>
             </div>
 
             <div id="status-message">Laden...</div>
@@ -206,6 +208,24 @@
                     <tbody id="algemeen-defect-body">
                     </tbody>
                 </table>
+            </div>
+            <div id="tab-settings" class="tab-content">
+                <h2>Website Instellingen</h2>
+                <p>Beheer hier de globale instellingen van de applicatie.</p>
+
+                <form id="settings-form">
+                    <div class="form-grid">
+                        <div class="form-veld">
+                            <label for="setting-totaal-karts">Totaal Aantal
+                                Karts</label>
+                            <input type="number" id="setting-totaal-karts"
+                                required placeholder="40">
+                        </div>
+                    </div>
+                    <button type="submit" id="save-settings-btn"
+                        style="margin-top: 20px; background-color: #007bff;">Instellingen
+                        Opslaan</button>
+                </form>
             </div>
 
         </div>
