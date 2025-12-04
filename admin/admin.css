@@ -1,6 +1,6 @@
 /* ==========================================================================
    GAMECITY ADMIN STYLES (admin/admin.css)
-   Bevat: Admin Navigatie, Tabellen, User Management, Modals
+   Bevat: Admin Navigatie, Tabellen, User Management, Modals, Settings
    ========================================================================== */
 
 /* --- 1. BASIS & LAYOUT --- */
@@ -18,7 +18,12 @@ body {
     margin: 0 auto;
 }
 
-h2 { border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 30px; text-align: center; }
+h2 { 
+    border-bottom: 1px solid #444; 
+    padding-bottom: 10px; 
+    margin-top: 30px; 
+    text-align: center; 
+}
 
 /* --- 2. ADMIN NAVIGATIE --- */
 .tab-nav {
@@ -45,18 +50,15 @@ h2 { border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 30px; text
     text-decoration: none;
     border-bottom: 3px solid transparent;
     transition: background 0.2s;
-
-    /* CRUCIAAL: Reset de positie. 
-       In style.css staat hij op 'fixed', hier willen we hem gewoon in de lijst hebben. */
     position: relative; 
     top: auto; 
     left: auto;
 }
 
 .tab-link:hover, #back-button:hover { background-color: #333; color: white; }
-.tab-link.active { background-color: #222; color: white; border-bottom-color: #ca1097;; }
+.tab-link.active { background-color: #222; color: white; border-bottom-color: #ca1097; }
 
-/* Specifieke styling voor de terug-knop om hem te onderscheiden */
+/* Specifieke styling voor de terug-knop */
 #back-button { 
     background-color: #444; 
     flex-grow: 0; 
@@ -95,7 +97,7 @@ h2 { border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 30px; text
 .form-veld { margin-bottom: 15px; }
 .form-veld label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
 
-input[type="text"], input[type="password"], select {
+input[type="text"], input[type="password"], input[type="number"], select {
     width: 100%; padding: 10px;
     background: #333; border: 1px solid #555;
     border-radius: 5px; color: white;
@@ -141,24 +143,86 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 .delete-btn { background-color: #dc3545; color: white; padding: 6px 12px; font-size: 0.9em; }
 .action-btn { background-color: #28a745; color: white; padding: 6px 12px; font-size: 0.9em; }
 
-/* --- 5. CHECKLIST EDITOR (Lijstjes maken) --- */
-.list-builder {
-    border: 1px solid #444; background: #222;
-    border-radius: 8px; height: 300px;
-    display: flex; flex-direction: column; overflow: hidden;
-}
-.task-list {
-    flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0;
-}
-.task-list li {
-    padding: 10px; border-bottom: 1px solid #333;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.add-task-form { display: flex; border-top: 1px solid #444; }
-.add-task-form input { border: none; border-radius: 0; }
-.add-task-btn { width: 50px; background: #28a745; color: white; border-radius: 0; }
+/* --- 5. CHECKLIST EDITOR (VERBETERD) --- */
 
-/* --- 6. MODALS & TOASTS (Kopie van Main CSS voor consistentie) --- */
+/* Labels centreren boven de lijsten */
+#checklist-editor .form-grid .form-veld label {
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    color: #fff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.list-builder {
+    border: 1px solid #444; 
+    background: #222;
+    border-radius: 8px; 
+    height: 300px;
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden;
+}
+
+.task-list {
+    flex-grow: 1; 
+    overflow-y: auto; 
+    list-style: none; 
+    padding: 0; 
+    margin: 0;
+}
+
+.task-list li {
+    padding: 10px; 
+    border-bottom: 1px solid #333;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+/* De invulbalk onderaan (Strakker gemaakt) */
+.add-task-form { 
+    display: flex; 
+    height: 50px; /* Vaste hoogte */
+    border-top: 1px solid #555; 
+    background-color: #333;
+    border-radius: 0 0 8px 8px;
+}
+
+.add-task-form input { 
+    flex-grow: 1;
+    border: none; 
+    border-radius: 0; 
+    background: transparent;
+    color: #fff;
+    padding: 0 15px;
+    height: 100%;
+}
+
+.add-task-form input:focus {
+    outline: none;
+    background-color: #3a3a3a;
+}
+
+.add-task-btn { 
+    width: 60px; 
+    height: 100%;
+    background: #28a745; 
+    color: white; 
+    border-radius: 0 0 8px 0; 
+    border: none;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    cursor: pointer;
+}
+.add-task-btn:hover { background-color: #218838; }
+
+
+/* --- 6. MODALS --- */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
 .modal-box {
     display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -168,30 +232,54 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 #modal-ok-btn { background: #28a745; color: white; width: 100%; margin-top: 15px; }
 
-/* --- 7. RESPONSIVE ADMIN (De Fix) --- */
+
+/* --- 7. INSTELLINGEN PAGINA (NIEUW) --- */
+#settings-form {
+    background-color: #2a2a2a;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    max-width: 500px;
+    margin: 40px auto; /* Centreren */
+}
+
+#settings-form .form-grid {
+    display: block; /* Onder elkaar */
+    background: none;
+    padding: 0;
+}
+
+#settings-form input {
+    background-color: #333;
+    border: 1px solid #555;
+    padding: 15px;
+    font-size: 1.1em;
+    text-align: center;
+    font-weight: bold;
+}
+
+#settings-form button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+    font-size: 1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #007bff;
+}
+#settings-form button:hover { background-color: #0056b3; }
+
+
+/* --- 8. RESPONSIVE FIXES --- */
 @media (max-width: 768px) {
     #mobile-menu-toggle { display: block; }
 
-    .tab-nav {
-        flex-direction: column;
-        height: auto;
-    }
+    .tab-nav { flex-direction: column; height: auto; }
+    .tab-link, #back-button { display: none !important; width: 100%; text-align: center; border-bottom: 1px solid #444; }
+    .tab-nav.is-open .tab-link, .tab-nav.is-open #back-button { display: block !important; }
 
-    /* CRUCIAAL: Verberg items met !important zodat ze echt weg zijn */
-    .tab-link, #back-button {
-        display: none !important;
-        width: 100%;
-        text-align: center;
-        border-bottom: 1px solid #444;
-    }
-
-    /* Toon items ALLEEN als .is-open class op parent staat */
-    .tab-nav.is-open .tab-link,
-    .tab-nav.is-open #back-button {
-        display: block !important;
-    }
-
-    /* Tabel Card View op Mobiel */
+    /* Mobiele tabel weergave */
     table, thead, tbody, th, td, tr { display: block; }
     thead tr { position: absolute; top: -9999px; left: -9999px; }
     
@@ -216,8 +304,7 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
         content: attr(data-label);
     }
     
-    /* Vinkjes centreren in mobiele view */
-/* FIX: Vinkjes en labels netjes uitlijnen op mobiel */
+    /* FIX: Vinkjes en labels netjes uitlijnen op mobiel */
     td[data-label="Checklists"], 
     td[data-label="Admin"], 
     td[data-label="TD"], 
@@ -225,191 +312,99 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
         display: flex; 
         justify-content: space-between; 
         align-items: center;
-        
-        /* BELANGRIJK: Reset de standaard mobiele tabel-stijl */
-        padding-left: 15px !important; /* Haal de 50% padding weg */
+        padding-left: 15px !important; 
         text-align: left;
     }
 
-    /* Zorg dat het label (::before) gewoon links staat en niet zweeft */
     td[data-label="Checklists"]:before,
     td[data-label="Admin"]:before,
     td[data-label="TD"]:before,
     td[data-label="Users"]:before {
-        position: static; /* Zet hem terug in de normale flow */
-        width: auto;      /* Geen vaste breedte meer */
+        position: static; 
+        width: auto;      
         padding-right: 0;
-        margin-right: auto; /* Duw het vinkje naar rechts */
+        margin-right: auto;
     }
 }
 
-/* ===============================
-   DRAG & DROP STYLING
-   =============================== */
 
-/* De items in de lijst die versleepbaar zijn */
+/* --- 9. DRAG & DROP STYLING --- */
 .task-list li.draggable {
     cursor: grab;
     transition: background-color 0.2s, opacity 0.2s;
 }
+.task-list li.draggable:active { cursor: grabbing; }
 
-.task-list li.draggable:active {
-    cursor: grabbing;
-}
-
-/* De stijl van het item terwijl je het sleept */
 .task-list li.dragging {
     opacity: 0.5;
     background-color: #444;
     border: 1px dashed #777;
 }
 
-/* "Sleep Hendel" Icoontje */
 .drag-handle {
     cursor: grab;
-    font-size: 1.5em; /* Iets groter voor dikke vingers */
+    font-size: 1.5em; 
     color: #666;
-    padding: 0 15px 0 5px; /* Ruimte rondom het icoon */
-    user-select: none; /* Voorkom tekst selecteren */
+    padding: 0 15px 0 5px; 
+    user-select: none;
 }
+.task-list li { display: flex; align-items: center; }
 
-/* Zorg dat de elementen netjes naast elkaar staan */
-.task-list li {
-    display: flex;
-    align-items: center; 
-    /* Zorg dat de tekst alle ruimte pakt tussen hendel en knop */
-}
 
-/* ===============================
-   NIEUWE LAYOUT GEBRUIKER TOEVOEGEN
-   =============================== */
-
-/* Container voor de vinkjes: laat het lijken op een input veld */
-.rechten-container {
-    background: #333;
-    border: 1px solid #555;
-    border-radius: 5px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column; /* Zet ze onder elkaar */
-    gap: 5px;
-    min-height: 42px; /* Zelfde hoogte als inputs ongeveer */
-    box-sizing: border-box;
-}
-
-/* De losse regels met vinkjes */
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    font-size: 0.9em;
-    cursor: pointer;
-    color: #ccc;
-}
-
-.checkbox-label:hover {
-    color: #fff;
-}
-
-/* Zorg dat het vinkje zelf niet te groot is en ruimte heeft */
-.checkbox-label input[type="checkbox"] {
-    width: auto; /* Reset breedte */
-    margin-right: 10px;
-    margin-bottom: 0; /* Reset margin */
-}
-
-/* Responsive aanpassing:
-   Op hele brede schermen (desktop) mag het grid 4 kolommen zijn.
-   De standaard .form-grid doet dit al automatisch, maar we kunnen het finetunen. */
-@media (min-width: 1200px) {
-    .form-grid {
-        grid-template-columns: 1fr 1fr 1fr 1fr; /* Forceer 4 kolommen op grote schermen */
-    }
-}
-
-/* ===============================
-   MULTI-SELECT DROPDOWN STYLING
-   =============================== */
-
+/* --- 10. MULTI-SELECT DROPDOWN STYLING --- */
 .custom-dropdown {
-    position: relative; /* Zorgt dat de lijst hieraan vastzit */
+    position: relative; 
     width: 100%;
     user-select: none;
 }
 
-/* De "Knop" (ziet eruit als een input veld) */
 .dropdown-btn {
     background-color: #333;
     border: 1px solid #555;
     border-radius: 5px;
     padding: 10px 12px;
-    color: #aaa; /* Standaard tekstkleur */
+    color: #aaa; 
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 42px; /* Zelfde hoogte als andere inputs */
+    height: 42px; 
     box-sizing: border-box;
 }
 
-.dropdown-btn:hover {
-    border-color: #777;
-}
+.dropdown-btn:hover { border-color: #777; }
+.dropdown-btn.has-selection { color: #fff; }
 
-/* Als er iets geselecteerd is, maken we de tekst wit */
-.dropdown-btn.has-selection {
-    color: #fff;
-}
+.arrow { font-size: 0.8em; transition: transform 0.3s; }
+.custom-dropdown.active .arrow { transform: rotate(180deg); }
 
-/* De pijl rechts */
-.arrow {
-    font-size: 0.8em;
-    transition: transform 0.3s;
-}
-
-/* Draai de pijl als menu open is */
-.custom-dropdown.active .arrow {
-    transform: rotate(180deg);
-}
-
-/* De uitklaplijst (standaard verborgen) */
 .dropdown-content {
     display: none;
     position: absolute;
-    top: 105%; /* Ietsjes onder de knop */
+    top: 105%; 
     left: 0;
     width: 100%;
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-radius: 5px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 100; /* Zweef boven alles */
+    z-index: 100; 
     max-height: 200px;
-    overflow-y: auto; /* Scrollen als het te lang wordt */
+    overflow-y: auto;
 }
 
-/* Toon lijst als class 'active' aanwezig is */
-.custom-dropdown.active .dropdown-content {
-    display: block;
-}
+.custom-dropdown.active .dropdown-content { display: block; }
 
-/* De items in de lijst */
 .dropdown-content label {
     display: block;
     padding: 10px;
     border-bottom: 1px solid #333;
     cursor: pointer;
     color: #e0e0e0;
-    margin-bottom: 0; /* Reset standaard label margin */
+    margin-bottom: 0;
 }
-
-.dropdown-content label:last-child {
-    border-bottom: none;
-}
-
-.dropdown-content label:hover {
-    background-color: #333;
-}
-
+.dropdown-content label:last-child { border-bottom: none; }
+.dropdown-content label:hover { background-color: #333; }
 .dropdown-content input[type="checkbox"] {
     margin-right: 10px;
     width: auto;

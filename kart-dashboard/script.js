@@ -7,6 +7,7 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 let ingelogdeNaam = "";
 let ingelogdePermissies = {};
 let alleDefecten = [];
+let TOTAAL_KARTS = 40; // Standaard fallback, wordt overschreven door server
 
 // --- DEEL 1: DE "BEWAKER" ---
 (function () {
@@ -30,7 +31,8 @@ let alleDefecten = [];
     }
 
     // 3. Start modules
-    vulKartDropdowns();
+    vulKartDropdowns(); // Tekent eerst 1-40 (zodat je direct beeld hebt)
+    haalInstellingenOp(); // Haalt op de achtergrond het echte aantal op (bijv. 50) en tekent opnieuw
     setupDefectForm();
     laadDefectenDashboard();
     setupKartFilter();
@@ -43,17 +45,26 @@ let alleDefecten = [];
 function vulKartDropdowns() {
     const meldSelect = document.getElementById('new-defect-kart');
     const editSelect = document.getElementById('edit-kart-select');
-
+    
+    // Eerst leegmaken (voor als we de functie opnieuw aanroepen na laden settings)
     if (meldSelect) {
-        for (let i = 1; i <= 40; i++) {
+        meldSelect.innerHTML = '<option value="">Kart...</option>';
+        for (let i = 1; i <= TOTAAL_KARTS; i++) {
             meldSelect.add(new Option(`Kart ${i}`, i));
         }
     }
+    
     if (editSelect) {
-        for (let i = 1; i <= 40; i++) {
+        // Edit select heeft geen placeholder nodig, die wordt later gezet
+        editSelect.innerHTML = ''; 
+        for (let i = 1; i <= TOTAAL_KARTS; i++) {
             editSelect.add(new Option(`Kart ${i}`, i));
         }
     }
+    
+    // Update ook even het tekstje in het dashboard (Statistieken blokje)
+    const totaalVeld = document.getElementById('stat-totaal-karts');
+    if (totaalVeld) totaalVeld.textContent = TOTAAL_KARTS;
 }
 
 function setupDefectForm() { // Kart defect
@@ -108,8 +119,11 @@ function laadDefectenDashboard() {
 function updateStatBoxes(defects) {
     const openDefecten = defects.filter(d => d.status === 'Open');
     const uniekeKartsMetProbleem = [...new Set(openDefecten.map(d => d.kartNummer))];
+    
     document.getElementById('stat-karts-problemen').textContent = uniekeKartsMetProbleem.length;
-    document.getElementById('stat-werkende-karts').textContent = 40 - uniekeKartsMetProbleem.length;
+    
+    // AANGEPAST: Gebruik nu TOTAAL_KARTS in plaats van 40
+    document.getElementById('stat-werkende-karts').textContent = TOTAAL_KARTS - uniekeKartsMetProbleem.length;
 }
 
 function setupKartFilter() {
@@ -389,4 +403,21 @@ function toonSkeletonKaarten(containerId, aantal) {
         html += `<div class="defect-card skeleton-card skeleton"></div>`;
     }
     container.innerHTML = html;
+}
+
+function haalInstellingenOp() {
+    callApi("GET_SETTINGS").then(result => {
+        if (result.data && result.data['totaal_karts']) {
+            // Update de variabele met de waarde uit de spreadsheet
+            TOTAAL_KARTS = parseInt(result.data['totaal_karts']);
+            
+            // Ververs de dropdowns en statistieken met het nieuwe aantal
+            vulKartDropdowns();
+            
+            // Als we defecten al geladen hadden, update de statistiek-boxen dan ook
+            if (typeof alleDefecten !== 'undefined') {
+                updateStatBoxes(alleDefecten);
+            }
+        }
+    }).catch(err => console.log("Kon instellingen niet laden, gebruik standaard 40."));
 }
