@@ -715,16 +715,14 @@ input[type="checkbox"]:checked+label {
 }
 
 .skeleton-card {
-    height: 180px;
-    width: 350px;
-    /* VERPLICHT exact zoals de echte kaarten */
-    max-width: 350px;
+    /* ALGEMEEN: Pas je aan aan de container */
+    height: 100px; 
+    width: 100%;      /* Vul de ruimte */
+    max-width: none;  /* Geen limiet in de basis css */
+    border-radius: 4px;
 }
 
-.skeleton-row td {
-    padding: 15px;
-}
-
+.skeleton-row td { padding: 15px; }
 .skeleton-row div {
     height: 20px;
     width: 100%;

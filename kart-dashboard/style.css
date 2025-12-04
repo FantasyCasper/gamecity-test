@@ -343,14 +343,21 @@ body.is-manager .manager-btn-danger {
 }
 
 /* ===============================
-   SKELETON CARDS (Specifiek voor Kart Dashboard)
+   GRID & SKELETONS (Specifiek voor Kart Dashboard)
    =============================== */
+
+/* 2. De Kaarten Zelf: Mogen nooit breder dan hun kolom */
+.defect-card, 
 .skeleton-card {
-    height: 180px;       /* Vaste hoogte */
-    width: 100%;         /* Vult de grid-kolom volledig */
-    border-radius: 8px;  /* Zelfde ronding als de defect-kaarten */
-    margin-bottom: 0;    /* Reset eventuele margins */
-    
-    /* De maximale breedte wordt nu geregeld door je grid (.problem-card-grid),
-       dus we hoeven hier geen max-width meer op te zetten! */
+    width: 100%;
+    max-width: 350px;   /* HARDE LIMIET: Nooit breder dan dit */
+    margin-left: auto;  /* Centreren binnen de kolom */
+    margin-right: auto;
+}
+
+/* 3. Specifieke Skeleton Styling voor hier */
+.skeleton-card {
+    height: 180px;      /* Vaste hoogte die past bij defect cards */
+    border-radius: 8px; /* Mooie ronding */
+    margin-bottom: 0;
 }
