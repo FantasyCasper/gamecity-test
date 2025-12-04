@@ -9,6 +9,7 @@ let CHECKLIST_DATA = {};
 let ingelogdeNaam = "";
 let ingelogdePermissies = {};
 let alleAlgemeneDefectenData = []; // Cache voor het filteren
+let GLOBALE_ACTIVITEITEN = [];
 
 // --- DEEL 1: DE "BEWAKER" & INIT ---
 (function () {
@@ -60,6 +61,7 @@ let alleAlgemeneDefectenData = []; // Cache voor het filteren
     setTimeout(() => laadDefectenDashboard(), 10);
     setTimeout(() => laadBijzonderhedenVanGisteren(), 20);
     setTimeout(() => fetchAlgemeneDefecten(), 30);
+    setTimeout(() => laadGlobaleInstellingen(), 40);
 
     // Checklists heeft prioriteit, die doen we direct
     if (ingelogdePermissies.checklists) {
@@ -200,31 +202,35 @@ function laadChecklistConfiguratie() {
 function vulActiviteitDropdown() {
     const activiteitSelect = document.getElementById('activiteit-select');
     if (activiteitSelect) {
-        // Huidige selectie onthouden
+        // Huidige selectie onthouden (zodat hij niet verspringt als we verversen)
         const currentVal = activiteitSelect.value;
 
         // Reset de dropdown (laat de eerste 'Selecteer' optie staan)
         while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
 
-        // --- HIER BEPALEN WE DE VASTE VOLGORDE ---
-        const vasteVolgorde = ["Baan", "Lasergame", "Prison Island", "Minigolf"];
+        // 1. BEPAAL DE LIJST
+        // Is er een lijst uit de instellingen? Gebruik die.
+        // Zo niet? Gebruik de ouderwetse standaardlijst (fallback).
+        let teTonenLijst = GLOBALE_ACTIVITEITEN;
+        
+        if (teTonenLijst.length === 0) {
+            teTonenLijst = ["Baan", "Lasergame", "Prison Island", "Minigolf"];
+        }
 
-        // 1. Loop door de vaste volgorde en voeg toe als de data bestaat
-        vasteVolgorde.forEach(naam => {
-            if (CHECKLIST_DATA[naam]) {
-                activiteitSelect.add(new Option(naam, naam));
-            }
+        // 2. VUL DE DROPDOWN
+        teTonenLijst.forEach(naam => {
+            activiteitSelect.add(new Option(naam, naam));
         });
 
-        // 2. Vangnet: Voeg eventuele nieuwe/andere activiteiten toe die NIET in je vaste lijstje staan
-        // (Bijvoorbeeld als je later "Bowling" toevoegt in Excel, verschijnt die toch onderaan)
+        // 3. VANGNET (Voor oude data in checklists die niet meer in de lijst staat)
+        // Als er in CHECKLIST_DATA een activiteit zit die NIET in onze lijst staat, voeg hem toch toe (anders kun je er niet bij)
         for (const activiteit in CHECKLIST_DATA) {
-            if (!vasteVolgorde.includes(activiteit)) {
+            if (!teTonenLijst.includes(activiteit)) {
                 activiteitSelect.add(new Option(activiteit, activiteit));
             }
         }
 
-        // Probeer selectie te herstellen
+        // Probeer oude selectie te herstellen
         if (currentVal) activiteitSelect.value = currentVal;
     }
 }
@@ -603,4 +609,24 @@ function toonSkeletonRijen(bodyId, aantalRijen, aantalKolommen) {
         html += `</tr>`;
     }
     body.innerHTML = html;
+}
+
+function laadGlobaleInstellingen() {
+    callApi("GET_SETTINGS").then(result => {
+        const settings = result.data;
+        
+        // Hebben we een lijst met activiteiten in de database?
+        if (settings && settings['activiteiten']) {
+            try {
+                // De database geeft tekst terug (bv '["Baan","Bowling"]'), wij maken er een lijst van
+                GLOBALE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
+                console.log("Activiteiten geladen uit instellingen:", GLOBALE_ACTIVITEITEN);
+                
+                // Ververs de dropdown direct met deze nieuwe kennis
+                vulActiviteitDropdown();
+            } catch (e) {
+                console.error("Kon activiteiten niet lezen, we gebruiken de standaard.", e);
+            }
+        }
+    }).catch(err => console.log("Geen instellingen gevonden, we gebruiken defaults."));
 }

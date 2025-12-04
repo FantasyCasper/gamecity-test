@@ -211,7 +211,7 @@
             </div>
             <div id="tab-settings" class="tab-content">
                 <h2>Website Instellingen</h2>
-                <p>Beheer hier de globale instellingen van de applicatie.</p>
+                <h3>Beheer hier de globale instellingen van de applicatie.</h3>
 
                 <form id="settings-form">
                     <div class="form-grid">
@@ -221,9 +221,24 @@
                             <input type="number" id="setting-totaal-karts"
                                 required placeholder="40">
                         </div>
+
+                        <div class="form-veld">
+                            <label>Activiteiten Beheren</label>
+                            <div class="list-builder"
+                                style="height: auto; min-height: 200px;">
+                                <ul id="setting-activiteiten-list"
+                                    class="task-list"></ul>
+                                <div class="add-task-form">
+                                    <input type="text" id="new-activity-input"
+                                        placeholder="Nieuwe activiteit...">
+                                    <button type="button" class="add-task-btn"
+                                        id="add-activity-btn">+</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" id="save-settings-btn"
-                        style="margin-top: 20px; background-color: #007bff;">Instellingen
+
+                    <button type="submit" id="save-settings-btn">Instellingen
                         Opslaan</button>
                 </form>
             </div>

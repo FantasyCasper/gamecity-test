@@ -767,9 +767,25 @@ function getDragAfterElement(container, y) {
 function fetchSettings() {
     callApi("GET_SETTINGS").then(result => {
         const settings = result.data;
-        // Vul de velden als de data bestaat
+        
+        // 1. Vul Totaal Karts
         if (settings['totaal_karts']) {
             document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
+        }
+
+        // 2. Vul Activiteiten Lijst
+        const list = document.getElementById('setting-activiteiten-list');
+        if (list && settings['activiteiten']) {
+            try {
+                list.innerHTML = ''; // Eerst leegmaken
+                const activiteiten = JSON.parse(settings['activiteiten']); // Van tekst naar array
+                activiteiten.forEach(act => {
+                    // We gebruiken weer de createTaakLi functie zodat ze sleepbaar zijn
+                    list.appendChild(createTaakLi(act));
+                });
+            } catch (e) {
+                console.error("Fout bij parsen activiteiten:", e);
+            }
         }
     }).catch(error => handleError(error, "Kon instellingen niet laden: "));
 }
@@ -778,6 +794,9 @@ function setupSettingsForm() {
     const form = document.getElementById('settings-form');
     const btn = document.getElementById('save-settings-btn');
 
+    // Start de logica voor de lijst (toevoegen/verwijderen)
+    setupActivityListLogic();
+
     if (!form) return;
 
     form.addEventListener('submit', (e) => {
@@ -785,15 +804,67 @@ function setupSettingsForm() {
         btn.disabled = true; btn.textContent = "Opslaan...";
 
         const karts = document.getElementById('setting-totaal-karts').value;
+        
+        // Verzamelen van de activiteiten uit de lijst
+        const activiteitenLijst = [];
+        document.querySelectorAll('#setting-activiteiten-list li span:nth-child(2)').forEach(span => {
+            activiteitenLijst.push(span.textContent);
+        });
 
-        // We slaan ze één voor één op (of je bouwt een bulk-save in de toekomst)
+        // We sturen twee verzoeken naar de server
+        // 1. Karts opslaan
         callApi({ type: "SAVE_SETTING", key: "totaal_karts", value: karts })
+            .then(() => {
+                // 2. Activiteiten opslaan (als JSON string, bv: '["Baan","Lasergame"]')
+                return callApi({ type: "SAVE_SETTING", key: "activiteiten", value: JSON.stringify(activiteitenLijst) });
+            })
             .then(result => {
-                toonMooieModal("Succes", "Instellingen zijn bijgewerkt.");
+                toonMooieModal("Succes", "Alle instellingen zijn bijgewerkt.");
             })
             .catch(error => handleError(error, "Fout bij opslaan: "))
             .finally(() => {
                 btn.disabled = false; btn.textContent = "Instellingen Opslaan";
             });
+    });
+}
+
+function setupActivityListLogic() {
+    const list = document.getElementById('setting-activiteiten-list');
+    const input = document.getElementById('new-activity-input');
+    const addBtn = document.getElementById('add-activity-btn');
+
+    if (!list || !input || !addBtn) return;
+
+    // Helper om items toe te voegen (hergebruikt createTaakLi logica)
+    function addActivityItem(text) {
+        // We hergebruiken createTaakLi uit de checklist sectie voor de Drag & Drop functionaliteit!
+        // Zorg dat createTaakLi beschikbaar is in je scope (dat is hij in admin.js)
+        const li = createTaakLi(text); 
+        list.appendChild(li);
+    }
+
+    // Klikken op plusje
+    addBtn.addEventListener('click', () => {
+        const text = input.value.trim();
+        if (text) {
+            addActivityItem(text);
+            input.value = '';
+            input.focus();
+        }
+    });
+
+    // Enter toets in input
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addBtn.click();
+        }
+    });
+
+    // Verwijder knop functionaliteit (Delegeer event)
+    list.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-task-btn')) {
+            e.target.parentElement.remove();
+        }
     });
 }
