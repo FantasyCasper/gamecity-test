@@ -1,76 +1,86 @@
 <!DOCTYPE html>
 <html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kart Dashboard</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
-</head>
-<body>
-    <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kart Dashboard</title>
+        <link rel="stylesheet" href="../style.css">
+        <link rel="stylesheet" href="style.css">
+        <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
+    </head>
+    <body>
+        <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
 
-    <div class="container">
-        <h1>Kart Dashboard</h1>
+        <div class="container">
+            <h1>Kart Dashboard</h1>
 
-        <div class="stat-box-grid">
-            <div class="stat-box"><span id="stat-totaal-karts">40</span>Totaal Karts</div>
-            <div class="stat-box"><span id="stat-karts-problemen">0</span>Karts met Problemen</div>
-            <div class="stat-box"><span id="stat-werkende-karts">0</span>Werkende Karts</div>
-        </div>
+            <div class="stat-box-grid">
+                <div class="stat-box"><span
+                        id="stat-totaal-karts">40</span>Totaal Karts</div>
+                <div class="stat-box"><span
+                        id="stat-karts-problemen">0</span>Karts met
+                    Problemen</div>
+                <div class="stat-box"><span
+                        id="stat-werkende-karts">0</span>Werkende Karts</div>
+            </div>
 
-        <form id="new-defect-form" class="form-bar user-info">
-            <select id="new-defect-kart" required>
-                <option value="">Kart...</option>
+            <form id="new-defect-form" class="form-bar user-info">
+                <select id="new-defect-kart" required>
+                    <option value>Kart...</option>
                 </select>
-            <input type="text" id="new-defect-problem" placeholder="Probleem omschrijving..." required>
-            <button type="submit" id="new-defect-submit">+ Toevoegen</button>
-        </form>
-        
-        <div id="new-filter-bar" class="form-bar user-info">
-            <span>Filter:</span>
-            <select id="filter-status">
-                <option value="open">Status: Open</option>
-                <option value="opgelost">Status: Opgelost</option>
-                <option value="alle">Status: Alle</option>
-            </select>
-            <button id="filter-wissen-btn">X Wissen</button>
-        </div>
-        
-        <div id="status-message-defect" class="status-bericht"></div>
+                <input type="text" id="new-defect-problem"
+                    placeholder="Probleem omschrijving..." required>
+                <button type="submit" id="new-defect-submit">+
+                    Toevoegen</button>
+            </form>
 
-        <h2>Openstaande Defecten</h2>
-        <div id="defect-card-container" class="problem-card-grid">
+            <div id="new-filter-bar" class="form-bar user-info">
+                <span>Filter:</span>
+                <select id="filter-status">
+                    <option value="open">Status: Open</option>
+                    <option value="opgelost">Status: Opgelost</option>
+                    <option value="alle">Status: Alle</option>
+                </select>
+                <button id="filter-wissen-btn">X Wissen</button>
             </div>
 
-    </div> <div id="modal-overlay"></div>
-    <div id="edit-modal" class="modal-container">
-        <div class="modal-header">
-            <h2>Defect Aanpassen</h2>
-            <button id="modal-close-btn">×</button>
-        </div>
-        <form id="edit-defect-form">
-            <input type="hidden" id="edit-row-id">
-            
-            <div class="form-veld">
-                <label for="edit-kart-select">Kart Nummer (1-40):</label>
-                <select id="edit-kart-select" required>
+            <div id="status-message-defect" class="status-bericht"></div>
+
+            <h2>Openstaande Defecten</h2>
+            <div id="defect-card-container" class="problem-card-grid">
+            </div>
+
+        </div> <div id="modal-overlay"></div>
+        <div id="edit-modal" class="modal-container">
+            <div class="modal-header">
+                <h2>Defect Aanpassen</h2>
+                <button id="modal-close-btn">×</button>
+            </div>
+            <form id="edit-defect-form">
+                <input type="hidden" id="edit-row-id">
+
+                <div class="form-veld">
+                    <label for="edit-kart-select">Kart Nummer (1-40):</label>
+                    <select id="edit-kart-select" required>
                     </select>
-            </div>
-            <div class="form-veld">
-                <label for="edit-defect-omschrijving">Omschrijving Defect:</label>
-                <textarea id="edit-defect-omschrijving" rows="5" required></textarea>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" id="modal-delete-btn" class="manager-btn-danger">Verwijderen</button>
-                
-                <button type="button" id="modal-cancel-btn">Annuleren</button>
-                <button type="submit" id="modal-save-btn">Opslaan</button>
-            </div>
-        </form>
-    </div>
-    <script src="script.js"></script>
-</body>
+                </div>
+                <div class="form-veld">
+                    <label for="edit-defect-omschrijving">Omschrijving
+                        Defect:</label>
+                    <textarea id="edit-defect-omschrijving" rows="5"
+                        required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="modal-delete-btn"
+                        class="manager-btn-danger">Verwijderen</button>
+
+                    <button type="button"
+                        id="modal-cancel-btn">Annuleren</button>
+                    <button type="submit" id="modal-save-btn">Opslaan</button>
+                </div>
+            </form>
+        </div>
+        <script src="script.js"></script>
+    </body>
 </html>

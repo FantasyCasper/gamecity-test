@@ -200,9 +200,9 @@ function fetchUsers() {
 
 function renderUsers(users) {
     const userBody = document.getElementById("user-body");
-    if(!userBody) return;
+    if (!userBody) return;
     userBody.innerHTML = "";
-    
+
     // SAFETY CHECK
     if (!users) users = [];
 
@@ -216,7 +216,7 @@ function renderUsers(users) {
 
         // Appels met appels vergelijken (username)
         const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
-        
+
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
@@ -228,7 +228,7 @@ function renderUsers(users) {
         `;
 
         const tr = document.createElement('tr');
-        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)"; 
+        if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 
         // Logica voor de verwijderknop (Admin is hierboven al gefilterd, dus die logica kan simpeler)
         let deleteKnopActie = '';
@@ -462,11 +462,11 @@ function fetchChecklistConfig() {
 
 function createTaakLi(taak) {
     const li = document.createElement('li');
-    
+
     // MAAK HET ITEM SLEEPBAAR
     li.classList.add('draggable');
     li.setAttribute('draggable', 'true'); // Voor desktop
-    
+
     // NIEUWE HTML: Met een Sleep Hendel (☰)
     // We geven de tekst 'flex-grow: 1' zodat hij de ruimte opvult en de delete-knop naar rechts duwt
     li.innerHTML = `
@@ -474,25 +474,25 @@ function createTaakLi(taak) {
         <span style="flex-grow: 1;">${taak}</span>
         <button class="delete-task-btn">X</button>
     `;
-    
+
     // --- 1. DESKTOP (Muis) ---
     // Werkt zoals voorheen, sleep gewoon het hele ding
     li.addEventListener('dragstart', () => { li.classList.add('dragging'); });
     li.addEventListener('dragend', () => { li.classList.remove('dragging'); });
 
     // --- 2. MOBIEL (Aanraking - HIER ZIT DE FIX) ---
-    
+
     // START SLEPEN
     li.addEventListener('touchstart', (e) => {
         // BELANGRIJK: Raakten we de hendel aan?
         if (e.target.classList.contains('drag-handle')) {
             // JA: Blokkeer scrollen en start slepen
-            e.preventDefault(); 
+            e.preventDefault();
             li.classList.add('dragging');
             document.body.style.overflow = 'hidden'; // Stop pagina scroll
         }
         // NEE (je raakte de tekst): Doe niks, laat de browser gewoon scrollen!
-    }, {passive: false});
+    }, { passive: false });
 
     // STOP SLEPEN
     li.addEventListener('touchend', (e) => {
@@ -509,18 +509,18 @@ function createTaakLi(taak) {
         if (!li.classList.contains('dragging')) return;
 
         // Als we WEL aan het slepen zijn: voer de logica uit
-        e.preventDefault(); 
-        const touch = e.touches[0]; 
+        e.preventDefault();
+        const touch = e.touches[0];
         const container = li.parentElement;
-        
+
         const afterElement = getDragAfterElement(container, touch.clientY);
-        
+
         if (afterElement == null) {
             container.appendChild(li);
         } else {
             container.insertBefore(li, afterElement);
         }
-    }, {passive: false});
+    }, { passive: false });
 
     return li;
 }
@@ -746,13 +746,13 @@ function getDragAfterElement(container, y) {
             btn.classList.add('has-selection');
         }
     }
-    
+
     // Reset tekst ook na succesvol opslaan (kan gekoppeld worden aan je form submit)
     const form = document.getElementById("add-user-form");
-    if(form) {
+    if (form) {
         form.addEventListener('reset', () => {
-             // Wacht heel even tot de browser de vinkjes heeft weggehaald
-             setTimeout(updateDropdownText, 10);
+            // Wacht heel even tot de browser de vinkjes heeft weggehaald
+            setTimeout(updateDropdownText, 10);
         });
     }
 })();

@@ -530,17 +530,18 @@ input[type="checkbox"]:checked+label {
 
 /* --- 9. RESPONSIVE MEDIA QUERIES (Mobiel) --- */
 @media (max-width: 768px) {
-    
+
     /* 1. MENU KNOP CENTREREN */
-    #mobile-menu-toggle { 
-        display: block; 
-        text-align: center; /* Was left, nu center voor consistentie */
+    #mobile-menu-toggle {
+        display: block;
+        text-align: center;
+        /* Was left, nu center voor consistentie */
     }
-    
+
     .main-nav {
         flex-direction: column;
     }
-    
+
     /* 2. DE FIX VOOR HET SCHEVE MENU */
     .main-tab-link,
     .admin-tab.zichtbaar {
@@ -548,11 +549,12 @@ input[type="checkbox"]:checked+label {
         width: 100%;
         text-align: center;
         border-bottom: 1px solid #444;
-        
+
         /* DE BELANGRIJKSTE REGEL: */
         /* Zorgt dat padding NIET bij de breedte wordt opgeteld */
-        box-sizing: border-box; 
-        padding-left: 0;  /* Reset eventuele padding die het scheef duwt */
+        box-sizing: border-box;
+        padding-left: 0;
+        /* Reset eventuele padding die het scheef duwt */
         padding-right: 0;
     }
 
@@ -678,18 +680,29 @@ input[type="checkbox"]:checked+label {
    =============================== */
 
 @keyframes skeleton-pulse {
-    0% { background-color: #333; }
-    50% { background-color: #444; }
-    100% { background-color: #333; }
+    0% {
+        background-color: #333;
+    }
+
+    50% {
+        background-color: #444;
+    }
+
+    100% {
+        background-color: #333;
+    }
 }
 
 .skeleton {
     animation: skeleton-pulse 1.5s infinite ease-in-out;
     background-color: #333;
     border-radius: 4px;
-    color: transparent !important; /* Verbergt eventuele tekst */
-    pointer-events: none; /* Voorkomt klikken tijdens laden */
-    border: none !important; /* Geen borders tijdens laden */
+    color: transparent !important;
+    /* Verbergt eventuele tekst */
+    pointer-events: none;
+    /* Voorkomt klikken tijdens laden */
+    border: none !important;
+    /* Geen borders tijdens laden */
     box-shadow: none !important;
 }
 
@@ -703,13 +716,15 @@ input[type="checkbox"]:checked+label {
 
 .skeleton-card {
     height: 180px;
-    width: 350px;        /* VERPLICHT exact zoals de echte kaarten */
+    width: 350px;
+    /* VERPLICHT exact zoals de echte kaarten */
     max-width: 350px;
 }
 
 .skeleton-row td {
     padding: 15px;
 }
+
 .skeleton-row div {
     height: 20px;
     width: 100%;
