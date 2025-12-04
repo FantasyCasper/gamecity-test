@@ -242,9 +242,10 @@ body.is-manager .manager-btn {
 }
 
 .modal-header h2 {
-    margin: 0;
+    margin-top: 0;
     font-size: 1.3em;
     color: #fff;
+    text-align: center; 
 }
 
 #modal-close-btn {
