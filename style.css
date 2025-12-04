@@ -706,7 +706,7 @@ input[type="checkbox"]:checked+label {
     box-shadow: none !important;
 }
 
-/* Specifieke vormen */
+/* Specifieke vormen (Algemeen) */
 .skeleton-text {
     height: 1em;
     width: 70%;
