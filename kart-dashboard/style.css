@@ -17,6 +17,13 @@ body {
     padding-top: 70px;
 }
 
+h2 { 
+    border-bottom: 1px solid #444; 
+    padding-bottom: 10px; 
+    margin-top: 30px; 
+    text-align: center; 
+}
+
 /* 2. SPECIFIEKE NAVIGATIE */
 #back-button {
     position: fixed;
@@ -242,10 +249,9 @@ body.is-manager .manager-btn {
 }
 
 .modal-header h2 {
-    margin-top: 0;
+    margin: 0;
     font-size: 1.3em;
-    color: #fff;
-    text-align: center; 
+    color: #fff; 
 }
 
 #modal-close-btn {
