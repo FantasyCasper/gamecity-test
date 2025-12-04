@@ -6,6 +6,7 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 
 const statusDiv = document.getElementById('status-message');
 let ingelogdePermissies = {};
+let BESCHIKBARE_ACTIVITEITEN = []; // Hier slaan we jouw lijst in op
 let HUIDIGE_CHECKLIST_CONFIG = {};
 let alleAdminDefectenCache = []; // Opslag voor filteren defecten
 let localUsersCache = []; // Opslag voor optimistic UI gebruikers
@@ -538,6 +539,45 @@ function renderTaskList(listId, takenArray) {
     takenArray.forEach(taak => { ul.appendChild(createTaakLi(taak)); });
 }
 
+function updateChecklistDropdown() {
+    const dropdown = document.getElementById('cl-activiteit');
+    if (!dropdown) return;
+
+    // Huidige selectie onthouden
+    const currentVal = dropdown.value;
+
+    // Leegmaken (behalve de eerste optie)
+    while (dropdown.options.length > 1) { dropdown.remove(1); }
+
+    // 1. Gebruik jouw lijst uit de instellingen
+    if (BESCHIKBARE_ACTIVITEITEN.length > 0) {
+        BESCHIKBARE_ACTIVITEITEN.forEach(naam => {
+            dropdown.add(new Option(naam, naam));
+        });
+    } else {
+        // Fallback als er nog niks is ingesteld
+        ["Baan", "Lasergame", "Prison Island", "Minigolf"].forEach(naam => {
+            dropdown.add(new Option(naam, naam));
+        });
+    }
+
+    // 2. Voeg ook items toe die WEL in de config zitten maar NIET in je lijst
+    // (Zodat je oude checklists niet kwijtraakt)
+    for (const act in HUIDIGE_CHECKLIST_CONFIG) {
+        let bestaatAl = false;
+        for (let i = 0; i < dropdown.options.length; i++) {
+            if (dropdown.options[i].value === act) exists = true;
+        }
+        // Als hij nog niet in de dropdown staat, voeg toe
+        // (Simpele check: zit hij in BESCHIKBARE_ACTIVITEITEN?)
+        if (!BESCHIKBARE_ACTIVITEITEN.includes(act) && act !== "Baan" && act !== "Lasergame") { // Voorkom dubbelen bij fallback
+            dropdown.add(new Option(act, act));
+        }
+    }
+
+    if (currentVal) dropdown.value = currentVal;
+}
+
 function setupChecklistEditor() {
     const activiteitSelect = document.getElementById('cl-activiteit');
     const saveButton = document.getElementById('checklist-save-button');
@@ -773,16 +813,23 @@ function fetchSettings() {
             document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
         }
 
-        // 2. Vul Activiteiten Lijst
+        // 2. Vul Activiteiten Lijst & Variabele
         const list = document.getElementById('setting-activiteiten-list');
-        if (list && settings['activiteiten']) {
+        if (settings['activiteiten']) {
             try {
-                list.innerHTML = ''; // Eerst leegmaken
-                const activiteiten = JSON.parse(settings['activiteiten']); // Van tekst naar array
-                activiteiten.forEach(act => {
-                    // We gebruiken weer de createTaakLi functie zodat ze sleepbaar zijn
-                    list.appendChild(createTaakLi(act));
-                });
+                // Sla op in de variabele voor de dropdown
+                BESCHIKBARE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
+                
+                // Update de dropdown in Checklist Beheer direct!
+                updateChecklistDropdown();
+
+                // Vul de lijst in het Instellingen scherm
+                if (list) {
+                    list.innerHTML = ''; 
+                    BESCHIKBARE_ACTIVITEITEN.forEach(act => {
+                        list.appendChild(createTaakLi(act));
+                    });
+                }
             } catch (e) {
                 console.error("Fout bij parsen activiteiten:", e);
             }
@@ -804,7 +851,7 @@ function setupSettingsForm() {
         btn.disabled = true; btn.textContent = "Opslaan...";
 
         const karts = document.getElementById('setting-totaal-karts').value;
-        
+
         // Verzamelen van de activiteiten uit de lijst
         const activiteitenLijst = [];
         document.querySelectorAll('#setting-activiteiten-list li span:nth-child(2)').forEach(span => {
@@ -839,7 +886,7 @@ function setupActivityListLogic() {
     function addActivityItem(text) {
         // We hergebruiken createTaakLi uit de checklist sectie voor de Drag & Drop functionaliteit!
         // Zorg dat createTaakLi beschikbaar is in je scope (dat is hij in admin.js)
-        const li = createTaakLi(text); 
+        const li = createTaakLi(text);
         list.appendChild(li);
     }
 

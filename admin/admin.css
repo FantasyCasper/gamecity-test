@@ -419,3 +419,85 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     width: auto;
     vertical-align: middle;
 }
+
+/* ===============================
+   FIX: INSTELLINGEN LIJST STYLING
+   =============================== */
+
+/* Zorg dat de lijst items eruit zien als regels, niet als knoppen */
+#setting-activiteiten-list li {
+    background-color: transparent; /* Geen blauwe achtergrond */
+    border-bottom: 1px solid #444;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between; /* Tekst links, kruisje rechts */
+    align-items: center;
+    color: #fff;
+    font-size: 1em;
+}
+
+#setting-activiteiten-list li:hover {
+    background-color: #333; /* Subtiele hover */
+}
+
+/* Het sleep-icoontje (indien aanwezig) */
+#setting-activiteiten-list .drag-handle {
+    margin-right: 10px;
+    color: #666;
+    cursor: grab;
+}
+
+/* De tekst van de activiteit */
+#setting-activiteiten-list span {
+    flex-grow: 1; /* Pak alle ruimte */
+    text-align: left;
+}
+
+/* Het verwijder kruisje (mooi rood knopje rechts) */
+#setting-activiteiten-list .delete-task-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-left: 10px;
+}
+
+#setting-activiteiten-list .delete-task-btn:hover {
+    background-color: #c82333;
+}
+
+/* De invulbalk onderaan fixen (zodat hij niet verspringt) */
+#tab-settings .add-task-form {
+    display: flex;
+    height: 50px;
+    background-color: #333;
+    border: 1px solid #555;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+#tab-settings .add-task-form input {
+    border: none;
+    background: transparent;
+    color: #fff;
+    height: 100%;
+}
+
+#tab-settings .add-task-btn {
+    width: 60px;
+    height: 100%;
+    border-radius: 0 0 8px 0;
+    font-size: 1.5em;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
