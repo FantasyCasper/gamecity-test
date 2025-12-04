@@ -342,32 +342,10 @@ body.is-manager .manager-btn-danger {
     }
 }
 
-/* ===============================
-   GRID & SKELETONS (Specifiek voor Kart Dashboard)
-   =============================== */
-
-/* 1. Het Rooster: Dwingt kolommen af van max 350px */
-/* We gebruiken !important om zeker te weten dat we winnen van de main css */
-.problem-card-grid {
-    display: grid;
-    /* Kolommen zijn minimaal 300px, maximaal 350px */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 350px)) !important; 
-    gap: 20px;
-    justify-content: center; /* Centreer het geheel op het scherm */
-}
-
-/* 2. De Kaarten Zelf: Mogen nooit breder dan hun kolom */
-.defect-card, 
+/* Skeleton kaarten op kartdashboard moeten dezelfde maat hebben als echte kaarten */
 .skeleton-card {
     width: 100%;
-    max-width: 350px;   /* HARDE LIMIET: Nooit breder dan dit */
-    margin-left: auto;  /* Centreren binnen de kolom */
-    margin-right: auto;
-}
-
-/* 3. Specifieke Skeleton Styling voor hier */
-.skeleton-card {
-    height: 180px;      /* Vaste hoogte die past bij defect cards */
-    border-radius: 8px; /* Mooie ronding */
-    margin-bottom: 0;
+    max-width: 350px !important;
+    height: 180px;
+    margin: 0 auto; /* centreert ze netjes */
 }
