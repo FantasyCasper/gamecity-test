@@ -592,10 +592,45 @@ function updateChecklistDropdown() {
 function setupChecklistEditor() {
     const activiteitSelect = document.getElementById('cl-activiteit');
     const saveButton = document.getElementById('checklist-save-button');
+    // Selecteer ook de invulvelden en plus-knoppen
+    const inputs = document.querySelectorAll('#checklist-editor input[type="text"]');
+    const buttons = document.querySelectorAll('#checklist-editor .add-task-btn');
+
     if (!activiteitSelect || !saveButton) return;
+
+    // Hulpfunctie: Zet alles aan of uit
+    function toggleEditor(disabled) {
+        inputs.forEach(input => {
+            input.disabled = disabled;
+            if (disabled) input.value = ''; // Leegmaken voor netheid
+        });
+        buttons.forEach(btn => btn.disabled = disabled);
+        saveButton.disabled = disabled;
+        
+        // Visuele feedback (optioneel, maakt het grijzer)
+        const editor = document.getElementById('checklist-editor');
+        editor.style.opacity = disabled ? '0.5' : '1';
+    }
+
+    // 1. Initialisatie: Zet standaard op slot als er niets gekozen is
+    if (activiteitSelect.value === "") {
+        toggleEditor(true);
+    }
 
     activiteitSelect.addEventListener('change', () => {
         const activiteit = activiteitSelect.value;
+        
+        // CHECK: Is het leeg?
+        if (activiteit === "") {
+            toggleEditor(true); // Op slot
+            renderTaskList('cl-openen-list', []);
+            renderTaskList('cl-sluiten-list', []);
+            return; // Stop hier
+        }
+
+        // Als we hier komen, is er iets gekozen -> Openen!
+        toggleEditor(false);
+
         const config = HUIDIGE_CHECKLIST_CONFIG[activiteit];
         if (config) {
             renderTaskList('cl-openen-list', config.openen);
@@ -606,6 +641,8 @@ function setupChecklistEditor() {
         }
     });
 
+    // ... (Hieronder blijft de rest van je bestaande code voor knoppen/drag&drop hetzelfde) ...
+    
     document.querySelectorAll('.add-task-btn').forEach(button => {
         button.addEventListener('click', () => {
             const targetListId = button.dataset.targetList;
@@ -640,8 +677,8 @@ function setupChecklistEditor() {
         const activiteit = activiteitSelect.value;
         if (!activiteit || activiteit === "") { alert("Selecteer eerst een activiteit."); return; }
 
-        const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span')).map(span => span.textContent);
-        const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span')).map(span => span.textContent);
+        const takenOpenen = Array.from(document.querySelectorAll('#cl-openen-list li span:nth-child(2)')).map(span => span.textContent);
+        const takenSluiten = Array.from(document.querySelectorAll('#cl-sluiten-list li span:nth-child(2)')).map(span => span.textContent);
         saveButton.disabled = true; saveButton.textContent = "Opslaan...";
 
         if (!HUIDIGE_CHECKLIST_CONFIG[activiteit]) HUIDIGE_CHECKLIST_CONFIG[activiteit] = {};
@@ -666,11 +703,9 @@ function setupChecklistEditor() {
 
     lists.forEach(list => {
         list.addEventListener('dragover', e => {
-            e.preventDefault(); // Nodig om te mogen droppen
-
+            e.preventDefault(); 
             const afterElement = getDragAfterElement(list, e.clientY);
             const draggable = document.querySelector('.dragging');
-
             if (afterElement == null) {
                 list.appendChild(draggable);
             } else {
@@ -678,7 +713,6 @@ function setupChecklistEditor() {
             }
         });
     });
-
 }
 
 

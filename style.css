@@ -287,6 +287,17 @@ input[type="checkbox"]:checked+label {
     color: #777;
 }
 
+/* Standaard zijn de checklist blokken verborgen */
+.checklist-section {
+    display: none;
+}
+
+/* Pas als de container deze class heeft (via JS), tonen we ze */
+.container.checklists-zichtbaar .checklist-section {
+    display: block;
+    animation: fadeIn 0.3s; /* Mooi effectje erbij */
+}
+
 /* --- 5. DASHBOARD & KAARTEN (Grid) --- */
 .problem-card-grid,
 .stat-box-grid {
