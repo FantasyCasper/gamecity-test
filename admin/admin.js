@@ -212,7 +212,9 @@ function renderUsers(users) {
     // SAFETY CHECK
     if (!users) users = [];
 
-    const ingelogdeGebruikersnaam = localStorage.getItem('ingelogdeUsername') || "";
+    // Haal beide waardes op uit de opslag
+    const ingelogdeGebruikersnaam = localStorage.getItem('ingelogdeUsername');
+    const ingelogdeVolledigeNaam = localStorage.getItem('ingelogdeMedewerker');
 
     users.forEach(user => {
         // 1. CHECK: Is dit de Super Admin?
@@ -220,8 +222,17 @@ function renderUsers(users) {
             return; // STOP! Toon deze gebruiker NIET in de lijst.
         }
 
-        // Appels met appels vergelijken (username)
-        const isSelf = (user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase());
+        // 2. CHECK: Ben ik dit zelf? (Verbeterde versie)
+        let isSelf = false;
+        
+        // Check A: Op basis van gebruikersnaam (Het veiligst)
+        if (ingelogdeGebruikersnaam && user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase()) {
+            isSelf = true;
+        } 
+        // Check B: Fallback op volledige naam (Voor oude mobiele sessies)
+        else if (ingelogdeVolledigeNaam && user.fullname === ingelogdeVolledigeNaam) {
+            isSelf = true;
+        }
 
         // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
@@ -232,7 +243,7 @@ function renderUsers(users) {
                    ${value ? 'checked' : ''} 
                    ${isSelf ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
         `;
-
+        
         const tr = document.createElement('tr');
         if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 

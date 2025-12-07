@@ -10,8 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loginForm.addEventListener("submit", function (event) {
         event.preventDefault();
-        const username = document.getElementById("username").value;
-        const pincode = document.getElementById("pincode").value;
+
+        // AANGEPAST: .trim() toegevoegd om spaties op mobiel te voorkomen
+        const username = document.getElementById("username").value.trim();
+        const pincode = document.getElementById("pincode").value.trim();
 
         if (username === "" || pincode === "") { toonStatus("Vul alle velden in.", "error"); return; }
 
