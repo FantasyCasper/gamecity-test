@@ -779,3 +779,34 @@ input[type="checkbox"]:checked+label {
     font-weight: bold;
     font-size: 1em;
 }
+
+/* Zorg dat de kaart als ankerpunt dient */
+.defect-card {
+    position: relative; 
+}
+
+/* Het blauwe pennetje */
+.edit-icon-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: #007bff; /* Blauw */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Rondje */
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background-color 0.2s;
+    padding: 0;
+}
+
+.edit-icon-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}

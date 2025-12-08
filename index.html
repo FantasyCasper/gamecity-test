@@ -183,6 +183,44 @@
             </div>
         </form>
     </div>
+    <div id="modal-overlay-edit-algemeen" class="modal-overlay"></div>
+    <div id="modal-edit-algemeen" class="modal-box" style="display:none; text-align: left;">
+        <div class="modal-header">
+            <h2>Defect Aanpassen</h2>
+            <button id="close-edit-algemeen-btn"
+                style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
+        </div>
+
+        <form id="edit-algemeen-form">
+            <input type="hidden" id="edit-algemeen-id">
+            <div class="form-veld">
+                <label for="edit-algemeen-locatie">Locatie:</label>
+                <select id="edit-algemeen-locatie" required style="width: 100%;">
+                    <option value="Baan">Baan</option>
+                    <option value="Lasergame">Lasergame</option>
+                    <option value="Prison Island">Prison Island</option>
+                    <option value="Minigolf">Minigolf</option>
+                    <option value="Algemeen">Algemeen</option>
+                </select>
+            </div>
+            <div class="form-veld" style="margin-top: 15px;">
+                <label for="edit-algemeen-omschrijving">Omschrijving:</label>
+                <textarea id="edit-algemeen-omschrijving" rows="6" required style="width: 100%;"></textarea>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button" id="delete-algemeen-btn"
+                    style="background-color: #dc3545; color: white;">Verwijderen</button>
+
+                <div style="display:flex; gap:10px;">
+                    <button type="button" id="cancel-edit-algemeen-btn"
+                        style="background-color: #555; color: white;">Annuleren</button>
+                    <button type="submit" id="save-edit-algemeen-btn"
+                        style="background-color: #007bff; color: white;">Opslaan</button>
+                </div>
+            </div>
+        </form>
+    </div>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js');

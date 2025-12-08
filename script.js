@@ -57,6 +57,7 @@ let GLOBALE_ACTIVITEITEN = [];
     setupDefectForm();
     setupAlgemeenDefectForm();
     setupAlgemeenModalLogic();
+    setupAlgemeenEditLogic();
 
     // Dashboards laden
     setTimeout(() => laadDefectenDashboard(), 10);
@@ -213,7 +214,7 @@ function vulActiviteitDropdown() {
         // Is er een lijst uit de instellingen? Gebruik die.
         // Zo niet? Gebruik de ouderwetse standaardlijst (fallback).
         let teTonenLijst = GLOBALE_ACTIVITEITEN;
-        
+
         if (teTonenLijst.length === 0) {
             teTonenLijst = ["Baan", "Lasergame", "Prison Island", "Minigolf"];
         }
@@ -425,10 +426,10 @@ function setupAlgemeenModalLogic() {
     }
 
     openBtn.addEventListener('click', openModal);
-    if(closeBtn) closeBtn.addEventListener('click', closeModal);
-    if(cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', closeModal);
-    
+
     // Maak closeModal globaal beschikbaar zodat we hem na verzenden kunnen aanroepen
     window.sluitAlgemeenDefectModal = closeModal;
 }
@@ -453,10 +454,10 @@ function setupAlgemeenDefectForm() {
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-                
+
                 // NIEUW: Sluit de modal als het gelukt is
                 if (window.sluitAlgemeenDefectModal) window.sluitAlgemeenDefectModal();
-                
+
                 // Herlaad de data
                 fetchAlgemeneDefecten();
             })
@@ -469,6 +470,94 @@ function setupAlgemeenDefectForm() {
     });
 }
 
+function setupAlgemeenEditLogic() {
+    const container = document.getElementById('algemeen-defecten-grid');
+    const modal = document.getElementById('modal-edit-algemeen');
+    const overlay = document.getElementById('modal-overlay-edit-algemeen');
+
+    // Formulier elementen
+    const form = document.getElementById('edit-algemeen-form');
+    const inputId = document.getElementById('edit-algemeen-id');
+    const inputLocatie = document.getElementById('edit-algemeen-locatie');
+    const inputDescr = document.getElementById('edit-algemeen-omschrijving');
+
+    // Knoppen
+    const closeBtn = document.getElementById('close-edit-algemeen-btn');
+    const cancelBtn = document.getElementById('cancel-edit-algemeen-btn');
+    const deleteBtn = document.getElementById('delete-algemeen-btn');
+
+    if (!container || !modal) return;
+
+    function sluitModal() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }
+
+    // 1. Luister naar klikken op de blauwe pennetjes (via delegation)
+    container.addEventListener('click', (e) => {
+        const knop = e.target.closest('.edit-icon-btn');
+        if (knop) {
+            // Vul de modal met de data uit de knop
+            inputId.value = knop.dataset.id;
+            inputLocatie.value = knop.dataset.locatie;
+            inputDescr.value = unescape(knop.dataset.descr);
+
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+    });
+
+    // 2. Opslaan (Submit)
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('save-edit-algemeen-btn');
+        btn.disabled = true; btn.textContent = "Opslaan...";
+
+        const payload = {
+            type: "UPDATE_ALGEMEEN_DEFECT",
+            rowId: inputId.value,
+            nieuweLocatie: inputLocatie.value,
+            nieuweOmschrijving: inputDescr.value,
+            medewerker: ingelogdeNaam
+        };
+
+        callApi(payload).then(res => {
+            toonAlgemeenDefectStatus("Defect bijgewerkt!", "success");
+            sluitModal();
+            fetchAlgemeneDefecten();
+        }).catch(err => {
+            alert("Fout: " + err.message);
+        }).finally(() => {
+            btn.disabled = false; btn.textContent = "Opslaan";
+        });
+    });
+
+    // 3. Verwijderen
+    deleteBtn.addEventListener('click', () => {
+        if (!confirm("Weet je zeker dat je dit defect wilt verwijderen?")) return;
+
+        deleteBtn.disabled = true; deleteBtn.textContent = "...";
+
+        callApi({
+            type: "DELETE_OWN_ALGEMEEN_DEFECT",
+            rowId: inputId.value,
+            medewerker: ingelogdeNaam
+        }).then(res => {
+            toonAlgemeenDefectStatus("Defect verwijderd.", "success");
+            sluitModal();
+            fetchAlgemeneDefecten();
+        }).catch(err => {
+            alert("Fout: " + err.message);
+        }).finally(() => {
+            deleteBtn.disabled = false; deleteBtn.textContent = "Verwijderen";
+        });
+    });
+
+    // Sluit knoppen
+    if (closeBtn) closeBtn.addEventListener('click', sluitModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', sluitModal);
+    if (overlay) overlay.addEventListener('click', sluitModal);
+}
 
 // --- DEEL 7: ALGEMEEN DASHBOARD (MET FILTER & GROEPERING) ---
 
@@ -538,6 +627,22 @@ function laadAlgemeneDefecten(defecten) {
         card.className = 'defect-card';
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
+        // Check: Is dit mijn defect? En is het < 24 uur oud?
+        const isEigenaar = (defect.medewerker === ingelogdeNaam);
+        const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
+
+        let editKnop = '';
+        if (isEigenaar && isVers) {
+            // We stoppen de data in attributen zodat we die straks makkelijk kunnen uitlezen
+            editKnop = `
+                <button class="edit-icon-btn" 
+                    data-id="${defect.rowId}" 
+                    data-locatie="${defect.locatie}" 
+                    data-descr="${escape(defect.defect)}">
+                    ✎
+                </button>`;
+        }
+
         card.innerHTML = `
             <h3>${defect.locatie}</h3>
             <div class="meta">
@@ -545,6 +650,7 @@ function laadAlgemeneDefecten(defecten) {
                 <span class="meta-item">Gemeld: ${ts}</span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
+            ${editKnop}
         `;
         container.appendChild(card);
     });
@@ -647,14 +753,14 @@ function toonSkeletonRijen(bodyId, aantalRijen, aantalKolommen) {
 function laadGlobaleInstellingen() {
     callApi("GET_SETTINGS").then(result => {
         const settings = result.data;
-        
+
         // Hebben we een lijst met activiteiten in de database?
         if (settings && settings['activiteiten']) {
             try {
                 // De database geeft tekst terug (bv '["Baan","Bowling"]'), wij maken er een lijst van
                 GLOBALE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
                 console.log("Activiteiten geladen uit instellingen:", GLOBALE_ACTIVITEITEN);
-                
+
                 // Ververs de dropdown direct met deze nieuwe kennis
                 vulActiviteitDropdown();
             } catch (e) {
