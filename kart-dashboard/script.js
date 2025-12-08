@@ -187,25 +187,23 @@ function renderDefectCards(defects) {
 
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
 
-        // --- KNOPPEN LOGICA AANGEPAST ---
-        let actieKnop = '';
-        
+        // --- RECHTEN LOGICA ---
+        // Je hebt rechten als: (Je de eigenaar bent EN het is <24u geleden) OF (Je bent TD/Admin)
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+        
+        const heeftRechten = (isEigenaar && isVers) || isTD;
 
-        // Situatie 1: Defect is nog OPEN
-        if (defect.status === 'Open') {
-            // Eigenaar (<24u) OF TD mag bewerken -> Potloodje
-            if ((isEigenaar && isVers) || isTD) {
+        let actieKnop = '';
+
+        if (heeftRechten) {
+            if (defect.status === 'Open') {
+                // Status OPEN -> Potloodje (Aanpassen)
                 actieKnop = maakEditKnop(defect);
-            }
-        } 
-        // Situatie 2: Defect is OPGELOST
-        else if (defect.status === 'Opgelost') {
-            // ALLEEN TD/Admin mag verwijderen -> Rood Kruisje
-            // De eigenaar ziet hier nu niets meer.
-            if (isTD) {
+            } 
+            else if (defect.status === 'Opgelost') {
+                // Status OPGELOST -> Rood Kruisje (Verwijderen)
                 actieKnop = `
                     <button class="delete-icon-btn" data-row-id="${defect.rowId}">
                         ✖
@@ -262,23 +260,26 @@ function setupDashboardListeners() {
             openEditModal(editKnop.dataset);
         }
 
-        // 2. KLIK OP KRUISJE (Verwijderen door TD)
+        // 2. KLIK OP KRUISJE (Verwijderen)
         const deleteKnop = e.target.closest('.delete-icon-btn');
         if (deleteKnop) {
             const rowId = deleteKnop.dataset.rowId;
-            // Bevestiging vragen
-            if (confirm("Wil je dit opgeloste defect definitief verwijderen?")) {
+            if (confirm("Wil je dit defect definitief verwijderen?")) {
                 
-                // Visuele feedback
                 deleteKnop.disabled = true; 
                 deleteKnop.innerHTML = "..."; 
 
-                // We gebruiken hier de bestaande UPDATE functie die TD'ers mogen gebruiken
-                const payload = { 
-                    type: "UPDATE_DEFECT_STATUS", 
-                    rowId: rowId, 
-                    newStatus: "Verwijderd" 
-                };
+                // BEPAAL WELKE API WE ROEPEN
+                let payload = {};
+                const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+
+                if (isTD) {
+                    // TD mag alles verwijderen via de status update
+                    payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" };
+                } else {
+                    // Melder mag alleen eigen defect verwijderen (met extra checks in backend)
+                    payload = { type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam };
+                }
 
                 callApi(payload)
                     .then(res => {
