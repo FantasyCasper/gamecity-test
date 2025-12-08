@@ -175,7 +175,7 @@ function renderDefectCards(defects) {
     if (actieveDefecten.length === 0) {
         container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
-
+    
     // Sorteren: Open eerst
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
@@ -183,44 +183,44 @@ function renderDefectCards(defects) {
         const ts = tijdGeleden(defect.timestamp);
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
-        // Zorg dat de kaart 'position: relative' heeft voor het icoontje (zie CSS stap)
-        kaart.style.position = "relative";
+        kaart.style.position = "relative"; 
 
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
 
-        // --- DE NIEUWE LOGICA ---
-        let editKnopHtml = '';
-
-        // Check 1: Ben ik de maker en is het < 24 uur?
+        // --- DE NIEUWE LOGICA VOOR KNOPJES ---
+        let actieKnop = '';
+        
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
-
-        // Check 2: Ben ik TD of Admin?
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
-        // Als één van beide waar is, toon het potloodje
-        if ((isEigenaar && defect.status === "Open" && isVers) || isTD) {
-            editKnopHtml = `
-                <button class="edit-icon-btn" 
-                        data-row-id="${defect.rowId}" 
-                        data-kart="${defect.kartNummer}" 
-                        data-omschrijving="${escape(defect.defect)}"
-                        data-status="${defect.status}"
-                        /* HIER ZAT DE FIX: */
-                        data-benodigdheden="${escape(defect.benodigdheden || '')}"
-                        data-onderdelen="${escape(defect.onderdelenStatus || '')}">
-                    ✎
-               </button>`;
+        // Situatie 1: Ik ben de Eigenaar én het is < 24u geleden
+        if (isEigenaar && isVers) {
+            if (defect.status === 'Open') {
+                 // Status OPEN -> Ik zie een Potlood (Bewerken)
+                 actieKnop = maakEditKnop(defect);
+            } else if (defect.status === 'Opgelost') {
+                 // Status OPGELOST -> Ik zie een Rood Kruis (Verwijderen)
+                 actieKnop = `
+                    <button class="delete-icon-btn" data-row-id="${defect.rowId}">
+                        ✖
+                    </button>`;
+            }
+        } 
+        
+        // Situatie 2: Ik ben TD (en Situatie 1 heeft nog geen knop gemaakt)
+        // TD mag altijd bewerken (potloodje)
+        if (actieKnop === '' && isTD) {
+             actieKnop = maakEditKnop(defect);
         }
 
-        // De inhoud van de kaart
-        // We tonen nu ook de TD info op de kaart als die er is
+        // TD Info opbouwen
         let extraInfo = '';
         if (defect.benodigdheden) {
             extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">Nodig: ${defect.benodigdheden}</div>`;
         }
-        if (defect.onderdelenStatus && defect.onderdelenStatus !== "Niet nodig") {
-            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; // Groen of Rood
+        if (defect.onderdelenStatus && defect.onderdelenStatus !== 'Niet nodig') { // Let op camelCase: onderdelenStatus
+            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; 
             extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelenStatus}</div>`;
         }
 
@@ -233,21 +233,56 @@ function renderDefectCards(defects) {
             </div>
             <p class="omschrijving">${defect.defect}</p>
             ${extraInfo}
-            ${editKnopHtml}
+            ${actieKnop}
         `;
         container.appendChild(kaart);
     });
+}
+
+// Hulpfunctie om dubbele code te voorkomen
+function maakEditKnop(defect) {
+    return `<button class="edit-icon-btn" 
+                data-row-id="${defect.rowId}" 
+                data-kart="${defect.kartNummer}" 
+                data-omschrijving="${escape(defect.defect)}"
+                data-status="${defect.status}"
+                data-benodigdheden="${escape(defect.benodigdheden || '')}"
+                data-onderdelen="${escape(defect.onderdelenStatus || '')}">
+            ✎
+       </button>`;
 }
 
 /* --- Vervang setupDashboardListeners --- */
 function setupDashboardListeners() {
     const container = document.getElementById("defect-card-container");
     if (!container) return;
+    
     container.addEventListener("click", e => {
-        // We luisteren nu naar het potlood icoontje (of het kind ervan)
-        const knop = e.target.closest('.edit-icon-btn');
-        if (knop) {
-            openEditModal(knop.dataset);
+        // 1. KLIK OP POTLOOD (Bewerken)
+        const editKnop = e.target.closest('.edit-icon-btn');
+        if (editKnop) {
+            openEditModal(editKnop.dataset);
+        }
+
+        // 2. KLIK OP KRUISJE (Verwijderen)
+        const deleteKnop = e.target.closest('.delete-icon-btn');
+        if (deleteKnop) {
+            const rowId = deleteKnop.dataset.rowId;
+            if (confirm("Dit defect is opgelost. Wil je het verwijderen uit de lijst?")) {
+                // Visuele feedback
+                deleteKnop.disabled = true; 
+                deleteKnop.innerHTML = "..."; 
+
+                callApi({ type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam })
+                    .then(res => {
+                        toonDefectStatus("Defect verwijderd.", "success");
+                        laadDefectenDashboard();
+                    })
+                    .catch(err => {
+                        alert("Fout: " + err.message);
+                        deleteKnop.disabled = false; deleteKnop.innerHTML = "✖";
+                    });
+            }
         }
     });
 }

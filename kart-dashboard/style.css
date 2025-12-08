@@ -409,3 +409,30 @@ body.is-manager .manager-btn-danger {
     position: relative;
     padding-bottom: 50px; /* Iets extra ruimte onderaan voor de knop */
 }
+
+/* Het rode verwijder kruisje */
+.delete-icon-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: #dc3545; /* Rood */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Rondje */
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background-color 0.2s;
+    padding: 0;
+    z-index: 10;
+}
+
+.delete-icon-btn:hover {
+    background-color: #c82333; /* Iets donkerder rood */
+    transform: scale(1.1);
+}
