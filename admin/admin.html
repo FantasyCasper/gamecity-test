@@ -194,19 +194,24 @@
         </div>
         <div id="tab-settings" class="tab-content">
             <h2>Website Instellingen</h2>
-            <h3>Beheer hier de globale instellingen van de applicatie.</h3>
+            <p>Beheer hier de globale instellingen van de applicatie.</p>
 
             <form id="settings-form">
-                <div class="form-grid">
-                    <div class="form-veld">
-                        <label for="setting-totaal-karts">Totaal Aantal
-                            Karts</label>
-                        <input type="number" id="setting-totaal-karts" required placeholder="40">
+                <button type="submit" id="save-settings-btn">Instellingen Opslaan</button>
+
+                <div class="settings-grid">
+
+                    <div class="settings-card">
+                        <h3>Algemeen</h3>
+                        <div class="form-veld">
+                            <label for="setting-totaal-karts">Totaal Aantal Karts</label>
+                            <input type="number" id="setting-totaal-karts" required placeholder="40">
+                        </div>
                     </div>
 
-                    <div class="form-veld">
-                        <label>Activiteiten Beheren</label>
-                        <div class="list-builder" style="height: auto; min-height: 200px;">
+                    <div class="settings-card">
+                        <h3>Activiteiten</h3>
+                        <div class="list-builder" style="height: 300px;">
                             <ul id="setting-activiteiten-list" class="task-list"></ul>
                             <div class="add-task-form">
                                 <input type="text" id="new-activity-input" placeholder="Nieuwe activiteit...">
@@ -214,10 +219,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" id="save-settings-btn">Instellingen
-                    Opslaan</button>
+                    <div class="settings-card placeholder-card">
+                        <h3>Toekomstig</h3>
+                        <p style="border:none; margin-top:50px; color:#555;">Nog geen instellingen</p>
+                    </div>
+
+                    <div class="settings-card placeholder-card">
+                        <h3>Overig</h3>
+                        <p style="border:none; margin-top:50px; color:#555;">Nog geen instellingen</p>
+                    </div>
+
+                </div>
             </form>
         </div>
 

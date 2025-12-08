@@ -367,46 +367,101 @@ input.perm-checkbox:disabled {
     outline: none;
 }
 
-/* --- 7. INSTELLINGEN PAGINA (NIEUW) --- */
+/* ===============================
+   NIEUWE LAYOUT INSTELLINGEN (GRID)
+   =============================== */
+
+/* Reset de form container zodat hij breed mag zijn */
 #settings-form {
-    background-color: #2a2a2a;
-    padding: 30px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    max-width: 500px;
-    margin: 40px auto;
-    /* Centreren */
-}
-
-#settings-form .form-grid {
-    display: block;
-    /* Onder elkaar */
-    background: none;
+    background-color: transparent;
     padding: 0;
+    border: none;
+    box-shadow: none;
+    max-width: 100%; /* Volle breedte toestaan */
+    margin: 0;
 }
 
-#settings-form input {
-    background-color: #333;
-    border: 1px solid #555;
-    padding: 15px;
-    font-size: 1.1em;
-    text-align: center;
-    font-weight: bold;
-}
-
-#settings-form button {
+/* 1. DE GROENE KNOP (Bovenaan, breed) */
+#save-settings-btn {
     width: 100%;
-    margin-top: 25px;
-    padding: 15px;
-    font-size: 1em;
+    background-color: #00e600; /* Fel groen zoals op tekening */
+    color: #000; /* Zwarte tekst leest beter op fel groen */
+    font-weight: 900; /* Extra dik */
     text-transform: uppercase;
-    letter-spacing: 1px;
-    background-color: #007bff;
+    font-size: 1.2em;
+    padding: 15px;
+    margin-top: 0;
+    margin-bottom: 30px; /* Ruimte tot de blokken */
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0,230,0,0.3); /* Groene gloed */
+    border: none;
 }
 
-#settings-form button:hover {
-    background-color: #0056b3;
+#save-settings-btn:hover {
+    background-color: #00cc00;
+    color: #fff;
+}
+
+/* 2. HET GRID (De 4 vakken) */
+.settings-grid {
+    display: grid;
+    /* Desktop: 4 gelijke kolommen */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px;
+}
+
+/* 3. DE VAKKEN (Cards) */
+.settings-card {
+    background-color: #2a2a2a;
+    border: 2px solid #000; /* Zwarte rand zoals op tekening */
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px; /* Zorg dat ze allemaal lekker hoog zijn */
+}
+
+.settings-card h3 {
+    text-align: center;
+    margin-top: 0;
+    border-bottom: 2px solid #444;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: #fff;
+}
+
+/* Specifiek voor de input in het eerste vak */
+.settings-card input[type="number"] {
+    font-size: 2em; /* Lekker groot getal */
+    text-align: center;
+    height: 80px;
+}
+
+/* Placeholder vakken iets dimmen */
+.placeholder-card {
+    opacity: 0.5;
+    border-style: dashed; /* Gestippelde rand voor lege vakken */
+}
+
+/* --- RESPONSIVE --- */
+/* Op tablets: 2 bij 2 */
+@media (max-width: 1200px) {
+    .settings-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Op mobiel: Alles onder elkaar */
+@media (max-width: 768px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+    /* Knop iets kleiner op mobiel */
+    #save-settings-btn {
+        font-size: 1em;
+        padding: 12px;
+    }
 }
 
 
