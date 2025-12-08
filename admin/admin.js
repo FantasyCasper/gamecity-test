@@ -321,17 +321,30 @@ function setupUserActionListeners() {
     const userTable = document.getElementById("user-table");
     if (!userTable) return;
 
-    userTable.addEventListener("click", e => {
+    // Let op: 'async' toegevoegd zodat we kunnen wachten op de modal
+    userTable.addEventListener("click", async e => {
         const target = e.target;
         
         // ACTIE 1: WACHTWOORD WIJZIGEN (BLAUW)
         if (target.classList.contains("change-pin-btn")) {
             const username = target.dataset.username;
-            const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
             
+            // NIEUW: Mooie Modal aanroepen
+            const newPin = await toonInteractieveModal({
+                titel: "Wachtwoord Wijzigen",
+                tekst: `Voer een nieuwe 4-cijferige pincode in voor ${username}:`,
+                inputNodig: true,
+                inputType: "password", // Maskeert de invoer (bolletjes)
+                maxLength: 4,
+                placeholder: "****",
+                knopTekst: "Opslaan",
+                knopKleur: "blauw"
+            });
+            
+            // Als er niet op Annuleren is gedrukt (newPin is niet null)
             if (newPin !== null) {
                 if (newPin.length !== 4 || isNaN(newPin)) {
-                    alert("De pincode moet uit precies 4 cijfers bestaan.");
+                    toonMooieModal("Fout", "De pincode moet uit precies 4 cijfers bestaan.");
                     return;
                 }
 
@@ -353,14 +366,21 @@ function setupUserActionListeners() {
         // ACTIE 2: VERWIJDEREN (ROOD)
         if (target.classList.contains("delete-user-btn")) {
             const username = target.dataset.username;
-            const row = target.closest('tr'); // Handig om visueel te verwijderen
 
-            if (confirm(`Weet je zeker dat je "${username}" definitief wilt verwijderen?`)) {
+            // NIEUW: Mooie Modal aanroepen (zonder input, met rode knop)
+            const bevestigd = await toonInteractieveModal({
+                titel: "Gebruiker Verwijderen",
+                tekst: `Weet je zeker dat je "${username}" definitief wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`,
+                inputNodig: false,
+                knopTekst: "Verwijderen",
+                knopKleur: "rood"
+            });
+
+            if (bevestigd) {
                 target.disabled = true; target.textContent = "...";
                 
                 callApi("DELETE_USER", { username: username }).then(result => {
                     toonMooieModal("Succes", result.message);
-                    // Update de lijst (of haal rij weg voor snelle feedback)
                     fetchUsers(); 
                 }).catch(error => {
                     alert("Fout: " + error.message);
@@ -993,6 +1013,73 @@ function setupActivityListLogic() {
     list.addEventListener('click', (e) => {
         if (e.target.classList.contains('delete-task-btn')) {
             e.target.parentElement.remove();
+        }
+    });
+}
+
+// --- NIEUWE MODAL FUNCTIE (Vervangt prompt/confirm) ---
+function toonInteractieveModal(opties) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('interactie-modal-overlay');
+        const modal = document.getElementById('interactie-modal');
+        const titelEl = document.getElementById('im-titel');
+        const tekstEl = document.getElementById('im-tekst');
+        const inputDiv = document.getElementById('im-input-container');
+        const inputEl = document.getElementById('im-input');
+        const confirmBtn = document.getElementById('im-confirm-btn');
+        const cancelBtn = document.getElementById('im-cancel-btn');
+
+        // 1. Instellen van de tekst en stijl
+        titelEl.textContent = opties.titel || "Bevestigen";
+        tekstEl.textContent = opties.tekst || "Weet je het zeker?";
+        
+        // Knop kleur en tekst (Rood of Blauw)
+        confirmBtn.textContent = opties.knopTekst || "Bevestigen";
+        confirmBtn.className = "btn-action " + (opties.knopKleur === 'rood' ? 'btn-red' : 'btn-blue');
+
+        // Input veld tonen of verbergen?
+        if (opties.inputNodig) {
+            inputDiv.style.display = 'block';
+            inputEl.value = '';
+            inputEl.placeholder = opties.placeholder || "";
+            inputEl.type = opties.inputType || "text";
+            if (opties.maxLength) inputEl.setAttribute('maxlength', opties.maxLength);
+        } else {
+            inputDiv.style.display = 'none';
+        }
+
+        // 2. Tonen
+        overlay.style.display = 'block';
+        modal.style.display = 'block';
+        if (opties.inputNodig) inputEl.focus();
+
+        // 3. Afhandeling (Opruimen en antwoorden)
+        function sluit(waarde) {
+            overlay.style.display = 'none';
+            modal.style.display = 'none';
+            // We verwijderen de event listeners door de knoppen te clonen (trucje)
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            inputEl.onkeyup = null;
+            resolve(waarde);
+        }
+
+        // Knoppen functionaliteit
+        confirmBtn.onclick = () => {
+            const resultaat = opties.inputNodig ? inputEl.value : true;
+            if (opties.inputNodig && !resultaat) return; // Lege input niet accepteren
+            sluit(resultaat);
+        };
+
+        cancelBtn.onclick = () => {
+            sluit(null); // Null betekent geannuleerd
+        };
+
+        // Enter toets ondersteuning in input
+        if (opties.inputNodig) {
+            inputEl.onkeyup = (e) => {
+                if (e.key === 'Enter') confirmBtn.click();
+            };
         }
     });
 }

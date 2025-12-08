@@ -20,18 +20,18 @@ body {
 
 h1,
 h2,
-h3 { 
-    border-bottom: 1px solid #444; 
-    padding-bottom: 10px; 
-    margin-top: 30px; 
-    text-align: center; 
+h3 {
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-top: 30px;
+    text-align: center;
 }
 
-p { 
-    border-bottom: 1px solid #444; 
-    padding-bottom: 10px; 
-    margin-top: 30px; 
-    text-align: center; 
+p {
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-top: 30px;
+    text-align: center;
 }
 
 /* --- 2. ADMIN NAVIGATIE --- */
@@ -40,13 +40,14 @@ p {
     border-radius: 8px;
     display: flex;
     flex-wrap: wrap;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     margin-bottom: 20px;
 }
 
 /* De knoppen */
-.tab-link, #back-button {
+.tab-link,
+#back-button {
     padding: 15px 20px;
     background: none;
     border: none;
@@ -59,23 +60,33 @@ p {
     text-decoration: none;
     border-bottom: 3px solid transparent;
     transition: background 0.2s;
-    position: relative; 
-    top: auto; 
+    position: relative;
+    top: auto;
     left: auto;
 }
 
-.tab-link:hover, #back-button:hover { background-color: #333; color: white; }
-.tab-link.active { background-color: #222; color: white; border-bottom-color: #ca1097; }
+.tab-link:hover,
+#back-button:hover {
+    background-color: #333;
+    color: white;
+}
+
+.tab-link.active {
+    background-color: #222;
+    color: white;
+    border-bottom-color: #ca1097;
+}
 
 /* Specifieke styling voor de terug-knop */
-#back-button { 
-    background-color: #444; 
-    flex-grow: 0; 
+#back-button {
+    background-color: #444;
+    flex-grow: 0;
     color: #fff;
 }
 
 #mobile-menu-toggle {
-    display: none; /* Alleen mobiel */
+    display: none;
+    /* Alleen mobiel */
     width: 100%;
     padding: 15px;
     background: #2a2a2a;
@@ -88,9 +99,24 @@ p {
     border-bottom: 1px solid #444;
 }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn 0.3s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
 
 /* --- 3. FORMULIEREN (Users & Checklists) --- */
 .form-grid {
@@ -103,26 +129,49 @@ p {
     margin-bottom: 20px;
 }
 
-.form-veld { margin-bottom: 15px; }
-.form-veld label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
+.form-veld {
+    margin-bottom: 15px;
+}
 
-input[type="text"], input[type="password"], input[type="number"], select {
-    width: 100%; padding: 10px;
-    background: #333; border: 1px solid #555;
-    border-radius: 5px; color: white;
+.form-veld label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #ccc;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    color: white;
     box-sizing: border-box;
 }
 
 button {
     padding: 12px 20px;
-    border-radius: 5px; border: none;
-    font-weight: bold; cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
     font-size: 1em;
 }
-#add-user-button, #checklist-save-button {
-    background-color: #28a745; color: white; width: 100%;
+
+#add-user-button,
+#checklist-save-button {
+    background-color: #28a745;
+    color: white;
+    width: 100%;
 }
-#add-user-button:hover { background-color: #218838; }
+
+#add-user-button:hover {
+    background-color: #218838;
+}
 
 /* --- 4. TABELLEN (Logs & Users) --- */
 table {
@@ -134,23 +183,50 @@ table {
     margin-top: 15px;
 }
 
-th, td {
+th,
+td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #444;
 }
-th { background-color: #333; color: white; font-weight: bold; }
-tr:hover { background-color: #333; }
+
+th {
+    background-color: #333;
+    color: white;
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #333;
+}
 
 /* Checkboxes in tabel groter maken */
 input.perm-checkbox {
-    width: 20px; height: 20px; cursor: pointer; accent-color: #007bff;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #007bff;
 }
-input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
+
+input.perm-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
 
 /* Actie knoppen in tabel */
-.delete-btn { background-color: #dc3545; color: white; padding: 6px 12px; font-size: 0.9em; }
-.action-btn { background-color: #28a745; color: white; padding: 6px 12px; font-size: 0.9em; }
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+
+.action-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
 
 /* --- 5. CHECKLIST EDITOR (VERBETERD) --- */
 
@@ -165,44 +241,45 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 
 .list-builder {
-    border: 1px solid #444; 
+    border: 1px solid #444;
     background: #222;
-    border-radius: 8px; 
+    border-radius: 8px;
     height: 300px;
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .task-list {
-    flex-grow: 1; 
-    overflow-y: auto; 
-    list-style: none; 
-    padding: 0; 
+    flex-grow: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
     margin: 0;
 }
 
 .task-list li {
-    padding: 10px; 
+    padding: 10px;
     border-bottom: 1px solid #333;
-    display: flex; 
-    justify-content: space-between; 
+    display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
 /* De invulbalk onderaan (Strakker gemaakt) */
-.add-task-form { 
-    display: flex; 
-    height: 50px; /* Vaste hoogte */
-    border-top: 1px solid #555; 
+.add-task-form {
+    display: flex;
+    height: 50px;
+    /* Vaste hoogte */
+    border-top: 1px solid #555;
     background-color: #333;
     border-radius: 0 0 8px 8px;
 }
 
-.add-task-form input { 
+.add-task-form input {
     flex-grow: 1;
-    border: none; 
-    border-radius: 0; 
+    border: none;
+    border-radius: 0;
     background: transparent;
     color: #fff;
     padding: 0 15px;
@@ -214,12 +291,12 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     background-color: #3a3a3a;
 }
 
-.add-task-btn { 
-    width: 60px; 
+.add-task-btn {
+    width: 60px;
     height: 100%;
-    background: #28a745; 
-    color: white; 
-    border-radius: 0 0 8px 0; 
+    background: #28a745;
+    color: white;
+    border-radius: 0 0 8px 0;
     border: none;
     font-size: 1.5em;
     display: flex;
@@ -228,19 +305,67 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     padding: 0;
     cursor: pointer;
 }
-.add-task-btn:hover { background-color: #218838; }
+
+.add-task-btn:hover {
+    background-color: #218838;
+}
 
 
 /* --- 6. MODALS --- */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
-.modal-box {
-    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #2a2a2a; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px;
-    text-align: center; border: 1px solid #444; z-index: 2001;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
 }
-#modal-ok-btn { background: #28a745; color: white; width: 100%; margin-top: 15px; }
 
+.modal-box {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2a2a2a;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid #444;
+    z-index: 2001;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#modal-ok-btn {
+    background: #28a745;
+    color: white;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.modal-input {
+    width: 200px !important;
+    /* Forceer breedte */
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+    font-size: 1.5em !important;
+    letter-spacing: 5px;
+    font-weight: bold;
+    background-color: #222 !important;
+    border: 2px solid #555 !important;
+    color: #fff;
+    padding: 10px !important;
+}
+
+.modal-input:focus {
+    border-color: #007bff !important;
+    outline: none;
+}
 
 /* --- 7. INSTELLINGEN PAGINA (NIEUW) --- */
 #settings-form {
@@ -248,13 +373,15 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     padding: 30px;
     border-radius: 8px;
     border: 1px solid #444;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     max-width: 500px;
-    margin: 40px auto; /* Centreren */
+    margin: 40px auto;
+    /* Centreren */
 }
 
 #settings-form .form-grid {
-    display: block; /* Onder elkaar */
+    display: block;
+    /* Onder elkaar */
     background: none;
     padding: 0;
 }
@@ -277,23 +404,59 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     letter-spacing: 1px;
     background-color: #007bff;
 }
-#settings-form button:hover { background-color: #0056b3; }
+
+#settings-form button:hover {
+    background-color: #0056b3;
+}
 
 
 /* --- 8. RESPONSIVE FIXES --- */
 @media (max-width: 768px) {
-    #mobile-menu-toggle { display: block; }
+    #mobile-menu-toggle {
+        display: block;
+    }
 
-    .tab-nav { flex-direction: column; height: auto; }
-    .tab-link, #back-button { display: none !important; width: 100%; text-align: center; border-bottom: 1px solid #444; }
-    .tab-nav.is-open .tab-link, .tab-nav.is-open #back-button { display: block !important; }
+    .tab-nav {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .tab-link,
+    #back-button {
+        display: none !important;
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px solid #444;
+    }
+
+    .tab-nav.is-open .tab-link,
+    .tab-nav.is-open #back-button {
+        display: block !important;
+    }
 
     /* Mobiele tabel weergave */
-    table, thead, tbody, th, td, tr { display: block; }
-    thead tr { position: absolute; top: -9999px; left: -9999px; }
-    
-    tr { margin-bottom: 15px; border: 1px solid #444; background: #2a2a2a; border-radius: 8px; }
-    
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border: 1px solid #444;
+        background: #2a2a2a;
+        border-radius: 8px;
+    }
+
     td {
         border: none;
         border-bottom: 1px solid #333;
@@ -301,27 +464,29 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
         padding-left: 50%;
         text-align: right;
     }
-    
+
     td:before {
         position: absolute;
-        top: 12px; left: 10px;
-        width: 45%; padding-right: 10px;
+        top: 12px;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
         white-space: nowrap;
         text-align: left;
         font-weight: bold;
         color: #aaa;
         content: attr(data-label);
     }
-    
+
     /* FIX: Vinkjes en labels netjes uitlijnen op mobiel */
-    td[data-label="Checklists"], 
-    td[data-label="Admin"], 
-    td[data-label="TD"], 
+    td[data-label="Checklists"],
+    td[data-label="Admin"],
+    td[data-label="TD"],
     td[data-label="Users"] {
-        display: flex; 
-        justify-content: space-between; 
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        padding-left: 15px !important; 
+        padding-left: 15px !important;
         text-align: left;
     }
 
@@ -329,8 +494,8 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     td[data-label="Admin"]:before,
     td[data-label="TD"]:before,
     td[data-label="Users"]:before {
-        position: static; 
-        width: auto;      
+        position: static;
+        width: auto;
         padding-right: 0;
         margin-right: auto;
     }
@@ -342,7 +507,10 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     cursor: grab;
     transition: background-color 0.2s, opacity 0.2s;
 }
-.task-list li.draggable:active { cursor: grabbing; }
+
+.task-list li.draggable:active {
+    cursor: grabbing;
+}
 
 .task-list li.dragging {
     opacity: 0.5;
@@ -352,17 +520,21 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .drag-handle {
     cursor: grab;
-    font-size: 1.5em; 
+    font-size: 1.5em;
     color: #666;
-    padding: 0 15px 0 5px; 
+    padding: 0 15px 0 5px;
     user-select: none;
 }
-.task-list li { display: flex; align-items: center; }
+
+.task-list li {
+    display: flex;
+    align-items: center;
+}
 
 
 /* --- 10. MULTI-SELECT DROPDOWN STYLING --- */
 .custom-dropdown {
-    position: relative; 
+    position: relative;
     width: 100%;
     user-select: none;
 }
@@ -372,37 +544,50 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     border: 1px solid #555;
     border-radius: 5px;
     padding: 10px 12px;
-    color: #aaa; 
+    color: #aaa;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 42px; 
+    height: 42px;
     box-sizing: border-box;
 }
 
-.dropdown-btn:hover { border-color: #777; }
-.dropdown-btn.has-selection { color: #fff; }
+.dropdown-btn:hover {
+    border-color: #777;
+}
 
-.arrow { font-size: 0.8em; transition: transform 0.3s; }
-.custom-dropdown.active .arrow { transform: rotate(180deg); }
+.dropdown-btn.has-selection {
+    color: #fff;
+}
+
+.arrow {
+    font-size: 0.8em;
+    transition: transform 0.3s;
+}
+
+.custom-dropdown.active .arrow {
+    transform: rotate(180deg);
+}
 
 .dropdown-content {
     display: none;
     position: absolute;
-    top: 105%; 
+    top: 105%;
     left: 0;
     width: 100%;
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-radius: 5px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 100; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 100;
     max-height: 200px;
     overflow-y: auto;
 }
 
-.custom-dropdown.active .dropdown-content { display: block; }
+.custom-dropdown.active .dropdown-content {
+    display: block;
+}
 
 .dropdown-content label {
     display: block;
@@ -412,8 +597,15 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
     color: #e0e0e0;
     margin-bottom: 0;
 }
-.dropdown-content label:last-child { border-bottom: none; }
-.dropdown-content label:hover { background-color: #333; }
+
+.dropdown-content label:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content label:hover {
+    background-color: #333;
+}
+
 .dropdown-content input[type="checkbox"] {
     margin-right: 10px;
     width: auto;
@@ -426,18 +618,21 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 
 /* Zorg dat de lijst items eruit zien als regels, niet als knoppen */
 #setting-activiteiten-list li {
-    background-color: transparent; /* Geen blauwe achtergrond */
+    background-color: transparent;
+    /* Geen blauwe achtergrond */
     border-bottom: 1px solid #444;
     padding: 12px 15px;
     display: flex;
-    justify-content: space-between; /* Tekst links, kruisje rechts */
+    justify-content: space-between;
+    /* Tekst links, kruisje rechts */
     align-items: center;
     color: #fff;
     font-size: 1em;
 }
 
 #setting-activiteiten-list li:hover {
-    background-color: #333; /* Subtiele hover */
+    background-color: #333;
+    /* Subtiele hover */
 }
 
 /* Het sleep-icoontje (indien aanwezig) */
@@ -449,7 +644,8 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 
 /* De tekst van de activiteit */
 #setting-activiteiten-list span {
-    flex-grow: 1; /* Pak alle ruimte */
+    flex-grow: 1;
+    /* Pak alle ruimte */
     text-align: left;
 }
 
@@ -509,7 +705,8 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 /* Container om de knoppen naast elkaar te zetten */
 .action-btn-group {
     display: flex;
-    gap: 8px; /* Ruimte tussen de knoppen */
+    gap: 8px;
+    /* Ruimte tussen de knoppen */
     align-items: center;
 }
 
@@ -530,6 +727,7 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 .btn-blue {
     background-color: #007bff;
 }
+
 .btn-blue:hover {
     background-color: #0056b3;
 }
@@ -538,6 +736,7 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 .btn-red {
     background-color: #dc3545;
 }
+
 .btn-red:hover {
     background-color: #c82333;
 }

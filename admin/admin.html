@@ -228,6 +228,21 @@
         <p id="modal-message">Bericht...</p>
         <button id="modal-ok-btn">OK</button>
     </div>
+    <div id="interactie-modal-overlay" class="modal-overlay"></div>
+    <div id="interactie-modal" class="modal-box">
+        <h3 id="im-titel">Actie Vereist</h3>
+        <p id="im-tekst" style="margin: 20px 0; font-size: 1.1em; color: #ccc;">...</p>
+
+        <div id="im-input-container" style="display:none; margin-bottom: 25px;">
+            <input type="text" id="im-input" class="modal-input" autocomplete="off">
+        </div>
+
+        <div class="modal-footer" style="justify-content: center; border-top: none; padding-top: 0;">
+            <button id="im-cancel-btn" class="btn-action"
+                style="background-color: #555; margin-right: 10px;">Annuleren</button>
+            <button id="im-confirm-btn" class="btn-action">Bevestigen</button>
+        </div>
+    </div>
 
     <script src="admin.js"></script>
 </body>
