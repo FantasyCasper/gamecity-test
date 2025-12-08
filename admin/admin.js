@@ -322,54 +322,50 @@ function setupUserActionListeners() {
     if (!userTable) return;
 
     userTable.addEventListener("click", e => {
-        // Hebben we op de 'Go' knop geklikt?
-        if (e.target.classList.contains("user-action-btn")) {
-            const button = e.target;
-            const username = button.dataset.username;
+        const target = e.target;
+        
+        // ACTIE 1: WACHTWOORD WIJZIGEN (BLAUW)
+        if (target.classList.contains("change-pin-btn")) {
+            const username = target.dataset.username;
+            const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
             
-            // Zoek de dropdown die er direct naast staat
-            const select = document.getElementById(`action-select-${username}`);
-            const actie = select.value;
+            if (newPin !== null) {
+                if (newPin.length !== 4 || isNaN(newPin)) {
+                    alert("De pincode moet uit precies 4 cijfers bestaan.");
+                    return;
+                }
 
-            // ACTIE 1: VERWIJDEREN
-            if (actie === 'delete') {
-                if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
-                    button.disabled = true; button.textContent = "...";
-                    
-                    callApi("DELETE_USER", { username: username }).then(result => {
-                        toonMooieModal("Succes", result.message);
-                        fetchUsers();
-                    }).catch(error => {
+                target.disabled = true; target.textContent = "...";
+
+                callApi("UPDATE_USER_PIN", { targetUser: username, newPin: newPin })
+                    .then(result => {
+                        toonMooieModal("Succes", `Pincode van ${username} is gewijzigd.`);
+                    })
+                    .catch(error => {
                         alert("Fout: " + error.message);
-                        button.disabled = false; button.textContent = "Go";
+                    })
+                    .finally(() => {
+                        target.disabled = false; target.textContent = "Wachtwoord";
                     });
-                }
             }
+        }
 
-            // ACTIE 2: PINCODE WIJZIGEN
-            if (actie === 'pin') {
-                const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
+        // ACTIE 2: VERWIJDEREN (ROOD)
+        if (target.classList.contains("delete-user-btn")) {
+            const username = target.dataset.username;
+            const row = target.closest('tr'); // Handig om visueel te verwijderen
+
+            if (confirm(`Weet je zeker dat je "${username}" definitief wilt verwijderen?`)) {
+                target.disabled = true; target.textContent = "...";
                 
-                if (newPin !== null) { // Als er niet op Annuleren is geklikt
-                    // Simpele validatie
-                    if (newPin.length !== 4 || isNaN(newPin)) {
-                        alert("De pincode moet uit precies 4 cijfers bestaan.");
-                        return;
-                    }
-
-                    button.disabled = true; button.textContent = "...";
-
-                    callApi("UPDATE_USER_PIN", { targetUser: username, newPin: newPin })
-                        .then(result => {
-                            toonMooieModal("Succes", `Pincode van ${username} is gewijzigd.`);
-                        })
-                        .catch(error => {
-                            alert("Fout: " + error.message);
-                        })
-                        .finally(() => {
-                            button.disabled = false; button.textContent = "Go";
-                        });
-                }
+                callApi("DELETE_USER", { username: username }).then(result => {
+                    toonMooieModal("Succes", result.message);
+                    // Update de lijst (of haal rij weg voor snelle feedback)
+                    fetchUsers(); 
+                }).catch(error => {
+                    alert("Fout: " + error.message);
+                    target.disabled = false; target.textContent = "X";
+                });
             }
         }
     });
@@ -960,56 +956,43 @@ function setupSettingsForm() {
     });
 }
 
-function setupUserActionListeners() {
-    const userTable = document.getElementById("user-table");
-    if (!userTable) return;
+function setupActivityListLogic() {
+    const list = document.getElementById('setting-activiteiten-list');
+    const input = document.getElementById('new-activity-input');
+    const addBtn = document.getElementById('add-activity-btn');
 
-    userTable.addEventListener("click", e => {
-        const target = e.target;
-        
-        // ACTIE 1: WACHTWOORD WIJZIGEN (BLAUW)
-        if (target.classList.contains("change-pin-btn")) {
-            const username = target.dataset.username;
-            const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
-            
-            if (newPin !== null) {
-                if (newPin.length !== 4 || isNaN(newPin)) {
-                    alert("De pincode moet uit precies 4 cijfers bestaan.");
-                    return;
-                }
+    if (!list || !input || !addBtn) return;
 
-                target.disabled = true; target.textContent = "...";
+    // Helper om items toe te voegen (hergebruikt createTaakLi logica)
+    function addActivityItem(text) {
+        // We hergebruiken createTaakLi uit de checklist sectie voor de Drag & Drop functionaliteit!
+        // Zorg dat createTaakLi beschikbaar is in je scope (dat is hij in admin.js)
+        const li = createTaakLi(text);
+        list.appendChild(li);
+    }
 
-                callApi("UPDATE_USER_PIN", { targetUser: username, newPin: newPin })
-                    .then(result => {
-                        toonMooieModal("Succes", `Pincode van ${username} is gewijzigd.`);
-                    })
-                    .catch(error => {
-                        alert("Fout: " + error.message);
-                    })
-                    .finally(() => {
-                        target.disabled = false; target.textContent = "Wachtwoord";
-                    });
-            }
+    // Klikken op plusje
+    addBtn.addEventListener('click', () => {
+        const text = input.value.trim();
+        if (text) {
+            addActivityItem(text);
+            input.value = '';
+            input.focus();
         }
+    });
 
-        // ACTIE 2: VERWIJDEREN (ROOD)
-        if (target.classList.contains("delete-user-btn")) {
-            const username = target.dataset.username;
-            const row = target.closest('tr'); // Handig om visueel te verwijderen
+    // Enter toets in input
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addBtn.click();
+        }
+    });
 
-            if (confirm(`Weet je zeker dat je "${username}" definitief wilt verwijderen?`)) {
-                target.disabled = true; target.textContent = "...";
-                
-                callApi("DELETE_USER", { username: username }).then(result => {
-                    toonMooieModal("Succes", result.message);
-                    // Update de lijst (of haal rij weg voor snelle feedback)
-                    fetchUsers(); 
-                }).catch(error => {
-                    alert("Fout: " + error.message);
-                    target.disabled = false; target.textContent = "X";
-                });
-            }
+    // Verwijder knop functionaliteit (Delegeer event)
+    list.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-task-btn')) {
+            e.target.parentElement.remove();
         }
     });
 }
