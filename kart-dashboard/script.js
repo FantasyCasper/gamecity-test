@@ -175,7 +175,7 @@ function renderDefectCards(defects) {
     if (actieveDefecten.length === 0) {
         container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
-    
+
     // Sorteren: Open eerst
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
@@ -183,7 +183,7 @@ function renderDefectCards(defects) {
         const ts = tijdGeleden(defect.timestamp);
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
-        kaart.style.position = "relative"; 
+        kaart.style.position = "relative";
 
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
 
@@ -192,7 +192,7 @@ function renderDefectCards(defects) {
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
-        
+
         const heeftRechten = (isEigenaar && isVers) || isTD;
 
         let actieKnop = '';
@@ -201,7 +201,7 @@ function renderDefectCards(defects) {
             if (defect.status === 'Open') {
                 // Status OPEN -> Potloodje (Aanpassen)
                 actieKnop = maakEditKnop(defect);
-            } 
+            }
             else if (defect.status === 'Opgelost') {
                 // Status OPGELOST -> Rood Kruisje (Verwijderen)
                 actieKnop = `
@@ -217,7 +217,7 @@ function renderDefectCards(defects) {
             extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">Nodig: ${defect.benodigdheden}</div>`;
         }
         if (defect.onderdelenStatus && defect.onderdelenStatus !== 'Niet nodig') {
-            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; 
+            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c';
             extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelenStatus}</div>`;
         }
 
@@ -244,15 +244,16 @@ function maakEditKnop(defect) {
                 data-omschrijving="${escape(defect.defect)}"
                 data-status="${defect.status}"
                 data-benodigdheden="${escape(defect.benodigdheden || '')}"
-                data-onderdelen="${escape(defect.onderdelenStatus || '')}">
+                data-onderdelen="${escape(defect.onderdelenStatus || '')}"
+                data-timestamp="${defect.timestamp}"
+                data-medewerker="${defect.medewerker}">
             ✎
        </button>`;
 }
-
 function setupDashboardListeners() {
     const container = document.getElementById("defect-card-container");
     if (!container) return;
-    
+
     container.addEventListener("click", e => {
         // 1. KLIK OP POTLOOD (Bewerken)
         const editKnop = e.target.closest('.edit-icon-btn');
@@ -265,9 +266,9 @@ function setupDashboardListeners() {
         if (deleteKnop) {
             const rowId = deleteKnop.dataset.rowId;
             if (confirm("Wil je dit defect definitief verwijderen?")) {
-                
-                deleteKnop.disabled = true; 
-                deleteKnop.innerHTML = "..."; 
+
+                deleteKnop.disabled = true;
+                deleteKnop.innerHTML = "...";
 
                 // BEPAAL WELKE API WE ROEPEN
                 let payload = {};
@@ -300,77 +301,72 @@ function setupEditModal() {
     const overlay = document.getElementById('modal-overlay');
     const form = document.getElementById('edit-defect-form');
     const saveButton = document.getElementById('modal-save-btn');
-    const resolveButton = document.getElementById('modal-resolve-btn'); // De nieuwe knop
+    const resolveButton = document.getElementById('modal-resolve-btn');
     const deleteButton = document.getElementById('modal-delete-btn');
 
-    // Sluit knoppen logic
+    // Sluit knoppen
     document.getElementById('modal-close-btn').onclick = closeEditModal;
     document.getElementById('modal-cancel-btn').onclick = closeEditModal;
     if (overlay) overlay.onclick = closeEditModal;
 
     if (!form) return;
 
-    // ALGEMENE FUNCTIE OM TE SAVEN
+    // 1. OPSLAAN / OPLOSSEN Functie
     function verwerkOpslaan(nieuweStatus) {
-        // Welke knop drukten we in? (Visuele feedback)
         const actieveKnop = (nieuweStatus === "Opgelost") ? resolveButton : saveButton;
-        actieveKnop.disabled = true;
-        actieveKnop.textContent = "Bezig...";
+        if (actieveKnop) { actieveKnop.disabled = true; actieveKnop.textContent = "Bezig..."; }
 
         const payload = {
             type: "UPDATE_DEFECT_EXTENDED",
             rowId: document.getElementById('edit-row-id').value,
             newKartNummer: document.getElementById('edit-kart-select').value,
             newText: document.getElementById('edit-defect-omschrijving').value.trim(),
-            // Lees de TD velden uit
             benodigdheden: document.getElementById('edit-benodigdheden').value,
             onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
-            // Gebruik de status die we meekrijgen (Opgelost of de originele)
             newStatus: nieuweStatus,
             medewerker: ingelogdeNaam
         };
 
         callApi(payload)
             .then(result => {
-                const melding = (nieuweStatus === "Opgelost") ? "Defect opgelost!" : "Wijzigingen opgeslagen.";
-                toonDefectStatus(melding, "success");
+                toonDefectStatus((nieuweStatus === "Opgelost") ? "Defect opgelost!" : "Opgeslagen.", "success");
                 closeEditModal();
                 laadDefectenDashboard();
             })
-            .catch(error => {
-                toonDefectStatus("Fout: " + error.message, "error");
-            })
+            .catch(error => { toonDefectStatus("Fout: " + error.message, "error"); })
             .finally(() => {
-                actieveKnop.disabled = false;
-                actieveKnop.textContent = (nieuweStatus === "Opgelost") ? "✓ Markeer als Opgelost" : "Opslaan";
+                if (actieveKnop) {
+                    actieveKnop.disabled = false;
+                    actieveKnop.textContent = (nieuweStatus === "Opgelost") ? "✓ Markeer als Opgelost" : "Opslaan";
+                }
             });
     }
 
-    // KNOP 1: OPSLAAN (Status blijft zoals hij was, meestal 'Open')
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const huidigeStatus = document.getElementById('original-status').value;
-        verwerkOpslaan(huidigeStatus);
-    });
+    // Listeners voor Opslaan
+    form.addEventListener('submit', (e) => { e.preventDefault(); verwerkOpslaan(document.getElementById('original-status').value); });
+    if (resolveButton) resolveButton.addEventListener('click', () => { if (confirm("Markeren als opgelost?")) verwerkOpslaan("Opgelost"); });
 
-    // KNOP 2: OPLOSSEN (Nieuwe knop)
-    if (resolveButton) {
-        resolveButton.addEventListener('click', () => {
-            // Bevestiging is misschien fijn, maar hoeft niet perse
-            if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
-            verwerkOpslaan("Opgelost");
-        });
-    }
-
-    // KNOP 3: VERWIJDEREN (Bestaande logica)
+    // 2. VERWIJDEREN (De logica voor de rode knop in de modal)
     if (deleteButton) {
         deleteButton.addEventListener('click', () => {
-            if (!confirm('Weet je zeker dat je dit defect definitief wilt verwijderen uit de lijst?')) return;
+            if (!confirm('Weet je zeker dat je dit defect definitief wilt verwijderen?')) return;
 
             deleteButton.disabled = true; deleteButton.textContent = "...";
             const rowId = document.getElementById('edit-row-id').value;
 
-            callApi({ type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" })
+            // KIES DE JUISTE METHODE
+            let payload = {};
+            const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+
+            if (isTD) {
+                // TD methode
+                payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" };
+            } else {
+                // Melder methode (eigen defect)
+                payload = { type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam };
+            }
+
+            callApi(payload)
                 .then(result => {
                     toonDefectStatus("Verwijderd.", "success");
                     closeEditModal();
@@ -392,36 +388,35 @@ function openEditModal(dataset) {
     document.getElementById('edit-defect-omschrijving').value = unescape(dataset.omschrijving);
     document.getElementById('original-status').value = dataset.status;
 
-    // 2. TD Logica
+    // 2. TD Velden vullen (indien TD)
     const tdSection = document.getElementById('td-fields');
-    const deleteBtn = document.getElementById('modal-delete-btn');
-    const resolveBtn = document.getElementById('modal-resolve-btn'); // De nieuwe knop
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+    const resolveBtn = document.getElementById('modal-resolve-btn');
 
     if (isTD) {
         tdSection.style.display = 'block';
-
-        // HIER IS DE FIX: Vul de velden met de data uit de knop
         document.getElementById('edit-benodigdheden').value = dataset.benodigdheden ? unescape(dataset.benodigdheden) : '';
         document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || '';
-
-
-        // Knoppen tonen/verbergen op basis van status
-        if (dataset.status === 'Opgelost') {
-            deleteBtn.style.display = 'block';
-            if (resolveBtn) resolveBtn.style.display = 'none'; // Al opgelost, dus knop weg
-        } else {
-            deleteBtn.style.display = 'none';
-            if (resolveBtn) resolveBtn.style.display = 'block'; // Nog open, dus knop tonen
-        }
-
+        if (resolveBtn) resolveBtn.style.display = 'block';
     } else {
         tdSection.style.display = 'none';
-        deleteBtn.style.display = 'none';
         if (resolveBtn) resolveBtn.style.display = 'none';
     }
 
-    // 3. Open de modal
+    // 3. VERWIJDER KNOP LOGICA (Hier zorgen we dat hij zichtbaar wordt!)
+    const deleteBtn = document.getElementById('modal-delete-btn');
+
+    // Check: Ben ik eigenaar (<24u) OF ben ik TD?
+    const isEigenaar = (dataset.medewerker === ingelogdeNaam);
+    const isVers = (Date.now() - new Date(dataset.timestamp).getTime() < 86400000);
+
+    if ((isEigenaar && isVers) || isTD) {
+        deleteBtn.style.display = 'block'; // MAAK ZICHTBAAR
+    } else {
+        deleteBtn.style.display = 'none';  // VERBERG
+    }
+
+    // 4. Open de modal
     document.getElementById('edit-modal').style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
 }
