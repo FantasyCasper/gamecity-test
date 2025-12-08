@@ -45,7 +45,7 @@ let TOTAAL_KARTS = 40; // Standaard fallback, wordt overschreven door server
 function vulKartDropdowns() {
     const meldSelect = document.getElementById('new-defect-kart');
     const editSelect = document.getElementById('edit-kart-select');
-    
+
     // Eerst leegmaken (voor als we de functie opnieuw aanroepen na laden settings)
     if (meldSelect) {
         meldSelect.innerHTML = '<option value="">Kart...</option>';
@@ -53,15 +53,15 @@ function vulKartDropdowns() {
             meldSelect.add(new Option(`Kart ${i}`, i));
         }
     }
-    
+
     if (editSelect) {
         // Edit select heeft geen placeholder nodig, die wordt later gezet
-        editSelect.innerHTML = ''; 
+        editSelect.innerHTML = '';
         for (let i = 1; i <= TOTAAL_KARTS; i++) {
             editSelect.add(new Option(`Kart ${i}`, i));
         }
     }
-    
+
     // Update ook even het tekstje in het dashboard (Statistieken blokje)
     const totaalVeld = document.getElementById('stat-totaal-karts');
     if (totaalVeld) totaalVeld.textContent = TOTAAL_KARTS;
@@ -119,9 +119,9 @@ function laadDefectenDashboard() {
 function updateStatBoxes(defects) {
     const openDefecten = defects.filter(d => d.status === 'Open');
     const uniekeKartsMetProbleem = [...new Set(openDefecten.map(d => d.kartNummer))];
-    
+
     document.getElementById('stat-karts-problemen').textContent = uniekeKartsMetProbleem.length;
-    
+
     // AANGEPAST: Gebruik nu TOTAAL_KARTS in plaats van 40
     document.getElementById('stat-werkende-karts').textContent = TOTAAL_KARTS - uniekeKartsMetProbleem.length;
 }
@@ -175,7 +175,7 @@ function renderDefectCards(defects) {
     if (actieveDefecten.length === 0) {
         container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
-    
+
     // Sorteren: Open eerst
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
@@ -184,33 +184,31 @@ function renderDefectCards(defects) {
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
         // Zorg dat de kaart 'position: relative' heeft voor het icoontje (zie CSS stap)
-        kaart.style.position = "relative"; 
+        kaart.style.position = "relative";
 
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
 
         // --- DE NIEUWE LOGICA ---
         let editKnopHtml = '';
-        
+
         // Check 1: Ben ik de maker en is het < 24 uur?
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
-        
+
         // Check 2: Ben ik TD of Admin?
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
         // Als één van beide waar is, toon het potloodje
         if ((isEigenaar && defect.status === "Open" && isVers) || isTD) {
-            // We slaan alle data op in attributen (ook de nieuwe TD velden)
-            // Let op: 'benodigdheden' en 'onderdelen_status' moeten wel in je Google Sheet staan!
-            // Als ze nog niet bestaan, zijn ze 'undefined', dat vangen we op.
             editKnopHtml = `
                 <button class="edit-icon-btn" 
                         data-row-id="${defect.rowId}" 
                         data-kart="${defect.kartNummer}" 
                         data-omschrijving="${escape(defect.defect)}"
                         data-status="${defect.status}"
+                        /* HIER ZAT DE FIX: */
                         data-benodigdheden="${escape(defect.benodigdheden || '')}"
-                        data-onderdelen="${escape(defect.onderdelen_status || '')}">
+                        data-onderdelen="${escape(defect.onderdelenStatus || '')}">
                     ✎
                </button>`;
         }
@@ -259,6 +257,7 @@ function setupEditModal() {
     const overlay = document.getElementById('modal-overlay');
     const form = document.getElementById('edit-defect-form');
     const saveButton = document.getElementById('modal-save-btn');
+    const resolveButton = document.getElementById('modal-resolve-btn'); // De nieuwe knop
     const deleteButton = document.getElementById('modal-delete-btn');
     
     // Sluit knoppen logic
@@ -268,33 +267,30 @@ function setupEditModal() {
 
     if (!form) return;
 
-    // OPSLAAN
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveButton.disabled = true; saveButton.textContent = "Opslaan...";
-
-        // Check of TD 'opgelost' heeft aangevinkt
-        const isOpgelost = document.getElementById('edit-is-opgelost').checked;
-        const nieuweStatus = isOpgelost ? "Opgelost" : "Open";
+    // ALGEMENE FUNCTIE OM TE SAVEN
+    function verwerkOpslaan(nieuweStatus) {
+        // Welke knop drukten we in? (Visuele feedback)
+        const actieveKnop = (nieuweStatus === "Opgelost") ? resolveButton : saveButton;
+        actieveKnop.disabled = true; 
+        actieveKnop.textContent = "Bezig...";
 
         const payload = {
-            type: "UPDATE_DEFECT_EXTENDED", // <-- Nieuw type in je backend nodig, of update bestaande
+            type: "UPDATE_DEFECT_EXTENDED",
             rowId: document.getElementById('edit-row-id').value,
             newKartNummer: document.getElementById('edit-kart-select').value,
             newText: document.getElementById('edit-defect-omschrijving').value.trim(),
-            // Nieuwe TD velden
+            // Lees de TD velden uit
             benodigdheden: document.getElementById('edit-benodigdheden').value,
             onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
-            newStatus: nieuweStatus,
+            // Gebruik de status die we meekrijgen (Opgelost of de originele)
+            newStatus: nieuweStatus, 
             medewerker: ingelogdeNaam
         };
-        
-        // OPMERKING: Zorg dat je Google Script 'UPDATE_DEFECT_EXTENDED' of de gewone 'UPDATE_DEFECT' update om deze extra velden te accepteren!
-        // Als je backend dit nog niet kan, moet ik de backend code ook voor je schrijven.
 
         callApi(payload)
             .then(result => {
-                toonDefectStatus("Defect bijgewerkt.", "success");
+                const melding = (nieuweStatus === "Opgelost") ? "Defect opgelost!" : "Wijzigingen opgeslagen.";
+                toonDefectStatus(melding, "success");
                 closeEditModal();
                 laadDefectenDashboard();
             })
@@ -302,11 +298,28 @@ function setupEditModal() {
                 toonDefectStatus("Fout: " + error.message, "error");
             })
             .finally(() => {
-                saveButton.disabled = false; saveButton.textContent = "Opslaan";
+                actieveKnop.disabled = false; 
+                actieveKnop.textContent = (nieuweStatus === "Opgelost") ? "✓ Markeer als Opgelost" : "Opslaan";
             });
+    }
+
+    // KNOP 1: OPSLAAN (Status blijft zoals hij was, meestal 'Open')
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const huidigeStatus = document.getElementById('original-status').value;
+        verwerkOpslaan(huidigeStatus);
     });
 
-    // VERWIJDEREN (Alleen zichtbaar als Opgelost + TD)
+    // KNOP 2: OPLOSSEN (Nieuwe knop)
+    if (resolveButton) {
+        resolveButton.addEventListener('click', () => {
+             // Bevestiging is misschien fijn, maar hoeft niet perse
+             if(!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
+             verwerkOpslaan("Opgelost");
+        });
+    }
+
+    // KNOP 3: VERWIJDEREN (Bestaande logica)
     if (deleteButton) {
         deleteButton.addEventListener('click', () => {
             if (!confirm('Weet je zeker dat je dit defect definitief wilt verwijderen uit de lijst?')) return;
@@ -336,30 +349,32 @@ function openEditModal(dataset) {
     document.getElementById('edit-defect-omschrijving').value = unescape(dataset.omschrijving);
     document.getElementById('original-status').value = dataset.status;
 
-    // 2. TD Logica: Toon extra velden als je TD/Admin bent
+    // 2. TD Logica
     const tdSection = document.getElementById('td-fields');
     const deleteBtn = document.getElementById('modal-delete-btn');
+    const resolveBtn = document.getElementById('modal-resolve-btn'); // De nieuwe knop
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
     if (isTD) {
         tdSection.style.display = 'block';
         
-        // Vul TD velden (unescape voor veiligheid)
+        // HIER IS DE FIX: Vul de velden met de data uit de knop
         document.getElementById('edit-benodigdheden').value = dataset.benodigdheden ? unescape(dataset.benodigdheden) : '';
-        document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || '';
-        document.getElementById('edit-is-opgelost').checked = (dataset.status === 'Opgelost');
+        document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || ''; // Let op: dataset.onderdelen komt van data-onderdelen
 
-        // Verwijderknop logica: Alleen als hij AL opgelost is, mag je verwijderen
+        // Knoppen tonen/verbergen op basis van status
         if (dataset.status === 'Opgelost') {
             deleteBtn.style.display = 'block';
+            if(resolveBtn) resolveBtn.style.display = 'none'; // Al opgelost, dus knop weg
         } else {
             deleteBtn.style.display = 'none';
+            if(resolveBtn) resolveBtn.style.display = 'block'; // Nog open, dus knop tonen
         }
 
     } else {
-        // Geen TD? Verberg alles
         tdSection.style.display = 'none';
         deleteBtn.style.display = 'none';
+        if(resolveBtn) resolveBtn.style.display = 'none';
     }
 
     // 3. Open de modal
@@ -465,10 +480,10 @@ function haalInstellingenOp() {
         if (result.data && result.data['totaal_karts']) {
             // Update de variabele met de waarde uit de spreadsheet
             TOTAAL_KARTS = parseInt(result.data['totaal_karts']);
-            
+
             // Ververs de dropdowns en statistieken met het nieuwe aantal
             vulKartDropdowns();
-            
+
             // Als we defecten al geladen hadden, update de statistiek-boxen dan ook
             if (typeof alleDefecten !== 'undefined') {
                 updateStatBoxes(alleDefecten);

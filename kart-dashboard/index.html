@@ -86,9 +86,19 @@
                     </select>
                 </div>
 
-                <div class="form-veld" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
-                    <input type="checkbox" id="edit-is-opgelost" style="width: 20px; height: 20px;">
-                    <label for="edit-is-opgelost" style="margin:0; color: #fff;">Markeer als Opgelost</label>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <button type="button" id="modal-delete-btn" class="manager-btn-danger"
+                    style="display:none;">Verwijderen</button>
+
+                <div style="display: flex; gap: 10px; margin-left: auto;">
+                    <button type="button" id="modal-cancel-btn">Annuleren</button>
+                    <button type="submit" id="modal-save-btn">Opslaan</button>
+                    <button type="button" id="modal-resolve-btn"
+                        style="background-color: #28a745; color: white; border:none; border-radius:5px; padding: 10px 15px; font-weight:bold; cursor:pointer;">
+                        ✓ Markeer als Opgelost
+                    </button>
                 </div>
             </div>
 
