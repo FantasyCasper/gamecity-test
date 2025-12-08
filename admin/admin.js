@@ -216,7 +216,7 @@ function renderUsers(users) {
     const ingelogdeVolledigeNaam = localStorage.getItem('ingelogdeMedewerker');
 
     users.forEach(user => {
-        // 1. CHECK: Is dit de Super Admin?
+        // 1. CHECK: Is dit de Super Admin? (Die mag je niet editen/verwijderen)
         if (user.username.toLowerCase() === 'admin') {
             return; 
         }
@@ -229,7 +229,7 @@ function renderUsers(users) {
             isSelf = true;
         }
 
-        // Helper om een checkbox te maken (ongewijzigd)
+        // Helper om een checkbox te maken
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
                    class="perm-checkbox" 
@@ -242,25 +242,25 @@ function renderUsers(users) {
         const tr = document.createElement('tr');
         if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 
-        // --- HIER ZIT DE NIEUWE DROPDOWN LOGICA ---
+        // --- DE NIEUWE KNOPPEN LOGICA ---
         let actieHtml = '';
+        
+        // Knop 1: Wachtwoord wijzigen (Blauw) - Altijd zichtbaar
+        const changePassBtn = `<button class="btn-action btn-blue change-pin-btn" data-username="${user.username}" title="Wachtwoord wijzigen">Wachtwoord</button>`;
+        
+        // Knop 2: Verwijderen (Rood) - Alleen zichtbaar als het NIET jezelf is
+        const deleteBtn = `<button class="btn-action btn-red delete-user-btn" data-username="${user.username}" title="Gebruiker verwijderen">X</button>`;
+
         if (isSelf) {
-            actieHtml = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Jij (Niet verwijderbaar)</span>';
+            // Bij jezelf: Alleen blauw
+            actieHtml = `<div class="action-btn-group">${changePassBtn} <span style="font-size:0.8em; color:#aaa; margin-left:5px;">(Jij)</span></div>`;
         } else {
-            // Dropdown met Pincode als standaard (eerste optie)
-            actieHtml = `
-                <div class="user-action-container">
-                    <select id="action-select-${user.username}" class="user-action-select">
-                        <option value="pin">Wachtwoord Wijzigen</option>
-                        <option value="delete">Verwijderen</option>
-                    </select>
-                    <button class="user-action-btn" data-username="${user.username}">Go</button>
-                </div>
-            `;
+            // Bij anderen: Blauw én Rood
+            actieHtml = `<div class="action-btn-group">${changePassBtn} ${deleteBtn}</div>`;
         }
 
         tr.innerHTML = `
-            <td data-label="Gebruiker">${user.username} ${isSelf ? ' (Jij)' : ''}</td>
+            <td data-label="Gebruiker">${user.username}</td>
             <td data-label="Naam">${user.fullname}</td>
             <td data-label="Checklists" style="text-align:center;">${createCheckbox('checklists', user.perms.checklists)}</td>
             <td data-label="Admin" style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
@@ -960,43 +960,56 @@ function setupSettingsForm() {
     });
 }
 
-function setupActivityListLogic() {
-    const list = document.getElementById('setting-activiteiten-list');
-    const input = document.getElementById('new-activity-input');
-    const addBtn = document.getElementById('add-activity-btn');
+function setupUserActionListeners() {
+    const userTable = document.getElementById("user-table");
+    if (!userTable) return;
 
-    if (!list || !input || !addBtn) return;
+    userTable.addEventListener("click", e => {
+        const target = e.target;
+        
+        // ACTIE 1: WACHTWOORD WIJZIGEN (BLAUW)
+        if (target.classList.contains("change-pin-btn")) {
+            const username = target.dataset.username;
+            const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
+            
+            if (newPin !== null) {
+                if (newPin.length !== 4 || isNaN(newPin)) {
+                    alert("De pincode moet uit precies 4 cijfers bestaan.");
+                    return;
+                }
 
-    // Helper om items toe te voegen (hergebruikt createTaakLi logica)
-    function addActivityItem(text) {
-        // We hergebruiken createTaakLi uit de checklist sectie voor de Drag & Drop functionaliteit!
-        // Zorg dat createTaakLi beschikbaar is in je scope (dat is hij in admin.js)
-        const li = createTaakLi(text);
-        list.appendChild(li);
-    }
+                target.disabled = true; target.textContent = "...";
 
-    // Klikken op plusje
-    addBtn.addEventListener('click', () => {
-        const text = input.value.trim();
-        if (text) {
-            addActivityItem(text);
-            input.value = '';
-            input.focus();
+                callApi("UPDATE_USER_PIN", { targetUser: username, newPin: newPin })
+                    .then(result => {
+                        toonMooieModal("Succes", `Pincode van ${username} is gewijzigd.`);
+                    })
+                    .catch(error => {
+                        alert("Fout: " + error.message);
+                    })
+                    .finally(() => {
+                        target.disabled = false; target.textContent = "Wachtwoord";
+                    });
+            }
         }
-    });
 
-    // Enter toets in input
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addBtn.click();
-        }
-    });
+        // ACTIE 2: VERWIJDEREN (ROOD)
+        if (target.classList.contains("delete-user-btn")) {
+            const username = target.dataset.username;
+            const row = target.closest('tr'); // Handig om visueel te verwijderen
 
-    // Verwijder knop functionaliteit (Delegeer event)
-    list.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-task-btn')) {
-            e.target.parentElement.remove();
+            if (confirm(`Weet je zeker dat je "${username}" definitief wilt verwijderen?`)) {
+                target.disabled = true; target.textContent = "...";
+                
+                callApi("DELETE_USER", { username: username }).then(result => {
+                    toonMooieModal("Succes", result.message);
+                    // Update de lijst (of haal rij weg voor snelle feedback)
+                    fetchUsers(); 
+                }).catch(error => {
+                    alert("Fout: " + error.message);
+                    target.disabled = false; target.textContent = "X";
+                });
+            }
         }
     });
 }

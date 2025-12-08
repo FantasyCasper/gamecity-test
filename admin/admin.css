@@ -503,38 +503,41 @@ input.perm-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 
 /* ===============================
-   USER ACTION DROPDOWN
+   NIEUWE ACTIE KNOPPEN (User Management)
    =============================== */
 
-.user-action-container {
+/* Container om de knoppen naast elkaar te zetten */
+.action-btn-group {
     display: flex;
-    gap: 5px;
+    gap: 8px; /* Ruimte tussen de knoppen */
     align-items: center;
 }
 
-.user-action-select {
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #fff;
-    font-size: 0.9em;
-    cursor: pointer;
-    /* Zorg dat hij niet te breed wordt op mobiel */
-    max-width: 140px; 
-}
-
-.user-action-btn {
-    padding: 6px 12px;
-    background-color: #007bff; /* Blauw voor actie */
-    color: white;
+/* Basisstijl voor beide knoppen */
+.btn-action {
+    padding: 8px 12px;
     border: none;
     border-radius: 4px;
+    color: white;
     cursor: pointer;
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+    text-transform: uppercase;
 }
 
-.user-action-btn:hover {
+/* Blauw = Wachtwoord / Wijzigen */
+.btn-blue {
+    background-color: #007bff;
+}
+.btn-blue:hover {
     background-color: #0056b3;
+}
+
+/* Rood = Verwijderen */
+.btn-red {
+    background-color: #dc3545;
+}
+.btn-red:hover {
+    background-color: #c82333;
 }
