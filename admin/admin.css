@@ -384,16 +384,14 @@ input.perm-checkbox:disabled {
 /* 1. DE GROENE KNOP (Bovenaan, breed) */
 #save-settings-btn {
     width: 100%;
-    background-color: #00e600; /* Fel groen zoals op tekening */
-    color: #000; /* Zwarte tekst leest beter op fel groen */
-    font-weight: 900; /* Extra dik */
+    background-color: #218838;
+    color: white;
     text-transform: uppercase;
     font-size: 1.2em;
     padding: 15px;
     margin-top: 0;
     margin-bottom: 30px; /* Ruimte tot de blokken */
     border-radius: 5px;
-    box-shadow: 0 4px 10px rgba(0,230,0,0.3); /* Groene gloed */
     border: none;
 }
 
