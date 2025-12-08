@@ -810,3 +810,44 @@ input[type="checkbox"]:checked+label {
     background-color: #0056b3;
     transform: scale(1.1);
 }
+
+/* ===============================
+   FIX: EDIT MODAL (ALGEMEEN)
+   =============================== */
+
+#modal-edit-algemeen {
+    display: none;       /* Standaard verborgen */
+    position: fixed;     /* Losmaken van de pagina */
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%); /* Exact centreren */
+    
+    background-color: #2a2a2a;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    
+    z-index: 3001;       /* Bovenop de grijze laag */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #444;
+    text-align: left;
+}
+
+/* Zorg dat de footer knoppen netjes staan */
+#modal-edit-algemeen .modal-footer {
+    display: flex;
+    justify-content: space-between; /* Verwijderknop links, de rest rechts */
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+
+#modal-edit-algemeen .modal-footer button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+}
