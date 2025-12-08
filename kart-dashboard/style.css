@@ -376,3 +376,36 @@ body.is-manager .manager-btn-danger {
     border-radius: 8px; /* Mooiere ronding */
     margin-bottom: 0;
 }
+
+/* Styling voor het ronde blauwe potloodje */
+.edit-icon-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: #007bff; /* Blauw */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Rondje */
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background-color 0.2s;
+    padding: 0;
+    z-index: 10;
+}
+
+.edit-icon-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+/* Zorg dat de kaart positie relative heeft (voor het absoluut plaatsen van de knop) */
+.defect-card {
+    position: relative;
+    padding-bottom: 50px; /* Iets extra ruimte onderaan voor de knop */
+}

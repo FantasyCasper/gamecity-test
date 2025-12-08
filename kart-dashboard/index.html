@@ -52,28 +52,54 @@
     <div id="modal-overlay"></div>
     <div id="edit-modal" class="modal-container">
         <div class="modal-header">
-            <h2>Defect Aanpassen</h2>
-            <button id="modal-close-btn">×</button>
+            <h2>Defect Beheren</h2> <button id="modal-close-btn">×</button>
         </div>
         <form id="edit-defect-form">
             <input type="hidden" id="edit-row-id">
+            <input type="hidden" id="original-status">
 
             <div class="form-veld">
-                <label for="edit-kart-select">Kart Nummer (1-40):</label>
-                <select id="edit-kart-select" required>
-                </select>
+                <label for="edit-kart-select">Kart Nummer:</label>
+                <select id="edit-kart-select" required></select>
             </div>
             <div class="form-veld">
-                <label for="edit-defect-omschrijving">Omschrijving
-                    Defect:</label>
-                <textarea id="edit-defect-omschrijving" rows="5" required></textarea>
+                <label for="edit-defect-omschrijving">Omschrijving:</label>
+                <textarea id="edit-defect-omschrijving" rows="4" required></textarea>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" id="modal-delete-btn" class="manager-btn-danger">Verwijderen</button>
+            <div id="td-fields"
+                style="display:none; border-top: 1px solid #444; margin-top: 15px; padding-top: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px;">
+                <h3 style="margin-top:0; font-size: 1.1em; color: #aaa;">TD Opties</h3>
 
-                <button type="button" id="modal-cancel-btn">Annuleren</button>
-                <button type="submit" id="modal-save-btn">Opslaan</button>
+                <div class="form-veld">
+                    <label for="edit-benodigdheden">Benodigdheden:</label>
+                    <input type="text" id="edit-benodigdheden" placeholder="Bijv. Nieuwe band, Bougie...">
+                </div>
+
+                <div class="form-veld">
+                    <label for="edit-onderdelen-status">Status Onderdelen:</label>
+                    <select id="edit-onderdelen-status">
+                        <option value="">-- Status --</option>
+                        <option value="Niet nodig">Niet nodig</option>
+                        <option value="Aanwezig">Aanwezig</option>
+                        <option value="Besteld">Besteld</option>
+                    </select>
+                </div>
+
+                <div class="form-veld" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+                    <input type="checkbox" id="edit-is-opgelost" style="width: 20px; height: 20px;">
+                    <label for="edit-is-opgelost" style="margin:0; color: #fff;">Markeer als Opgelost</label>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button" id="modal-delete-btn" class="manager-btn-danger"
+                    style="display:none;">Verwijderen</button>
+
+                <div style="display: flex; gap: 10px; margin-left: auto;">
+                    <button type="button" id="modal-cancel-btn">Annuleren</button>
+                    <button type="submit" id="modal-save-btn">Opslaan</button>
+                </div>
             </div>
         </form>
     </div>
