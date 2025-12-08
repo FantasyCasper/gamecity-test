@@ -219,9 +219,9 @@ function renderDefectCards(defects) {
         if (defect.benodigdheden) {
             extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">Nodig: ${defect.benodigdheden}</div>`;
         }
-        if (defect.onderdelen_status && defect.onderdelen_status !== 'Niet nodig') {
-            const kleur = defect.onderdelen_status === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; // Groen of Rood
-            extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelen_status}</div>`;
+        if (defect.onderdelenStatus && defect.onderdelenStatus !== "Niet nodig") {
+            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; // Groen of Rood
+            extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelenStatus}</div>`;
         }
 
         kaart.innerHTML = `
@@ -259,11 +259,11 @@ function setupEditModal() {
     const saveButton = document.getElementById('modal-save-btn');
     const resolveButton = document.getElementById('modal-resolve-btn'); // De nieuwe knop
     const deleteButton = document.getElementById('modal-delete-btn');
-    
+
     // Sluit knoppen logic
     document.getElementById('modal-close-btn').onclick = closeEditModal;
     document.getElementById('modal-cancel-btn').onclick = closeEditModal;
-    if(overlay) overlay.onclick = closeEditModal;
+    if (overlay) overlay.onclick = closeEditModal;
 
     if (!form) return;
 
@@ -271,7 +271,7 @@ function setupEditModal() {
     function verwerkOpslaan(nieuweStatus) {
         // Welke knop drukten we in? (Visuele feedback)
         const actieveKnop = (nieuweStatus === "Opgelost") ? resolveButton : saveButton;
-        actieveKnop.disabled = true; 
+        actieveKnop.disabled = true;
         actieveKnop.textContent = "Bezig...";
 
         const payload = {
@@ -283,7 +283,7 @@ function setupEditModal() {
             benodigdheden: document.getElementById('edit-benodigdheden').value,
             onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
             // Gebruik de status die we meekrijgen (Opgelost of de originele)
-            newStatus: nieuweStatus, 
+            newStatus: nieuweStatus,
             medewerker: ingelogdeNaam
         };
 
@@ -298,7 +298,7 @@ function setupEditModal() {
                 toonDefectStatus("Fout: " + error.message, "error");
             })
             .finally(() => {
-                actieveKnop.disabled = false; 
+                actieveKnop.disabled = false;
                 actieveKnop.textContent = (nieuweStatus === "Opgelost") ? "✓ Markeer als Opgelost" : "Opslaan";
             });
     }
@@ -313,9 +313,9 @@ function setupEditModal() {
     // KNOP 2: OPLOSSEN (Nieuwe knop)
     if (resolveButton) {
         resolveButton.addEventListener('click', () => {
-             // Bevestiging is misschien fijn, maar hoeft niet perse
-             if(!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
-             verwerkOpslaan("Opgelost");
+            // Bevestiging is misschien fijn, maar hoeft niet perse
+            if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
+            verwerkOpslaan("Opgelost");
         });
     }
 
@@ -323,10 +323,10 @@ function setupEditModal() {
     if (deleteButton) {
         deleteButton.addEventListener('click', () => {
             if (!confirm('Weet je zeker dat je dit defect definitief wilt verwijderen uit de lijst?')) return;
-            
+
             deleteButton.disabled = true; deleteButton.textContent = "...";
             const rowId = document.getElementById('edit-row-id').value;
-            
+
             callApi({ type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" })
                 .then(result => {
                     toonDefectStatus("Verwijderd.", "success");
@@ -357,24 +357,25 @@ function openEditModal(dataset) {
 
     if (isTD) {
         tdSection.style.display = 'block';
-        
+
         // HIER IS DE FIX: Vul de velden met de data uit de knop
         document.getElementById('edit-benodigdheden').value = dataset.benodigdheden ? unescape(dataset.benodigdheden) : '';
-        document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || ''; // Let op: dataset.onderdelen komt van data-onderdelen
+        document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || '';
+
 
         // Knoppen tonen/verbergen op basis van status
         if (dataset.status === 'Opgelost') {
             deleteBtn.style.display = 'block';
-            if(resolveBtn) resolveBtn.style.display = 'none'; // Al opgelost, dus knop weg
+            if (resolveBtn) resolveBtn.style.display = 'none'; // Al opgelost, dus knop weg
         } else {
             deleteBtn.style.display = 'none';
-            if(resolveBtn) resolveBtn.style.display = 'block'; // Nog open, dus knop tonen
+            if (resolveBtn) resolveBtn.style.display = 'block'; // Nog open, dus knop tonen
         }
 
     } else {
         tdSection.style.display = 'none';
         deleteBtn.style.display = 'none';
-        if(resolveBtn) resolveBtn.style.display = 'none';
+        if (resolveBtn) resolveBtn.style.display = 'none';
     }
 
     // 3. Open de modal
