@@ -187,39 +187,38 @@ function renderDefectCards(defects) {
 
         if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
 
-        // --- DE NIEUWE LOGICA VOOR KNOPJES ---
+        // --- KNOPPEN LOGICA AANGEPAST ---
         let actieKnop = '';
         
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
-        // Situatie 1: Ik ben de Eigenaar én het is < 24u geleden
-        if (isEigenaar && isVers) {
-            if (defect.status === 'Open') {
-                 // Status OPEN -> Ik zie een Potlood (Bewerken)
-                 actieKnop = maakEditKnop(defect);
-            } else if (defect.status === 'Opgelost') {
-                 // Status OPGELOST -> Ik zie een Rood Kruis (Verwijderen)
-                 actieKnop = `
+        // Situatie 1: Defect is nog OPEN
+        if (defect.status === 'Open') {
+            // Eigenaar (<24u) OF TD mag bewerken -> Potloodje
+            if ((isEigenaar && isVers) || isTD) {
+                actieKnop = maakEditKnop(defect);
+            }
+        } 
+        // Situatie 2: Defect is OPGELOST
+        else if (defect.status === 'Opgelost') {
+            // ALLEEN TD/Admin mag verwijderen -> Rood Kruisje
+            // De eigenaar ziet hier nu niets meer.
+            if (isTD) {
+                actieKnop = `
                     <button class="delete-icon-btn" data-row-id="${defect.rowId}">
                         ✖
                     </button>`;
             }
-        } 
-        
-        // Situatie 2: Ik ben TD (en Situatie 1 heeft nog geen knop gemaakt)
-        // TD mag altijd bewerken (potloodje)
-        if (actieKnop === '' && isTD) {
-             actieKnop = maakEditKnop(defect);
         }
 
-        // TD Info opbouwen
+        // TD Info opbouwen (blijft hetzelfde)
         let extraInfo = '';
         if (defect.benodigdheden) {
             extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">Nodig: ${defect.benodigdheden}</div>`;
         }
-        if (defect.onderdelenStatus && defect.onderdelenStatus !== 'Niet nodig') { // Let op camelCase: onderdelenStatus
+        if (defect.onderdelenStatus && defect.onderdelenStatus !== 'Niet nodig') {
             const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c'; 
             extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelenStatus}</div>`;
         }
@@ -252,7 +251,6 @@ function maakEditKnop(defect) {
        </button>`;
 }
 
-/* --- Vervang setupDashboardListeners --- */
 function setupDashboardListeners() {
     const container = document.getElementById("defect-card-container");
     if (!container) return;
@@ -264,16 +262,25 @@ function setupDashboardListeners() {
             openEditModal(editKnop.dataset);
         }
 
-        // 2. KLIK OP KRUISJE (Verwijderen)
+        // 2. KLIK OP KRUISJE (Verwijderen door TD)
         const deleteKnop = e.target.closest('.delete-icon-btn');
         if (deleteKnop) {
             const rowId = deleteKnop.dataset.rowId;
-            if (confirm("Dit defect is opgelost. Wil je het verwijderen uit de lijst?")) {
+            // Bevestiging vragen
+            if (confirm("Wil je dit opgeloste defect definitief verwijderen?")) {
+                
                 // Visuele feedback
                 deleteKnop.disabled = true; 
                 deleteKnop.innerHTML = "..."; 
 
-                callApi({ type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam })
+                // We gebruiken hier de bestaande UPDATE functie die TD'ers mogen gebruiken
+                const payload = { 
+                    type: "UPDATE_DEFECT_STATUS", 
+                    rowId: rowId, 
+                    newStatus: "Verwijderd" 
+                };
+
+                callApi(payload)
                     .then(res => {
                         toonDefectStatus("Defect verwijderd.", "success");
                         laadDefectenDashboard();
