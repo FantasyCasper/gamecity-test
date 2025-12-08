@@ -1,257 +1,235 @@
 <!DOCTYPE html>
 <html lang="nl">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin Panel</title>
-        <link rel="stylesheet" href="../style.css">
-        <link rel="stylesheet" href="admin.css">
-        <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
+</head>
 
-    <body>
-        <div class="container">
+<body>
+    <div class="container">
 
-            <div class="tab-nav">
-                <button id="mobile-menu-toggle">☰ Menu</button>
+        <div class="tab-nav">
+            <button id="mobile-menu-toggle">☰ Menu</button>
 
-                <a href="../index.html" id="back-button">&laquo; Terug naar de
-                    app</a>
+            <a href="../index.html" id="back-button">&laquo; Terug naar de
+                app</a>
 
-                <button class="tab-link active"
-                    data-tab="tab-logs">Logboek</button>
-                <button class="tab-link"
-                    data-tab="tab-users">Gebruikersbeheer</button>
-                <button class="tab-link" data-tab="tab-checklists">Checklist
-                    Beheer</button>
-                <button class="tab-link"
-                    data-tab="tab-algemeen-defecten">Defecten</button>
-                <button class="tab-link"
-                    data-tab="tab-settings">Instellingen</button>
-            </div>
+            <button class="tab-link active" data-tab="tab-logs">Logboek</button>
+            <button class="tab-link" data-tab="tab-users">Gebruikersbeheer</button>
+            <button class="tab-link" data-tab="tab-checklists">Checklist
+                Beheer</button>
+            <button class="tab-link" data-tab="tab-algemeen-defecten">Defecten</button>
+            <button class="tab-link" data-tab="tab-settings">Instellingen</button>
+        </div>
 
-            <div id="status-message">Laden...</div>
+        <div id="status-message">Laden...</div>
 
-            <div id="tab-logs" class="tab-content active">
-                <h2>Logboek Overzicht</h2>
-                <table id="log-table">
-                    <thead>
-                        <tr>
-                            <th>Tijdstip</th>
-                            <th>Medewerker</th>
-                            <th>Activiteit</th>
-                            <th>Lijst</th>
-                            <th>Voltooid</th>
-                            <th>Gemist</th>
-                            <th>Bijzonderheden</th>
-                        </tr>
-                    </thead>
-                    <tbody id="log-body"></tbody>
-                </table>
-            </div>
+        <div id="tab-logs" class="tab-content active">
+            <h2>Logboek Overzicht</h2>
+            <table id="log-table">
+                <thead>
+                    <tr>
+                        <th>Tijdstip</th>
+                        <th>Medewerker</th>
+                        <th>Activiteit</th>
+                        <th>Lijst</th>
+                        <th>Voltooid</th>
+                        <th>Gemist</th>
+                        <th>Bijzonderheden</th>
+                    </tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
 
-            <div id="tab-users" class="tab-content">
-                <h2>Nieuwe Gebruiker Toevoegen</h2>
-                <form id="add-user-form">
-                    <div class="form-grid">
-                        <div class="form-veld">
-                            <label for="new-username">Gebruikersnaam</label>
-                            <input type="text" id="new-username" required
-                                placeholder="bv. Rorick">
-                        </div>
-
-                        <div class="form-veld">
-                            <label for="new-fullname">Volledige Naam</label>
-                            <input type="text" id="new-fullname" required
-                                placeholder="bv. Rorick Roelofswaert">
-                        </div>
-
-                        <div class="form-veld">
-                            <label for="new-pincode">Pincode (4 cijfers)</label>
-                            <input type="password" id="new-pincode" required
-                                maxlength="4" placeholder="****">
-                        </div>
-
-                        <div class="form-veld">
-                            <label>Rechten Selecteren</label>
-                            <div class="custom-dropdown" id="rechten-dropdown">
-                                <div class="dropdown-btn" id="dropdown-btn">
-                                    <span id="dropdown-text">Selecteer
-                                        rechten...</span>
-                                    <span class="arrow">▼</span>
-                                </div>
-
-                                <div class="dropdown-content"
-                                    id="dropdown-list">
-                                    <label><input type="checkbox"
-                                            id="perm-checklists">
-                                        Checklists</label>
-                                    <label><input type="checkbox"
-                                            id="perm-admin"> Admin
-                                        (Volledig)</label>
-                                    <label><input type="checkbox" id="perm-td">
-                                        TD (Defecten)</label>
-                                    <label><input type="checkbox"
-                                            id="perm-users">
-                                        Gebruikersbeheer</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="add-user-button"
-                        style="margin-top: 20px;">Gebruiker Toevoegen</button>
-                </form>
-
-                <h2 class="user-list-header">Bestaande Gebruikers</h2>
-                <table id="user-table">
-                    <thead>
-                        <tr>
-                            <th>Gebruiker</th>
-                            <th>Naam</th>
-                            <th>Checklists</th>
-                            <th>Admin</th>
-                            <th>TD</th>
-                            <th>Users</th>
-                            <th>Actie</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-body"></tbody>
-                </table>
-            </div>
-
-            <div id="tab-checklists" class="tab-content">
-                <h2>Checklists Bewerken</h2>
-                <p>Selecteer een activiteit om de taken te bewerken.</p>
-
-                <div id="checklist-editor">
+        <div id="tab-users" class="tab-content">
+            <h2>Nieuwe Gebruiker Toevoegen</h2>
+            <form id="add-user-form">
+                <div class="form-grid">
                     <div class="form-veld">
-                        <label for="cl-activiteit">Kies een activiteit om te
-                            bewerken:</label>
-                        <select id="cl-activiteit">
-                            <option value>-- Selecteer --</option>
-                            <option value="Baan">Baan</option>
-                            <option value="Lasergame">Lasergame</option>
-                            <option value="Prison Island">Prison Island</option>
-                            <option value="Minigolf">Minigolf</option>
-                        </select>
+                        <label for="new-username">Gebruikersnaam</label>
+                        <input type="text" id="new-username" required placeholder="bv. Rorick">
                     </div>
 
-                    <div class="form-grid">
-                        <div class="form-veld">
-                            <label for="cl-openen-input">Openen Taken</label>
-                            <div class="list-builder">
-                                <ul id="cl-openen-list" class="task-list"></ul>
-                                <div class="add-task-form">
-                                    <input type="text" id="cl-openen-input"
-                                        placeholder="Nieuwe taak...">
-                                    <button type="button" class="add-task-btn"
-                                        data-target-list="cl-openen-list"
-                                        data-source-input="cl-openen-input">+</button>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="form-veld">
+                        <label for="new-fullname">Volledige Naam</label>
+                        <input type="text" id="new-fullname" required placeholder="bv. Rorick Roelofswaert">
+                    </div>
 
-                        <div class="form-veld">
-                            <label for="cl-sluiten-input">Sluiten Taken</label>
-                            <div class="list-builder">
-                                <ul id="cl-sluiten-list" class="task-list"></ul>
-                                <div class="add-task-form">
-                                    <input type="text" id="cl-sluiten-input"
-                                        placeholder="Nieuwe taak...">
-                                    <button type="button" class="add-task-btn"
-                                        data-target-list="cl-sluiten-list"
-                                        data-source-input="cl-sluiten-input">+</button>
-                                </div>
+                    <div class="form-veld">
+                        <label for="new-pincode">Pincode (4 cijfers)</label>
+                        <input type="password" id="new-pincode" required maxlength="4" placeholder="****">
+                    </div>
+
+                    <div class="form-veld">
+                        <label>Rechten Selecteren</label>
+                        <div class="custom-dropdown" id="rechten-dropdown">
+                            <div class="dropdown-btn" id="dropdown-btn">
+                                <span id="dropdown-text">Selecteer
+                                    rechten...</span>
+                                <span class="arrow">▼</span>
+                            </div>
+
+                            <div class="dropdown-content" id="dropdown-list">
+                                <label><input type="checkbox" id="perm-checklists">
+                                    Checklists</label>
+                                <label><input type="checkbox" id="perm-admin"> Admin
+                                    (Volledig)</label>
+                                <label><input type="checkbox" id="perm-td">
+                                    TD (Defecten)</label>
+                                <label><input type="checkbox" id="perm-users">
+                                    Gebruikersbeheer</label>
                             </div>
                         </div>
                     </div>
-
-                    <button type="button" id="checklist-save-button">Checklist
-                        Opslaan</button>
                 </div>
-            </div>
 
-            <div id="tab-algemeen-defecten" class="tab-content">
-                <h2>Overzicht Algemene Defecten</h2>
-                <p>Overzicht van alle defecten (exclusief karts), met de
-                    nieuwste bovenaan.</p>
+                <button type="submit" id="add-user-button" style="margin-top: 20px;">Gebruiker Toevoegen</button>
+            </form>
 
-                <div class="form-veld"
-                    style="margin-bottom: 20px; max-width: 300px;">
-                    <label for="admin-filter-locatie">Filter op Locatie:</label>
-                    <select id="admin-filter-locatie">
-                        <option value="alle">Alle Locaties</option>
+            <h2 class="user-list-header">Bestaande Gebruikers</h2>
+            <table id="user-table">
+                <thead>
+                    <tr>
+                        <th>Gebruiker</th>
+                        <th>Naam</th>
+                        <th>Checklists</th>
+                        <th>Admin</th>
+                        <th>TD</th>
+                        <th>Users</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody id="user-body"></tbody>
+            </table>
+        </div>
+
+        <div id="tab-checklists" class="tab-content">
+            <h2>Checklists Bewerken</h2>
+            <p>Selecteer een activiteit om de taken te bewerken.</p>
+
+            <div id="checklist-editor">
+                <div class="form-veld">
+                    <label for="cl-activiteit">Kies een activiteit om te
+                        bewerken:</label>
+                    <select id="cl-activiteit">
+                        <option value>-- Selecteer --</option>
                         <option value="Baan">Baan</option>
                         <option value="Lasergame">Lasergame</option>
                         <option value="Prison Island">Prison Island</option>
                         <option value="Minigolf">Minigolf</option>
-                        <option value="Algemeen">Algemeen</option>
                     </select>
                 </div>
-                <h2>Overzicht Algemene Defecten</h2>
-                <p>Overzicht van alle defecten (exclusief karts), met de
-                    nieuwste bovenaan.</p>
 
-                <table id="algemeen-defect-table">
-                    <thead>
-                        <tr>
-                            <th>Tijdstip</th>
-                            <th>Gemeld door</th>
-                            <th>Locatie</th>
-                            <th>Omschrijving</th>
-                            <th>Status</th>
-                            <th>Actie</th>
-                        </tr>
-                    </thead>
-                    <tbody id="algemeen-defect-body">
-                    </tbody>
-                </table>
-            </div>
-            <div id="tab-settings" class="tab-content">
-                <h2>Website Instellingen</h2>
-                <h3>Beheer hier de globale instellingen van de applicatie.</h3>
-
-                <form id="settings-form">
-                    <div class="form-grid">
-                        <div class="form-veld">
-                            <label for="setting-totaal-karts">Totaal Aantal
-                                Karts</label>
-                            <input type="number" id="setting-totaal-karts"
-                                required placeholder="40">
-                        </div>
-
-                        <div class="form-veld">
-                            <label>Activiteiten Beheren</label>
-                            <div class="list-builder"
-                                style="height: auto; min-height: 200px;">
-                                <ul id="setting-activiteiten-list"
-                                    class="task-list"></ul>
-                                <div class="add-task-form">
-                                    <input type="text" id="new-activity-input"
-                                        placeholder="Nieuwe activiteit...">
-                                    <button type="button" class="add-task-btn"
-                                        id="add-activity-btn">+</button>
-                                </div>
+                <div class="form-grid">
+                    <div class="form-veld">
+                        <label for="cl-openen-input">Openen Taken</label>
+                        <div class="list-builder">
+                            <ul id="cl-openen-list" class="task-list"></ul>
+                            <div class="add-task-form">
+                                <input type="text" id="cl-openen-input" placeholder="Nieuwe taak...">
+                                <button type="button" class="add-task-btn" data-target-list="cl-openen-list"
+                                    data-source-input="cl-openen-input">+</button>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" id="save-settings-btn">Instellingen
-                        Opslaan</button>
-                </form>
+                    <div class="form-veld">
+                        <label for="cl-sluiten-input">Sluiten Taken</label>
+                        <div class="list-builder">
+                            <ul id="cl-sluiten-list" class="task-list"></ul>
+                            <div class="add-task-form">
+                                <input type="text" id="cl-sluiten-input" placeholder="Nieuwe taak...">
+                                <button type="button" class="add-task-btn" data-target-list="cl-sluiten-list"
+                                    data-source-input="cl-sluiten-input">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="checklist-save-button">Checklist
+                    Opslaan</button>
             </div>
-
-        </div>
-        <div id="custom-modal-overlay" class="modal-overlay"></div>
-        <div id="custom-modal" class="modal-box">
-            <h3 id="modal-title">Succes</h3>
-            <p id="modal-message">Bericht...</p>
-            <button id="modal-ok-btn">OK</button>
         </div>
 
-        <script src="admin.js"></script>
-    </body>
+        <div id="tab-algemeen-defecten" class="tab-content">
+            <h2>Overzicht Algemene Defecten</h2>
+            <p>Overzicht van alle defecten (exclusief karts), met de
+                nieuwste bovenaan.</p>
+
+            <div class="form-veld" style="margin-bottom: 20px; max-width: 300px;">
+                <label for="admin-filter-locatie">Filter op Locatie:</label>
+                <select id="admin-filter-locatie">
+                    <option value="alle">Alle Locaties</option>
+                    <option value="Baan">Baan</option>
+                    <option value="Lasergame">Lasergame</option>
+                    <option value="Prison Island">Prison Island</option>
+                    <option value="Minigolf">Minigolf</option>
+                    <option value="Algemeen">Algemeen</option>
+                </select>
+            </div>
+            <h2>Overzicht Algemene Defecten</h2>
+            <p>Overzicht van alle defecten (exclusief karts), met de
+                nieuwste bovenaan.</p>
+
+            <table id="algemeen-defect-table">
+                <thead>
+                    <tr>
+                        <th>Tijdstip</th>
+                        <th>Gemeld door</th>
+                        <th>Locatie</th>
+                        <th>Omschrijving</th>
+                        <th>Status</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody id="algemeen-defect-body">
+                </tbody>
+            </table>
+        </div>
+        <div id="tab-settings" class="tab-content">
+            <h2>Website Instellingen</h2>
+            <h3>Beheer hier de globale instellingen van de applicatie.</h3>
+
+            <form id="settings-form">
+                <div class="form-grid">
+                    <div class="form-veld">
+                        <label for="setting-totaal-karts">Totaal Aantal
+                            Karts</label>
+                        <input type="number" id="setting-totaal-karts" required placeholder="40">
+                    </div>
+
+                    <div class="form-veld">
+                        <label>Activiteiten Beheren</label>
+                        <div class="list-builder" style="height: auto; min-height: 200px;">
+                            <ul id="setting-activiteiten-list" class="task-list"></ul>
+                            <div class="add-task-form">
+                                <input type="text" id="new-activity-input" placeholder="Nieuwe activiteit...">
+                                <button type="button" class="add-task-btn" id="add-activity-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="save-settings-btn">Instellingen
+                    Opslaan</button>
+            </form>
+        </div>
+
+    </div>
+    <div id="custom-modal-overlay" class="modal-overlay"></div>
+    <div id="custom-modal" class="modal-box">
+        <h3 id="modal-title">Succes</h3>
+        <p id="modal-message">Bericht...</p>
+        <button id="modal-ok-btn">OK</button>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
 
 </html>

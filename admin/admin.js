@@ -61,7 +61,7 @@ let localUsersCache = []; // Opslag voor optimistic UI gebruikers
     if (ingelogdePermissies.users) {
         fetchUsers();
         setupUserForm();
-        setupUserDeleteListener();
+        setupUserActionListeners();
         setupUserPermListeners();
     }
 
@@ -212,29 +212,24 @@ function renderUsers(users) {
     // SAFETY CHECK
     if (!users) users = [];
 
-    // Haal beide waardes op uit de opslag
     const ingelogdeGebruikersnaam = localStorage.getItem('ingelogdeUsername');
     const ingelogdeVolledigeNaam = localStorage.getItem('ingelogdeMedewerker');
 
     users.forEach(user => {
         // 1. CHECK: Is dit de Super Admin?
         if (user.username.toLowerCase() === 'admin') {
-            return; // STOP! Toon deze gebruiker NIET in de lijst.
+            return; 
         }
 
-        // 2. CHECK: Ben ik dit zelf? (Verbeterde versie)
+        // 2. CHECK: Ben ik dit zelf?
         let isSelf = false;
-        
-        // Check A: Op basis van gebruikersnaam (Het veiligst)
         if (ingelogdeGebruikersnaam && user.username.toLowerCase() === ingelogdeGebruikersnaam.toLowerCase()) {
             isSelf = true;
-        } 
-        // Check B: Fallback op volledige naam (Voor oude mobiele sessies)
-        else if (ingelogdeVolledigeNaam && user.fullname === ingelogdeVolledigeNaam) {
+        } else if (ingelogdeVolledigeNaam && user.fullname === ingelogdeVolledigeNaam) {
             isSelf = true;
         }
 
-        // Helper om een checkbox te maken
+        // Helper om een checkbox te maken (ongewijzigd)
         const createCheckbox = (type, value) => `
             <input type="checkbox" 
                    class="perm-checkbox" 
@@ -243,19 +238,27 @@ function renderUsers(users) {
                    ${value ? 'checked' : ''} 
                    ${isSelf ? 'disabled title="Je kunt je eigen rechten niet wijzigen"' : ''}> 
         `;
-        
+
         const tr = document.createElement('tr');
         if (isSelf) tr.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
 
-        // Logica voor de verwijderknop (Admin is hierboven al gefilterd, dus die logica kan simpeler)
-        let deleteKnopActie = '';
+        // --- HIER ZIT DE NIEUWE DROPDOWN LOGICA ---
+        let actieHtml = '';
         if (isSelf) {
-            deleteKnopActie = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Niet verwijderbaar (Jij)</span>';
+            actieHtml = '<span style="color:#aaa; font-size:0.8em; font-style:italic;">Jij (Niet verwijderbaar)</span>';
         } else {
-            deleteKnopActie = `<button class="delete-btn" data-username="${user.username}">Verwijder</button>`;
+            // Dropdown met Pincode als standaard (eerste optie)
+            actieHtml = `
+                <div class="user-action-container">
+                    <select id="action-select-${user.username}" class="user-action-select">
+                        <option value="pin">Wachtwoord Wijzigen</option>
+                        <option value="delete">Verwijderen</option>
+                    </select>
+                    <button class="user-action-btn" data-username="${user.username}">Go</button>
+                </div>
+            `;
         }
 
-        // De rij opbouwen
         tr.innerHTML = `
             <td data-label="Gebruiker">${user.username} ${isSelf ? ' (Jij)' : ''}</td>
             <td data-label="Naam">${user.fullname}</td>
@@ -263,7 +266,7 @@ function renderUsers(users) {
             <td data-label="Admin" style="text-align:center;">${createCheckbox('admin', user.perms.admin)}</td>
             <td data-label="TD" style="text-align:center;">${createCheckbox('td', user.perms.td)}</td>
             <td data-label="Users" style="text-align:center;">${createCheckbox('users', user.perms.users)}</td>
-            <td data-label="Actie">${deleteKnopActie}</td>
+            <td data-label="Actie">${actieHtml}</td>
         `;
         userBody.appendChild(tr);
     });
@@ -314,22 +317,59 @@ function setupUserForm() {
     });
 }
 
-function setupUserDeleteListener() {
+function setupUserActionListeners() {
     const userTable = document.getElementById("user-table");
     if (!userTable) return;
+
     userTable.addEventListener("click", e => {
-        if (e.target.classList.contains("delete-btn")) {
-            const button = e.target, username = button.dataset.username;
-            if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
-                // Optimistic UI zou hier ook kunnen, maar verwijderen is riskant, dus we wachten even of doen button status
-                button.disabled = true; button.textContent = "Bezig...";
-                callApi("DELETE_USER", { username: username }).then(result => {
-                    toonMooieModal("Succes", result.message);
-                    fetchUsers();
-                }).catch(error => {
-                    handleError(error, "Fout bij verwijderen: ");
-                    button.disabled = false; button.textContent = "Verwijder";
-                });
+        // Hebben we op de 'Go' knop geklikt?
+        if (e.target.classList.contains("user-action-btn")) {
+            const button = e.target;
+            const username = button.dataset.username;
+            
+            // Zoek de dropdown die er direct naast staat
+            const select = document.getElementById(`action-select-${username}`);
+            const actie = select.value;
+
+            // ACTIE 1: VERWIJDEREN
+            if (actie === 'delete') {
+                if (confirm(`Weet je zeker dat je "${username}" wilt verwijderen?`)) {
+                    button.disabled = true; button.textContent = "...";
+                    
+                    callApi("DELETE_USER", { username: username }).then(result => {
+                        toonMooieModal("Succes", result.message);
+                        fetchUsers();
+                    }).catch(error => {
+                        alert("Fout: " + error.message);
+                        button.disabled = false; button.textContent = "Go";
+                    });
+                }
+            }
+
+            // ACTIE 2: PINCODE WIJZIGEN
+            if (actie === 'pin') {
+                const newPin = prompt(`Voer nieuwe 4-cijferige pincode in voor gebruiker "${username}":`);
+                
+                if (newPin !== null) { // Als er niet op Annuleren is geklikt
+                    // Simpele validatie
+                    if (newPin.length !== 4 || isNaN(newPin)) {
+                        alert("De pincode moet uit precies 4 cijfers bestaan.");
+                        return;
+                    }
+
+                    button.disabled = true; button.textContent = "...";
+
+                    callApi("UPDATE_USER_PIN", { targetUser: username, newPin: newPin })
+                        .then(result => {
+                            toonMooieModal("Succes", `Pincode van ${username} is gewijzigd.`);
+                        })
+                        .catch(error => {
+                            alert("Fout: " + error.message);
+                        })
+                        .finally(() => {
+                            button.disabled = false; button.textContent = "Go";
+                        });
+                }
             }
         }
     });
