@@ -56,6 +56,7 @@ let GLOBALE_ACTIVITEITEN = [];
     vulKartMeldDropdown();
     setupDefectForm();
     setupAlgemeenDefectForm();
+    setupAlgemeenModalLogic();
 
     // Dashboards laden
     setTimeout(() => laadDefectenDashboard(), 10);
@@ -404,6 +405,34 @@ function laadBijzonderhedenVanGisteren() {
 
 // --- DEEL 6: ALGEMEEN DEFECT MELDEN ---
 
+function setupAlgemeenModalLogic() {
+    const openBtn = document.getElementById('open-defect-modal-btn');
+    const closeBtn = document.getElementById('close-defect-modal-btn');
+    const cancelBtn = document.getElementById('cancel-defect-modal-btn');
+    const modal = document.getElementById('modal-algemeen-defect');
+    const overlay = document.getElementById('modal-overlay-algemeen');
+
+    if (!openBtn || !modal || !overlay) return;
+
+    function openModal() {
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }
+
+    openBtn.addEventListener('click', openModal);
+    if(closeBtn) closeBtn.addEventListener('click', closeModal);
+    if(cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+    
+    // Maak closeModal globaal beschikbaar zodat we hem na verzenden kunnen aanroepen
+    window.sluitAlgemeenDefectModal = closeModal;
+}
+
 function setupAlgemeenDefectForm() {
     const form = document.getElementById('algemeen-defect-form');
     if (!form) return;
@@ -417,21 +446,25 @@ function setupAlgemeenDefectForm() {
         if (locatie === "" || omschrijving === "") {
             toonAlgemeenDefectStatus("Selecteer een locatie en vul een omschrijving in.", "error"); return;
         }
-        button.disabled = true; button.textContent = "Bezig met melden...";
+        button.disabled = true; button.textContent = "Bezig...";
 
         const payload = { type: "LOG_ALGEMEEN_DEFECT", medewerker: ingelogdeNaam, locatie: locatie, defect: omschrijving };
         callApi(payload)
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-                // Herlaad de data voor het dashboard (via cache update)
+                
+                // NIEUW: Sluit de modal als het gelukt is
+                if (window.sluitAlgemeenDefectModal) window.sluitAlgemeenDefectModal();
+                
+                // Herlaad de data
                 fetchAlgemeneDefecten();
             })
             .catch(error => {
                 toonAlgemeenDefectStatus(error.message || "Melden mislukt", "error");
             })
             .finally(() => {
-                button.disabled = false; button.textContent = "Meld Algemeen Defect";
+                button.disabled = false; button.textContent = "Versturen";
             });
     });
 }

@@ -26,30 +26,30 @@
 
         <div id="tab-algemeen" class="tab-content active">
             <h1>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
-            <ul>
-                <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
-                <li>Meld eventuele defecten aan de karts via het "Kart Dashboard" tabblad.</li>
-                <li>Meld alle overige defecten via het "Meld Defect" tabblad.</li>
-            </ul>
+                <ul>
+                    <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
+                    <li>Meld eventuele defecten aan de karts via het "Kart Dashboard" tabblad.</li>
+                    <li>Meld alle overige defecten via het "Meld Defect" tabblad.</li>
+                </ul>
 
-            <div id="bijzonderheden-container">
-                <h3>Bijzonderheden van Gisteren</h3>
-                <table id="bijzonderheden-table">
-                    <thead>
-                        <tr>
-                            <th>Medewerker</th>
-                            <th>Activiteit</th>
-                            <th>Lijst</th>
-                            <th>Bijzonderheid</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bijzonderheden-body">
-                        <tr>
-                            <td colspan="4">Laden...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                <div id="bijzonderheden-container">
+                    <h3>Bijzonderheden van Gisteren</h3>
+                    <table id="bijzonderheden-table">
+                        <thead>
+                            <tr>
+                                <th>Medewerker</th>
+                                <th>Activiteit</th>
+                                <th>Lijst</th>
+                                <th>Bijzonderheid</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bijzonderheden-body">
+                            <tr>
+                                <td colspan="4">Laden...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
         </div>
 
         <div id="tab-checklists" class="tab-content">
@@ -122,34 +122,12 @@
         </div>
 
         <div id="tab-algemeen-defect" class="tab-content">
-            <h1>Algemeen Defect Melden</h1>
-            <p>Meld hier defecten voor de activiteiten (excl. karts)</p>
+            <h1>Algemene Defecten</h1>
 
-            <div id="algemeen-defect-status" class="status-bericht"></div>
-
-            <form id="algemeen-defect-form" class="user-info">
-                <div class="form-veld">
-                    <label for="locatie-select">Activiteit / Locatie:</label>
-                    <select id="locatie-select" required>
-                        <option value="">-- Selecteer Locatie --</option>
-                        <option value="Baan">Baan</option>
-                        <option value="Lasergame">Lasergame</option>
-                        <option value="Prison Island">Prison Island</option>
-                        <option value="Minigolf">Minigolf</option>
-                        <option value="Algemeen">Algemeen</option>
-                    </select>
-                </div>
-                <div class="form-veld">
-                    <label for="algemeen-defect-omschrijving">Omschrijving Defect:</label>
-                    <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..."
-                        required></textarea>
-                </div>
-                <button type="submit" id="algemeen-defect-submit" class="submit-button">Meld Algemeen Defect</button>
-            </form>
-
-            <hr style="border: 0; border-top: 1px solid #444; margin: 30px 0;">
-
-            <h2>Huidige Defecten</h2>
+            <button id="open-defect-modal-btn" class="submit-button"
+                style="max-width: 350px; margin: 0 auto 30px auto; display: block;">
+                + Meld Nieuw Defect
+            </button>
 
             <div class="form-bar user-info" style="margin-bottom: 20px; background-color: #222;">
                 <span>Toon:</span>
@@ -166,8 +144,44 @@
             <div id="algemeen-defecten-grid" class="problem-card-grid">
                 <p>Laden...</p>
             </div>
+
+            <div id="algemeen-defect-status" class="status-bericht"></div>
         </div>
 
+    </div>
+    <div id="modal-overlay-algemeen" class="modal-overlay"></div>
+    <div id="modal-algemeen-defect" class="modal-box" style="display:none; text-align: left;">
+        <div class="modal-header">
+            <h2>Nieuw Defect Melden</h2>
+            <button id="close-defect-modal-btn"
+                style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
+        </div>
+
+        <form id="algemeen-defect-form">
+            <div class="form-veld">
+                <label for="locatie-select">Activiteit / Locatie:</label>
+                <select id="locatie-select" required style="width: 100%;">
+                    <option value="">-- Selecteer Locatie --</option>
+                    <option value="Baan">Baan</option>
+                    <option value="Lasergame">Lasergame</option>
+                    <option value="Prison Island">Prison Island</option>
+                    <option value="Minigolf">Minigolf</option>
+                    <option value="Algemeen">Algemeen</option>
+                </select>
+            </div>
+            <div class="form-veld" style="margin-top: 15px;">
+                <label for="algemeen-defect-omschrijving">Omschrijving Defect:</label>
+                <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..." required
+                    style="width: 100%;"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="cancel-defect-modal-btn"
+                    style="background-color: #555; color: white; margin-right: 10px;">Annuleren</button>
+                <button type="submit" id="algemeen-defect-submit"
+                    style="background-color: #28a745; color: white;">Versturen</button>
+            </div>
+        </form>
     </div>
     <script>
         if ('serviceWorker' in navigator) {
