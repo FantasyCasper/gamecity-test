@@ -384,9 +384,8 @@ input.perm-checkbox:disabled {
 /* 1. DE GROENE KNOP (Bovenaan, breed) */
 #save-settings-btn {
     width: 100%;
-    background-color: #218838;
+    background-color: #28a745;
     color: white;
-    text-transform: uppercase;
     font-size: 1.2em;
     padding: 15px;
     margin-top: 0;
@@ -396,7 +395,7 @@ input.perm-checkbox:disabled {
 }
 
 #save-settings-btn:hover {
-    background-color: #00cc00;
+    background-color: #218838;
     color: #fff;
 }
 
