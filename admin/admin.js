@@ -218,7 +218,7 @@ function renderUsers(users) {
     users.forEach(user => {
         // 1. CHECK: Is dit de Super Admin? (Die mag je niet editen/verwijderen)
         if (user.username.toLowerCase() === 'admin') {
-            return; 
+            return;
         }
 
         // 2. CHECK: Ben ik dit zelf?
@@ -244,10 +244,10 @@ function renderUsers(users) {
 
         // --- DE NIEUWE KNOPPEN LOGICA ---
         let actieHtml = '';
-        
+
         // Knop 1: Wachtwoord wijzigen (Blauw) - Altijd zichtbaar
         const changePassBtn = `<button class="btn-action btn-blue change-pin-btn" data-username="${user.username}" title="Wachtwoord wijzigen">Wachtwoord</button>`;
-        
+
         // Knop 2: Verwijderen (Rood) - Alleen zichtbaar als het NIET jezelf is
         const deleteBtn = `<button class="btn-action btn-red delete-user-btn" data-username="${user.username}" title="Gebruiker verwijderen">X</button>`;
 
@@ -275,6 +275,15 @@ function renderUsers(users) {
 function setupUserForm() {
     const form = document.getElementById("add-user-form");
     const button = document.getElementById("add-user-button");
+
+    // NIEUW: Dwing cijfers af in het pincode veld
+    const pinInput = document.getElementById("new-pincode");
+    if (pinInput) {
+        pinInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+
     if (!form) return;
 
     form.addEventListener("submit", e => {
@@ -324,23 +333,24 @@ function setupUserActionListeners() {
     // Let op: 'async' toegevoegd zodat we kunnen wachten op de modal
     userTable.addEventListener("click", async e => {
         const target = e.target;
-        
+
         // ACTIE 1: WACHTWOORD WIJZIGEN (BLAUW)
         if (target.classList.contains("change-pin-btn")) {
             const username = target.dataset.username;
-            
+
             // NIEUW: Mooie Modal aanroepen
             const newPin = await toonInteractieveModal({
                 titel: "Wachtwoord Wijzigen",
                 tekst: `Voer een nieuwe 4-cijferige pincode in voor ${username}:`,
                 inputNodig: true,
                 inputType: "password", // Maskeert de invoer (bolletjes)
+                alleenCijfers: true,   // <--- DEZE REGEL TOEVOEGEN
                 maxLength: 4,
                 placeholder: "****",
                 knopTekst: "Opslaan",
                 knopKleur: "blauw"
             });
-            
+
             // Als er niet op Annuleren is gedrukt (newPin is niet null)
             if (newPin !== null) {
                 if (newPin.length !== 4 || isNaN(newPin)) {
@@ -378,10 +388,10 @@ function setupUserActionListeners() {
 
             if (bevestigd) {
                 target.disabled = true; target.textContent = "...";
-                
+
                 callApi("DELETE_USER", { username: username }).then(result => {
                     toonMooieModal("Succes", result.message);
-                    fetchUsers(); 
+                    fetchUsers();
                 }).catch(error => {
                     alert("Fout: " + error.message);
                     target.disabled = false; target.textContent = "X";
@@ -662,7 +672,7 @@ function setupChecklistEditor() {
         });
         buttons.forEach(btn => btn.disabled = disabled);
         saveButton.disabled = disabled;
-        
+
         // Visuele feedback (optioneel, maakt het grijzer)
         const editor = document.getElementById('checklist-editor');
         editor.style.opacity = disabled ? '0.5' : '1';
@@ -675,7 +685,7 @@ function setupChecklistEditor() {
 
     activiteitSelect.addEventListener('change', () => {
         const activiteit = activiteitSelect.value;
-        
+
         // CHECK: Is het leeg?
         if (activiteit === "") {
             toggleEditor(true); // Op slot
@@ -698,7 +708,7 @@ function setupChecklistEditor() {
     });
 
     // ... (Hieronder blijft de rest van je bestaande code voor knoppen/drag&drop hetzelfde) ...
-    
+
     document.querySelectorAll('.add-task-btn').forEach(button => {
         button.addEventListener('click', () => {
             const targetListId = button.dataset.targetList;
@@ -759,7 +769,7 @@ function setupChecklistEditor() {
 
     lists.forEach(list => {
         list.addEventListener('dragover', e => {
-            e.preventDefault(); 
+            e.preventDefault();
             const afterElement = getDragAfterElement(list, e.clientY);
             const draggable = document.querySelector('.dragging');
             if (afterElement == null) {
@@ -908,7 +918,7 @@ function getDragAfterElement(container, y) {
 function fetchSettings() {
     callApi("GET_SETTINGS").then(result => {
         const settings = result.data;
-        
+
         // 1. Vul Totaal Karts
         if (settings['totaal_karts']) {
             document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
@@ -920,13 +930,13 @@ function fetchSettings() {
             try {
                 // Sla op in de variabele voor de dropdown
                 BESCHIKBARE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
-                
+
                 // Update de dropdown in Checklist Beheer direct!
                 updateChecklistDropdown();
 
                 // Vul de lijst in het Instellingen scherm
                 if (list) {
-                    list.innerHTML = ''; 
+                    list.innerHTML = '';
                     BESCHIKBARE_ACTIVITEITEN.forEach(act => {
                         list.appendChild(createTaakLi(act));
                     });
@@ -1032,7 +1042,7 @@ function toonInteractieveModal(opties) {
         // 1. Instellen van de tekst en stijl
         titelEl.textContent = opties.titel || "Bevestigen";
         tekstEl.textContent = opties.tekst || "Weet je het zeker?";
-        
+
         // Knop kleur en tekst (Rood of Blauw)
         confirmBtn.textContent = opties.knopTekst || "Bevestigen";
         confirmBtn.className = "btn-action " + (opties.knopKleur === 'rood' ? 'btn-red' : 'btn-blue');
@@ -1044,6 +1054,19 @@ function toonInteractieveModal(opties) {
             inputEl.placeholder = opties.placeholder || "";
             inputEl.type = opties.inputType || "text";
             if (opties.maxLength) inputEl.setAttribute('maxlength', opties.maxLength);
+
+            // --- NIEUW: Filter voor cijfers ---
+            if (opties.alleenCijfers) {
+                inputEl.oninput = function () {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                };
+                inputEl.setAttribute('inputmode', 'numeric'); // Opent cijfer-toetsenbord op mobiel
+            } else {
+                inputEl.oninput = null; // Resetten voor andere modals
+                inputEl.removeAttribute('inputmode');
+            }
+            // ----------------------------------
+
         } else {
             inputDiv.style.display = 'none';
         }

@@ -8,6 +8,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const loginButton = document.getElementById("login-button");
     const statusDiv = document.getElementById("login-status");
 
+    // --- NIEUW: ALLEEN CIJFERS TOESTAAN IN PINCODE ---
+    const pinInput = document.getElementById("pincode");
+    if (pinInput) {
+        pinInput.addEventListener('input', function () {
+            // Vervang alles wat NIET een cijfer (0-9) is door niks
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+
     loginForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
