@@ -40,6 +40,7 @@ let localUsersCache = []; // Opslag voor optimistic UI gebruikers
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
         fetchAlgemeenDefects();
         setupAlgemeenDefectListeners();
+        setupAdminDefectModal();
 
         // Filter listener
         const filterSelect = document.getElementById('admin-filter-locatie');
@@ -475,10 +476,7 @@ function renderAlgemeenDefects(defects) {
     if (!defectBody) return;
     defectBody.innerHTML = '';
 
-    // SAFETY CHECK
-    if (!defects) defects = [];
-
-    if (defects.length === 0) {
+    if (!defects || defects.length === 0) {
         defectBody.innerHTML = '<tr><td colspan="6">Geen defecten gevonden voor deze selectie.</td></tr>';
         return;
     }
@@ -486,13 +484,25 @@ function renderAlgemeenDefects(defects) {
     defects.forEach(defect => {
         let ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const tr = document.createElement('tr');
+        
+        // Visuele feedback als het opgelost is
         if (defect.status === 'Opgelost') {
-            tr.classList.add('status-opgelost');
+            tr.style.opacity = "0.6";
         }
-        const isOpgelost = defect.status === 'Opgelost';
-        const actieKnop = isOpgelost
-            ? `<button class="delete-btn" data-row-id="${defect.rowId}">Verwijder</button>`
-            : `<button class="action-btn" data-row-id="${defect.rowId}">Markeer Opgelost</button>`;
+
+        // De BEHEER knop met alle data in attributen
+        const actieKnop = `
+            <button class="action-btn manage-defect-btn" 
+                style="background-color: #007bff;"
+                data-row-id="${defect.rowId}"
+                data-locatie="${defect.locatie}"
+                data-descr="${escape(defect.defect)}"
+                data-status="${defect.status}"
+                data-benodigdheden="${escape(defect.benodigdheden || '')}"
+                data-onderdelen="${escape(defect.onderdelenStatus || '')}"
+            >
+                ⚙ Beheer
+            </button>`;
 
         tr.innerHTML = `
             <td data-label="Tijdstip">${ts}</td>
@@ -504,6 +514,97 @@ function renderAlgemeenDefects(defects) {
         `;
         defectBody.appendChild(tr);
     });
+}
+
+function setupAdminDefectModal() {
+    const table = document.getElementById('algemeen-defect-table');
+    const modal = document.getElementById('modal-admin-defect');
+    const overlay = document.getElementById('modal-overlay-admin-defect');
+    const form = document.getElementById('admin-defect-form');
+    
+    // Knoppen
+    const closeBtn = document.getElementById('close-admin-defect-btn');
+    const cancelBtn = document.getElementById('btn-cancel-admin-defect');
+    const deleteBtn = document.getElementById('btn-delete-admin-defect');
+    const saveBtn = document.getElementById('btn-save-admin-defect');
+
+    // Functie om modal te sluiten
+    function sluitModal() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }
+
+    // 1. OPENEN: Luister naar klikken in de tabel (Event Delegation)
+    if (table) {
+        table.addEventListener('click', (e) => {
+            const btn = e.target.closest('.manage-defect-btn');
+            if (btn) {
+                // Vul de modal met data uit de knop
+                document.getElementById('admin-defect-id').value = btn.dataset.rowId;
+                document.getElementById('admin-defect-info').textContent = `${btn.dataset.locatie}: ${unescape(btn.dataset.descr)}`;
+                
+                document.getElementById('admin-benodigdheden').value = unescape(btn.dataset.benodigdheden);
+                document.getElementById('admin-onderdelen-status').value = unescape(btn.dataset.onderdelen);
+                document.getElementById('admin-defect-status').value = btn.dataset.status;
+
+                // Toon modal
+                modal.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+        });
+    }
+
+    // 2. SLUITEN
+    if(closeBtn) closeBtn.onclick = sluitModal;
+    if(cancelBtn) cancelBtn.onclick = sluitModal;
+    if(overlay) overlay.onclick = sluitModal;
+
+    // 3. OPSLAAN
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveBtn.disabled = true; saveBtn.textContent = "Bezig...";
+
+            const payload = {
+                type: "UPDATE_DEFECT_EXTENDED", // Dit mapt naar updateAlgemeenDefectExtended in Code.gs als je dat zo noemt, of we gebruiken een nieuwe type
+                // LET OP: In stap 2 noemde ik de functie updateAlgemeenDefectExtended. 
+                // Je moet in Code.gs zorgen dat doPost dit type herkent!
+                // Zie STAP 2b hieronder voor de doPost fix.
+                
+                rowId: document.getElementById('admin-defect-id').value,
+                benodigdheden: document.getElementById('admin-benodigdheden').value,
+                onderdelenStatus: document.getElementById('admin-onderdelen-status').value,
+                newStatus: document.getElementById('admin-defect-status').value
+            };
+
+            // Omdat we een generieke update functie hebben gemaakt:
+            callApi("UPDATE_DEFECT_EXTENDED_ALGEMEEN", payload) // We gebruiken een unieke naam
+                .then(res => {
+                    sluitModal();
+                    fetchAlgemeenDefects(); // Ververs de lijst
+                })
+                .catch(err => alert("Fout: " + err.message))
+                .finally(() => { saveBtn.disabled = false; saveBtn.textContent = "Opslaan"; });
+        });
+    }
+
+    // 4. VERWIJDEREN
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if(!confirm("Weet je zeker dat je dit defect definitief wilt verwijderen?")) return;
+            
+            deleteBtn.disabled = true; deleteBtn.textContent = "...";
+            const rowId = document.getElementById('admin-defect-id').value;
+
+            callApi({ type: "UPDATE_ALGEMEEN_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" })
+                .then(res => {
+                    sluitModal();
+                    fetchAlgemeenDefects();
+                })
+                .catch(err => alert("Fout: " + err.message))
+                .finally(() => { deleteBtn.disabled = false; deleteBtn.textContent = "Verwijderen"; });
+        });
+    }
 }
 
 function setupAlgemeenDefectListeners() {
