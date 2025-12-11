@@ -436,3 +436,55 @@ body.is-manager .manager-btn-danger {
     background-color: #c82333; /* Iets donkerder rood */
     transform: scale(1.1);
 }
+
+/* ===============================
+   FIX: MODAL SPLIT LAYOUT (PC)
+   =============================== */
+
+/* 1. Standaard styling voor TD kolom (donkerder vlak) */
+.modal-col-right {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    margin-top: 15px; /* Op mobiel ruimte erboven */
+}
+
+.td-header {
+    margin-top: 0;
+    font-size: 1.1em;
+    color: #aaa;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+/* 2. DESKTOP TWEAK: NAAST ELKAAR */
+@media (min-width: 800px) {
+    /* Als de modal de class 'wide-mode' krijgt (via JS), maak hem dan breder */
+    #edit-modal.wide-mode {
+        width: 900px; /* Lekker breed */
+        max-width: 95%;
+    }
+
+    /* Zet de grid aan als 'wide-mode' actief is */
+    #edit-modal.wide-mode #modal-grid-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Twee gelijke kolommen */
+        gap: 25px;
+        align-items: stretch; /* Even hoog maken */
+    }
+
+    /* Pas de rechterkolom aan voor desktop */
+    #edit-modal.wide-mode .modal-col-right {
+        margin-top: 0; /* Geen margin nodig naast elkaar */
+        height: 100%;  /* Vul de hoogte */
+        box-sizing: border-box;
+    }
+    
+    /* Zorg dat de linkerkolom ook de hoogte vult (voor textarea) */
+    #edit-modal.wide-mode .modal-col-left {
+        display: flex;
+        flex-direction: column;
+    }
+}

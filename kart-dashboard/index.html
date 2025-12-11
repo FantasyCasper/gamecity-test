@@ -58,37 +58,42 @@
             <input type="hidden" id="edit-row-id">
             <input type="hidden" id="original-status">
 
-            <div class="form-veld">
-                <label for="edit-kart-select">Kart Nummer:</label>
-                <select id="edit-kart-select" required></select>
-            </div>
-            <div class="form-veld">
-                <label for="edit-defect-omschrijving">Omschrijving:</label>
-                <textarea id="edit-defect-omschrijving" rows="4" required></textarea>
-            </div>
+            <div id="modal-grid-wrapper">
 
-            <div id="td-fields"
-                style="display:none; border-top: 1px solid #444; margin-top: 15px; padding-top: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px;">
-                <h3 style="margin-top:0; font-size: 1.1em; color: #aaa;">TD Opties</h3>
-
-                <div class="form-veld">
-                    <label for="edit-benodigdheden">Benodigdheden:</label>
-                    <input type="text" id="edit-benodigdheden" placeholder="Bijv. Nieuwe band, Bougie...">
+                <div class="modal-col-left">
+                    <div class="form-veld">
+                        <label for="edit-kart-select">Kart Nummer:</label>
+                        <select id="edit-kart-select" required></select>
+                    </div>
+                    <div class="form-veld" style="flex-grow: 1; display: flex; flex-direction: column;">
+                        <label for="edit-defect-omschrijving">Omschrijving:</label>
+                        <textarea id="edit-defect-omschrijving" rows="5" required
+                            style="flex-grow: 1; resize: vertical;"></textarea>
+                    </div>
                 </div>
 
-                <div class="form-veld">
-                    <label for="edit-onderdelen-status">Status Onderdelen:</label>
-                    <select id="edit-onderdelen-status">
-                        <option value="">-- Status --</option>
-                        <option value="Niet nodig">Niet nodig</option>
-                        <option value="Aanwezig">Aanwezig</option>
-                        <option value="Besteld">Besteld</option>
-                    </select>
-                </div>
+                <div id="td-fields" class="modal-col-right" style="display:none;">
+                    <h3 class="td-header">TD Opties</h3>
 
+                    <div class="form-veld">
+                        <label for="edit-benodigdheden">Benodigdheden:</label>
+                        <input type="text" id="edit-benodigdheden" placeholder="Bijv. Nieuwe band, Bougie...">
+                    </div>
+
+                    <div class="form-veld">
+                        <label for="edit-onderdelen-status">Status Onderdelen:</label>
+                        <select id="edit-onderdelen-status">
+                            <option value="">-- Status --</option>
+                            <option value="Niet nodig">Niet nodig</option>
+                            <option value="Aanwezig">Aanwezig</option>
+                            <option value="Besteld">Besteld</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="modal-footer" style="justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div class="modal-footer"
+                style="justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 20px;">
                 <button type="button" id="modal-delete-btn" class="manager-btn-danger"
                     style="display:none;">Verwijderen</button>
 

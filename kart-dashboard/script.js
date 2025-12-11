@@ -381,6 +381,7 @@ function setupEditModal() {
 }
 
 /* --- De nieuwe openEditModal --- */
+/* --- AANGEPASTE openEditModal --- */
 function openEditModal(dataset) {
     // 1. Vul de standaard velden
     document.getElementById('edit-row-id').value = dataset.rowId;
@@ -388,36 +389,49 @@ function openEditModal(dataset) {
     document.getElementById('edit-defect-omschrijving').value = unescape(dataset.omschrijving);
     document.getElementById('original-status').value = dataset.status;
 
-    // 2. TD Velden vullen (indien TD)
+    // 2. TD Logic & Layout Switch
     const tdSection = document.getElementById('td-fields');
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
     const resolveBtn = document.getElementById('modal-resolve-btn');
+    
+    // HET MODAL ELEMENT (voor de breedte class)
+    const modalBox = document.getElementById('edit-modal');
 
     if (isTD) {
+        // TOON TD VELDEN
         tdSection.style.display = 'block';
+        
+        // --- NIEUW: Schakel 'Breedbeeld' modus in voor 2 kolommen ---
+        if(modalBox) modalBox.classList.add('wide-mode'); 
+
+        // Vul de data
         document.getElementById('edit-benodigdheden').value = dataset.benodigdheden ? unescape(dataset.benodigdheden) : '';
         document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || '';
+        
         if (resolveBtn) resolveBtn.style.display = 'block';
     } else {
+        // VERBERG TD VELDEN
         tdSection.style.display = 'none';
+        
+        // --- NIEUW: Terug naar smalle modus ---
+        if(modalBox) modalBox.classList.remove('wide-mode');
+        
         if (resolveBtn) resolveBtn.style.display = 'none';
     }
 
-    // 3. VERWIJDER KNOP LOGICA (Hier zorgen we dat hij zichtbaar wordt!)
+    // 3. DELETE KNOP LOGICA
     const deleteBtn = document.getElementById('modal-delete-btn');
-
-    // Check: Ben ik eigenaar (<24u) OF ben ik TD?
     const isEigenaar = (dataset.medewerker === ingelogdeNaam);
     const isVers = (Date.now() - new Date(dataset.timestamp).getTime() < 86400000);
 
     if ((isEigenaar && isVers) || isTD) {
-        deleteBtn.style.display = 'block'; // MAAK ZICHTBAAR
+        deleteBtn.style.display = 'block';
     } else {
-        deleteBtn.style.display = 'none';  // VERBERG
+        deleteBtn.style.display = 'none';
     }
 
     // 4. Open de modal
-    document.getElementById('edit-modal').style.display = 'block';
+    if(modalBox) modalBox.style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
 }
 
