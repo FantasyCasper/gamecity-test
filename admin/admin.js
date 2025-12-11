@@ -492,7 +492,7 @@ function renderAlgemeenDefects(defects) {
 
         // De BEHEER knop met alle data in attributen
         const actieKnop = `
-            <button class="action-btn manage-defect-btn" 
+            <button class="manage-defect-btn" 
                 style="background-color: #007bff;"
                 data-row-id="${defect.rowId}"
                 data-locatie="${defect.locatie}"
