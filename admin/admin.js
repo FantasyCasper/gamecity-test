@@ -566,7 +566,7 @@ function setupAdminDefectModal() {
             saveBtn.disabled = true; saveBtn.textContent = "Bezig...";
 
             const payload = {
-                type: "UPDATE_DEFECT_EXTENDED", // Dit mapt naar updateAlgemeenDefectExtended in Code.gs als je dat zo noemt, of we gebruiken een nieuwe type
+                type: "UPDATE_DEFECT_EXTENDED_ALGEMEEN", // Dit mapt naar updateAlgemeenDefectExtended in Code.gs als je dat zo noemt, of we gebruiken een nieuwe type
                 // LET OP: In stap 2 noemde ik de functie updateAlgemeenDefectExtended. 
                 // Je moet in Code.gs zorgen dat doPost dit type herkent!
                 // Zie STAP 2b hieronder voor de doPost fix.
