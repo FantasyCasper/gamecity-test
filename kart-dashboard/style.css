@@ -17,11 +17,11 @@ body {
     padding-top: 70px;
 }
 
-h2 { 
-    border-bottom: 1px solid #444; 
-    padding-bottom: 10px; 
-    margin-top: 30px; 
-    text-align: center; 
+h2 {
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-top: 30px;
+    text-align: center;
 }
 
 /* 2. SPECIFIEKE NAVIGATIE */
@@ -251,7 +251,7 @@ body.is-manager .manager-btn {
 .modal-header h2 {
     margin: 0;
     font-size: 1.3em;
-    color: #fff; 
+    color: #fff;
 }
 
 #modal-close-btn {
@@ -356,24 +356,29 @@ body.is-manager .manager-btn-danger {
 .problem-card-grid {
     display: grid;
     /* !important zorgt dat deze regel wint van eerdere definities */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 350px)) !important; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 350px)) !important;
     gap: 20px;
-    justify-content: center; /* Centreer het geheel op het scherm */
+    justify-content: center;
+    /* Centreer het geheel op het scherm */
 }
 
 /* 2. De Kaarten (Zowel echt als skeleton): Mogen nooit breder dan 350px */
-.defect-card, 
+.defect-card,
 .skeleton-card {
     width: 100%;
-    max-width: 350px !important;   /* HARDE LIMIET voor dit dashboard */
-    margin-left: auto;  /* Centreren binnen de kolom */
+    max-width: 350px !important;
+    /* HARDE LIMIET voor dit dashboard */
+    margin-left: auto;
+    /* Centreren binnen de kolom */
     margin-right: auto;
 }
 
 /* 3. Specifieke Skeleton Styling voor hier */
 .skeleton-card {
-    height: 180px;      /* Hoger dan standaard, want defect kaarten zijn groot */
-    border-radius: 8px; /* Mooiere ronding */
+    height: 180px;
+    /* Hoger dan standaard, want defect kaarten zijn groot */
+    border-radius: 8px;
+    /* Mooiere ronding */
     margin-bottom: 0;
 }
 
@@ -382,15 +387,17 @@ body.is-manager .manager-btn-danger {
     position: absolute;
     bottom: 15px;
     right: 15px;
-    background-color: #007bff; /* Blauw */
+    background-color: #007bff;
+    /* Blauw */
     color: white;
     border: none;
-    border-radius: 50%; /* Rondje */
+    border-radius: 50%;
+    /* Rondje */
     width: 35px;
     height: 35px;
     font-size: 1.2em;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -407,7 +414,8 @@ body.is-manager .manager-btn-danger {
 /* Zorg dat de kaart positie relative heeft (voor het absoluut plaatsen van de knop) */
 .defect-card {
     position: relative;
-    padding-bottom: 50px; /* Iets extra ruimte onderaan voor de knop */
+    padding-bottom: 50px;
+    /* Iets extra ruimte onderaan voor de knop */
 }
 
 /* Het rode verwijder kruisje */
@@ -415,15 +423,17 @@ body.is-manager .manager-btn-danger {
     position: absolute;
     bottom: 15px;
     right: 15px;
-    background-color: #dc3545; /* Rood */
+    background-color: #dc3545;
+    /* Rood */
     color: white;
     border: none;
-    border-radius: 50%; /* Rondje */
+    border-radius: 50%;
+    /* Rondje */
     width: 35px;
     height: 35px;
     font-size: 1.2em;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -433,7 +443,8 @@ body.is-manager .manager-btn-danger {
 }
 
 .delete-icon-btn:hover {
-    background-color: #c82333; /* Iets donkerder rood */
+    background-color: #c82333;
+    /* Iets donkerder rood */
     transform: scale(1.1);
 }
 
@@ -447,7 +458,8 @@ body.is-manager .manager-btn-danger {
     padding: 15px;
     border-radius: 5px;
     border: 1px solid #444;
-    margin-top: 15px; /* Op mobiel ruimte erboven */
+    margin-top: 15px;
+    /* Op mobiel ruimte erboven */
 }
 
 .td-header {
@@ -461,30 +473,71 @@ body.is-manager .manager-btn-danger {
 
 /* 2. DESKTOP TWEAK: NAAST ELKAAR */
 @media (min-width: 800px) {
+
     /* Als de modal de class 'wide-mode' krijgt (via JS), maak hem dan breder */
     #edit-modal.wide-mode {
-        width: 900px; /* Lekker breed */
+        width: 900px;
+        /* Lekker breed */
         max-width: 95%;
     }
 
     /* Zet de grid aan als 'wide-mode' actief is */
     #edit-modal.wide-mode #modal-grid-wrapper {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Twee gelijke kolommen */
+        grid-template-columns: 1fr 1fr;
+        /* Twee gelijke kolommen */
         gap: 25px;
-        align-items: stretch; /* Even hoog maken */
+        align-items: stretch;
+        /* Even hoog maken */
     }
 
     /* Pas de rechterkolom aan voor desktop */
     #edit-modal.wide-mode .modal-col-right {
-        margin-top: 0; /* Geen margin nodig naast elkaar */
-        height: 100%;  /* Vul de hoogte */
+        margin-top: 0;
+        /* Geen margin nodig naast elkaar */
+        height: 100%;
+        /* Vul de hoogte */
         box-sizing: border-box;
     }
-    
+
     /* Zorg dat de linkerkolom ook de hoogte vult (voor textarea) */
     #edit-modal.wide-mode .modal-col-left {
         display: flex;
         flex-direction: column;
     }
+}
+
+/* Navigatie Balk */
+.defect-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.defect-nav-btn {
+    background-color: #333;
+    color: #aaa;
+    border: 1px solid #444;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+    flex-grow: 1;
+    max-width: 150px;
+    transition: all 0.2s;
+}
+
+.defect-nav-btn:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+.defect-nav-btn.active {
+    background-color: #28a745;
+    /* Groen, of kies een andere kleur */
+    color: white;
+    border-color: #28a745;
 }
