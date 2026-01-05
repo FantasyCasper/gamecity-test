@@ -1,490 +1,546 @@
-/* =======================================================
-   UNIVERSEEL DEFECTEN DASHBOARD SCRIPT
-   Voor: Karts, Lasergame & Prison Island
-   ======================================================= */
+/* ===============================
+   KART DASHBOARD SCRIPT (MET PERMISSIES)
+   =============================== */
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
-// --- CONFIGURATIE PER ACTIVITEIT ---
-// Hier bepaal je hoe elk dashboard zich gedraagt
-const CONFIG = {
-    kart: {
-        titel: "Kart Defecten",
-        itemNaam: "Kart",       // Bijv: "Kart 5"
-        settingKey: "totaal_karts", // Key in de 'Instellingen' sheet
-        defaultTotaal: 48       // Fallback als instellingen niet laden
-    },
-    lasergame: {
-        titel: "Lasergame Defecten",
-        itemNaam: "Pak",        // Bijv: "Pak 5"
-        settingKey: "totaal_lasergame",
-        defaultTotaal: 24
-    },
-    prisonisland: {
-        titel: "Prison Island Defecten",
-        itemNaam: "Cel",        // Bijv: "Cel 5"
-        settingKey: "totaal_pi",
-        defaultTotaal: 24
-    }
-};
-
-// Globale Variabelen
 let ingelogdeNaam = "";
 let ingelogdePermissies = {};
-let alleDefecten = []; // Cache van opgehaalde data
-let ACTIVE_TYPE = 'kart'; // Huidige geselecteerde dashboard (standaard kart)
-let TOTAAL_ITEMS = 40; // Wordt overschreven door instellingen
+let alleDefecten = [];
+let TOTAAL_KARTS = 40; // Standaard fallback, wordt overschreven door server
 
-/* ===============================
-   DEEL 1: INITIALISATIE
-   =============================== */
+// --- DEEL 1: DE "BEWAKER" ---
 (function () {
-    // 1. Login Check
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     const rawPerms = localStorage.getItem('ingelogdePermissies');
 
+    // 1. Login Check
     if (!ingelogdeNaam || !rawPerms) {
-        window.location.href = "../login/"; // Stuur terug naar login als niet ingelogd
+        alert("Je bent niet ingelogd.");
+        window.location.href = "../login/";
         return;
     }
+
+    // Parse de permissies
     ingelogdePermissies = JSON.parse(rawPerms);
 
-    // 2. Manager UI aanpassingen (TD/Admin zien meer)
+    // 2. Bepaal of we 'Manager' knoppen (Oplossen/Verwijderen) mogen zien
+    // Dit mag als je 'Admin' OF 'TD' rechten hebt.
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
         document.body.classList.add('is-manager');
     }
 
-    // 3. Modules opstarten
+    // 3. Start modules
+    vulKartDropdowns(); // Tekent eerst 1-40 (zodat je direct beeld hebt)
+    haalInstellingenOp(); // Haalt op de achtergrond het echte aantal op (bijv. 50) en tekent opnieuw
     setupDefectForm();
+    laadDefectenDashboard();
+    setupKartFilter();
     setupEditModal();
-    setupKartFilter(); // (Naam is oud, maar werkt universeel)
-
-    // 4. Start het dashboard (kijk of er een ?type=... in de URL staat, anders karts)
-    const urlParams = new URLSearchParams(window.location.search);
-    const startType = urlParams.get('type');
-    
-    if(startType && CONFIG[startType]) {
-        switchDashboard(startType);
-    } else {
-        switchDashboard('kart');
-    }
 
 })();
 
+// --- DEEL 2: FUNCTIES ---
 
-/* ===============================
-   DEEL 2: SCHAKELEN TUSSEN DASHBOARDS
-   ================================ */
-window.switchDashboard = function(type) {
-    if (!CONFIG[type]) return; // Veiligheidscheck
+function vulKartDropdowns() {
+    const meldSelect = document.getElementById('new-defect-kart');
+    const editSelect = document.getElementById('edit-kart-select');
 
-    ACTIVE_TYPE = type;
-    const conf = CONFIG[type];
-
-    // 1. Update de Titel & Navigatieknoppen
-    const titleEl = document.getElementById('dashboard-title');
-    if(titleEl) titleEl.textContent = conf.titel;
-
-    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        // Check of de knop tekst overeenkomt met het type (simpele check)
-        const btnText = btn.innerText.toLowerCase();
-        if (btnText.includes(type === 'prisonisland' ? 'prison' : type)) {
-            btn.classList.add('active');
+    // Eerst leegmaken (voor als we de functie opnieuw aanroepen na laden settings)
+    if (meldSelect) {
+        meldSelect.innerHTML = '<option value="">Kart...</option>';
+        for (let i = 1; i <= TOTAAL_KARTS; i++) {
+            meldSelect.add(new Option(`Kart ${i}`, i));
         }
-    });
+    }
 
-    // 2. Update de URL (zonder te herladen) voor als je F5 drukt
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
-    window.history.pushState({path:newUrl}, '', newUrl);
+    if (editSelect) {
+        // Edit select heeft geen placeholder nodig, die wordt later gezet
+        editSelect.innerHTML = '';
+        for (let i = 1; i <= TOTAAL_KARTS; i++) {
+            editSelect.add(new Option(`Kart ${i}`, i));
+        }
+    }
 
-    // 3. Haal instellingen op (Aantal items) en laad daarna de data
-    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
+    // Update ook even het tekstje in het dashboard (Statistieken blokje)
+    const totaalVeld = document.getElementById('stat-totaal-karts');
+    if (totaalVeld) totaalVeld.textContent = TOTAAL_KARTS;
 }
 
+function setupDefectForm() { // Kart defect
+    const defectForm = document.getElementById('new-defect-form');
+    if (!defectForm) return;
+    const defectButton = document.getElementById('new-defect-submit');
 
-/* ===============================
-   DEEL 3: DATA OPHALEN & VERWERKEN
-   =============================== */
-function haalInstellingenOp(key, fallback) {
-    // Zet eerst de fallback, zodat we direct door kunnen
-    TOTAAL_ITEMS = fallback;
-    
-    // Probeer echte instellingen te halen (asynchroon)
-    callApi("GET_SETTINGS").then(res => {
-        if(res.data && res.data[key]) {
-            TOTAAL_ITEMS = parseInt(res.data[key]);
+    defectForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const kartNummer = document.getElementById('new-defect-kart').value;
+        const omschrijving = document.getElementById('new-defect-problem').value.trim();
+        if (kartNummer === "" || omschrijving === "") {
+            toonDefectStatus("Selecteer een kart en vul een omschrijving in.", "error"); return;
         }
-        // Nu we het aantal weten, laden we de defecten en de dropdowns
-        laadDefectenDashboard();
-    }).catch(err => {
-        console.warn("Instellingen niet geladen, gebruik fallback.", err);
-        laadDefectenDashboard();
+        defectButton.disabled = true; defectButton.textContent = "Bezig...";
+
+        // Let op: type is "LOG_DEFECT"
+        const payload = { type: "LOG_DEFECT", medewerker: ingelogdeNaam, kartNummer: kartNummer, defect: omschrijving };
+
+        callApi(payload)
+            .then(data => {
+                toonDefectStatus("Defect succesvol gemeld!", "success");
+                defectForm.reset(); laadDefectenDashboard();
+            })
+            .catch(error => {
+                toonDefectStatus(error.message || "Melden mislukt", "error");
+            })
+            .finally(() => {
+                defectButton.disabled = false; defectButton.textContent = "+ Toevoegen";
+            });
     });
 }
 
 function laadDefectenDashboard() {
-    // Toon "Laden..." animatie
+    // NIEUWE REGEL:
     toonSkeletonKaarten('defect-card-container', 4);
 
-    // Vraag defecten op voor het actieve type
-    const payload = { type: "GET_OBJECT_DEFECTS", subType: ACTIVE_TYPE };
-
-    callApi(payload)
+    callApi({ type: "GET_DEFECTS" })
         .then(result => {
             alleDefecten = result.data;
-            updateUI(); // Teken alles op het scherm
+            updateStatBoxes(alleDefecten);
+            renderDefectCards(alleDefecten);
+            setupDashboardListeners();
         })
         .catch(error => {
-            document.getElementById('defect-card-container').innerHTML = `<p style="color: red; text-align:center;">Fout bij laden: ${error.message}</p>`;
+            if (document.getElementById('defect-card-container')) {
+                document.getElementById('defect-card-container').innerHTML = `<p style="color: red;">Kon defecten niet laden: ${error.message}</p>`;
+            }
         });
 }
 
-function updateUI() {
-    const conf = CONFIG[ACTIVE_TYPE];
+function updateStatBoxes(defects) {
+    const openDefecten = defects.filter(d => d.status === 'Open');
+    const uniekeKartsMetProbleem = [...new Set(openDefecten.map(d => d.kartNummer))];
 
-    // 1. Dropdowns verversen (Kart 1..40 of Cel 1..25)
-    vulDropdowns(conf.itemNaam, TOTAAL_ITEMS);
+    document.getElementById('stat-karts-problemen').textContent = uniekeKartsMetProbleem.length;
 
-    // 2. Statistieken berekenen
-    const openDefecten = alleDefecten.filter(d => d.status === 'Open');
-    // Gebruik Set om unieke nummers te tellen (als Kart 5 twee defecten heeft, telt hij als 1 kapotte kart)
-    const uniekeKapotteItems = [...new Set(openDefecten.map(d => d.nummer))];
-
-    const aantalKapot = uniekeKapotteItems.length;
-    const aantalWerkend = TOTAAL_ITEMS - aantalKapot;
-
-    // Update de boxen
-    document.getElementById('stat-totaal').textContent = TOTAAL_ITEMS;
-    document.getElementById('stat-label-totaal').textContent = `Totaal ${conf.itemNaam}s`; // "Totaal Karts"
-
-    document.getElementById('stat-problemen').textContent = aantalKapot;
-    document.getElementById('stat-label-probleem').textContent = `Defecte ${conf.itemNaam}s`;
-
-    document.getElementById('stat-werkend').textContent = aantalWerkend;
-    document.getElementById('stat-label-werkend').textContent = `Werkende ${conf.itemNaam}s`;
-
-    // 3. Kaarten tekenen
-    renderDefectCards(alleDefecten);
+    // AANGEPAST: Gebruik nu TOTAAL_KARTS in plaats van 40
+    document.getElementById('stat-werkende-karts').textContent = TOTAAL_KARTS - uniekeKartsMetProbleem.length;
 }
 
-function vulDropdowns(naam, totaal) {
-    const ids = ['new-defect-kart', 'edit-kart-select', 'filter-kart-select'];
-    
-    ids.forEach(id => {
-        const select = document.getElementById(id);
-        if(!select) return;
+function setupKartFilter() {
+    const statusFilter = document.getElementById('filter-status');
+    const wisButton = document.getElementById('filter-wissen-btn');
+    function pasFiltersToe() {
+        const geselecteerdeStatus = statusFilter.value;
+        let gefilterdeLijst = alleDefecten;
+        if (geselecteerdeStatus !== 'alle') {
+            gefilterdeLijst = gefilterdeLijst.filter(d => d.status.toLowerCase() === geselecteerdeStatus);
+        }
+        renderDefectCards(gefilterdeLijst);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', pasFiltersToe);
+        wisButton.addEventListener('click', () => {
+            statusFilter.value = 'open'; pasFiltersToe();
+        });
+    }
+}
 
-        // Reset
-        let eersteOptieTekst = (id === 'filter-kart-select') ? "Alles Tonen" : `Kies ${naam}...`;
-        select.innerHTML = `<option value="">${eersteOptieTekst}</option>`;
-
-        for (let i = 1; i <= totaal; i++) {
-            select.add(new Option(`${naam} ${i}`, i));
+function setupDashboardListeners() {
+    const container = document.getElementById("defect-card-container");
+    if (!container) return;
+    container.addEventListener("click", e => {
+        if (e.target.classList.contains("manager-btn")) {
+            markeerDefectOpgelost(e.target.dataset.rowId, e.target);
+        }
+        if (e.target.classList.contains("edit-defect-btn")) {
+            const knop = e.target;
+            openEditModal(
+                knop.dataset.rowId,
+                knop.dataset.kart,
+                unescape(knop.dataset.omschrijving)
+            );
         }
     });
 }
 
-
-/* ===============================
-   DEEL 4: KAARTEN RENDEREN
-   =============================== */
+/* --- Vervang de functie renderDefectCards --- */
 function renderDefectCards(defects) {
     const container = document.getElementById("defect-card-container");
+    if (!container) return;
     container.innerHTML = "";
-    
+
+    // Filter verwijderde items
     const actieveDefecten = defects.filter(d => d.status !== 'Verwijderd');
 
     if (actieveDefecten.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Geen defecten gevonden. Alles werkt!</p>"; 
-        return;
+        container.innerHTML = "<p>Geen defecten gevonden voor deze selectie.</p>"; return;
     }
 
-    // Sorteren: Open eerst, daarna Opgelost
+    // Sorteren: Open eerst
     actieveDefecten.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
     actieveDefecten.forEach(defect => {
-        const conf = CONFIG[ACTIVE_TYPE];
         const ts = tijdGeleden(defect.timestamp);
-        
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
-        if (defect.status === "Opgelost") kaart.classList.add("status-opgelost");
+        kaart.style.position = "relative";
 
-        // Edit/Delete Rechten Check
-        let editKnopHtml = '';
+        if (defect.status === "Opgelost") { kaart.classList.add("status-opgelost"); }
+
+        // --- RECHTEN LOGICA ---
+        // Je hebt rechten als: (Je de eigenaar bent EN het is <24u geleden) OF (Je bent TD/Admin)
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
-        // Eigenaar mag binnen 24u bewerken. TD/Admin mag altijd alles.
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
-        if ((isEigenaar && defect.status === "Open" && isVers) || isTD) {
-            // We stoppen alle data in data-attributen zodat de modal ze kan lezen
-            editKnopHtml = `
-                <button class="edit-icon-btn" 
-                        data-row-id="${defect.rowId}" 
-                        data-nummer="${defect.nummer}" 
-                        data-omschrijving="${escapeHtml(defect.defect)}"
-                        data-status="${defect.status}"
-                        data-benodigdheden="${escapeHtml(defect.benodigdheden || '')}"
-                        data-onderdelen="${escapeHtml(defect.onderdelenStatus || '')}"
-                        onclick="openEditModal(this.dataset)">
-                    ✎
-               </button>`;
+        const heeftRechten = (isEigenaar && isVers) || isTD;
+
+        let actieKnop = '';
+
+        if (heeftRechten) {
+            if (defect.status === 'Open') {
+                // Status OPEN -> Potloodje (Aanpassen)
+                actieKnop = maakEditKnop(defect);
+            }
+            else if (defect.status === 'Opgelost') {
+                // Status OPGELOST -> Rood Kruisje (Verwijderen)
+                actieKnop = `
+                    <button class="delete-icon-btn" data-row-id="${defect.rowId}">
+                        ✖
+                    </button>`;
+            }
         }
 
-        // Extra info tonen (TD info)
+        // TD Info opbouwen (blijft hetzelfde)
         let extraInfo = '';
-        if (defect.benodigdheden) extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
-        if (defect.onderdelenStatus) extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 Onderdeel: ${defect.onderdelenStatus}</div>`;
+        if (defect.benodigdheden) {
+            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">Nodig: ${defect.benodigdheden}</div>`;
+        }
+        if (defect.onderdelenStatus && defect.onderdelenStatus !== 'Niet nodig') {
+            const kleur = defect.onderdelenStatus === 'Aanwezig' ? '#2ecc71' : '#e74c3c';
+            extraInfo += `<div style="font-size: 0.85em; color: ${kleur};">Onderdeel: ${defect.onderdelenStatus}</div>`;
+        }
 
         kaart.innerHTML = `
-            <h3>${conf.itemNaam} ${defect.nummer}</h3>
+            <h3>Kart ${defect.kartNummer}</h3>
             <div class="meta">
-                <span class="meta-item">👤 ${defect.medewerker}</span>
-                <span class="meta-item">🕒 ${ts}</span>
+                <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
+                <span class="meta-item">Gemeld: ${ts}</span>
                 <span class="meta-item">Status: <strong>${defect.status}</strong></span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
             ${extraInfo}
-            ${editKnopHtml}
+            ${actieKnop}
         `;
         container.appendChild(kaart);
     });
 }
 
+// Hulpfunctie om dubbele code te voorkomen
+function maakEditKnop(defect) {
+    return `<button class="edit-icon-btn" 
+                data-row-id="${defect.rowId}" 
+                data-kart="${defect.kartNummer}" 
+                data-omschrijving="${escape(defect.defect)}"
+                data-status="${defect.status}"
+                data-benodigdheden="${escape(defect.benodigdheden || '')}"
+                data-onderdelen="${escape(defect.onderdelenStatus || '')}"
+                data-timestamp="${defect.timestamp}"
+                data-medewerker="${defect.medewerker}">
+            ✎
+       </button>`;
+}
+function setupDashboardListeners() {
+    const container = document.getElementById("defect-card-container");
+    if (!container) return;
 
-/* ===============================
-   DEEL 5: FORMULIEREN (MELDEN & MODAL)
-   =============================== */
-
-function setupDefectForm() {
-    const form = document.getElementById('new-defect-form');
-    if(!form) return;
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        
-        const nummer = document.getElementById('new-defect-kart').value;
-        const omschrijving = document.getElementById('new-defect-problem').value.trim();
-        const btn = document.getElementById('new-defect-submit');
-
-        if (!nummer || !omschrijving) {
-            toonDefectStatus("Vul alles in aub.", "error");
-            return;
+    container.addEventListener("click", e => {
+        // 1. KLIK OP POTLOOD (Bewerken)
+        const editKnop = e.target.closest('.edit-icon-btn');
+        if (editKnop) {
+            openEditModal(editKnop.dataset);
         }
-        
-        btn.disabled = true; 
-        btn.textContent = "Versturen...";
 
-        // BELANGRIJK: subType meesturen!
-        const payload = { 
-            type: "LOG_OBJECT_DEFECT", 
-            subType: ACTIVE_TYPE,
-            medewerker: ingelogdeNaam, 
-            nummer: nummer, 
-            defect: omschrijving 
-        };
+        // 2. KLIK OP KRUISJE (Verwijderen)
+        const deleteKnop = e.target.closest('.delete-icon-btn');
+        if (deleteKnop) {
+            const rowId = deleteKnop.dataset.rowId;
+            if (confirm("Wil je dit defect definitief verwijderen?")) {
 
-        callApi(payload).then(() => {
-            toonDefectStatus("Gemeld!", "success");
-            form.reset(); 
-            laadDefectenDashboard();
-        }).catch(err => {
-            toonDefectStatus(err.message, "error");
-        }).finally(() => { 
-            btn.disabled = false; 
-            btn.textContent = "+ Toevoegen"; 
-        });
+                deleteKnop.disabled = true;
+                deleteKnop.innerHTML = "...";
+
+                // BEPAAL WELKE API WE ROEPEN
+                let payload = {};
+                const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+
+                if (isTD) {
+                    // TD mag alles verwijderen via de status update
+                    payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" };
+                } else {
+                    // Melder mag alleen eigen defect verwijderen (met extra checks in backend)
+                    payload = { type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam };
+                }
+
+                callApi(payload)
+                    .then(res => {
+                        toonDefectStatus("Defect verwijderd.", "success");
+                        laadDefectenDashboard();
+                    })
+                    .catch(err => {
+                        alert("Fout: " + err.message);
+                        deleteKnop.disabled = false; deleteKnop.innerHTML = "✖";
+                    });
+            }
+        }
     });
 }
 
+/* --- Vervang setupEditModal en voeg logic toe --- */
 function setupEditModal() {
-    // Sluit knoppen (Annuleren)
     const overlay = document.getElementById('modal-overlay');
-    const cancelBtn = document.getElementById('modal-cancel-btn');
-    const editForm = document.getElementById('edit-defect-form');
+    const form = document.getElementById('edit-defect-form');
+    const saveButton = document.getElementById('modal-save-btn');
+    const resolveButton = document.getElementById('modal-resolve-btn');
+    const deleteButton = document.getElementById('modal-delete-btn');
 
-    const sluit = () => {
-        document.getElementById('edit-modal').style.display = 'none';
-        overlay.style.display = 'none';
-    };
+    // Sluit knoppen
+    document.getElementById('modal-close-btn').onclick = closeEditModal;
+    document.getElementById('modal-cancel-btn').onclick = closeEditModal;
+    if (overlay) overlay.onclick = closeEditModal;
 
-    if(cancelBtn) cancelBtn.onclick = sluit;
-    if(overlay) overlay.onclick = (e) => { if(e.target === overlay) sluit(); };
+    if (!form) return;
 
-    // Formulier Opslaan (Update Extended)
-    if(editForm) {
-        editForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('modal-save-btn');
-            btn.disabled = true; btn.textContent = "Opslaan...";
+    // 1. OPSLAAN / OPLOSSEN Functie
+    function verwerkOpslaan(nieuweStatus) {
+        const actieveKnop = (nieuweStatus === "Opgelost") ? resolveButton : saveButton;
+        if (actieveKnop) { actieveKnop.disabled = true; actieveKnop.textContent = "Bezig..."; }
 
-            const payload = {
-                type: "UPDATE_OBJECT_EXTENDED",
-                subType: ACTIVE_TYPE, // Welk tabblad?
-                rowId: document.getElementById('edit-row-id').value,
-                newNummer: document.getElementById('edit-kart-select').value,
-                newText: document.getElementById('edit-defect-omschrijving').value,
-                benodigdheden: document.getElementById('edit-benodigdheden').value,
-                onderdelenStatus: document.getElementById('edit-onderdelen-status').value
-            };
+        const payload = {
+            type: "UPDATE_DEFECT_EXTENDED",
+            rowId: document.getElementById('edit-row-id').value,
+            newKartNummer: document.getElementById('edit-kart-select').value,
+            newText: document.getElementById('edit-defect-omschrijving').value.trim(),
+            benodigdheden: document.getElementById('edit-benodigdheden').value,
+            onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
+            newStatus: nieuweStatus,
+            medewerker: ingelogdeNaam
+        };
 
-            callApi(payload).then(() => {
-                toonDefectStatus("Opgeslagen.", "success");
-                sluit();
+        callApi(payload)
+            .then(result => {
+                toonDefectStatus((nieuweStatus === "Opgelost") ? "Defect opgelost!" : "Opgeslagen.", "success");
+                closeEditModal();
                 laadDefectenDashboard();
-            }).catch(err => alert("Fout: " + err.message))
-              .finally(() => { btn.disabled = false; btn.textContent = "Opslaan"; });
-        });
+            })
+            .catch(error => { toonDefectStatus("Fout: " + error.message, "error"); })
+            .finally(() => {
+                if (actieveKnop) {
+                    actieveKnop.disabled = false;
+                    actieveKnop.textContent = (nieuweStatus === "Opgelost") ? "✓ Markeer als Opgelost" : "Opslaan";
+                }
+            });
     }
 
-    // Markeer Opgelost
-    const resolveBtn = document.getElementById('modal-resolve-btn');
-    if(resolveBtn) {
-        resolveBtn.onclick = function() {
-            updateStatus(document.getElementById('edit-row-id').value, "Opgelost", sluit);
-        };
-    }
+    // Listeners voor Opslaan
+    form.addEventListener('submit', (e) => { e.preventDefault(); verwerkOpslaan(document.getElementById('original-status').value); });
+    if (resolveButton) resolveButton.addEventListener('click', () => { if (confirm("Markeren als opgelost?")) verwerkOpslaan("Opgelost"); });
 
-    // Verwijder
-    const deleteBtn = document.getElementById('modal-delete-btn');
-    if(deleteBtn) {
-        deleteBtn.onclick = function() {
-            if(confirm("Weet je zeker dat je dit defect wilt verwijderen?")) {
-                updateStatus(document.getElementById('edit-row-id').value, "Verwijderd", sluit);
+    // 2. VERWIJDEREN (De logica voor de rode knop in de modal)
+    if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            if (!confirm('Weet je zeker dat je dit defect definitief wilt verwijderen?')) return;
+
+            deleteButton.disabled = true; deleteButton.textContent = "...";
+            const rowId = document.getElementById('edit-row-id').value;
+
+            // KIES DE JUISTE METHODE
+            let payload = {};
+            const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+
+            if (isTD) {
+                // TD methode
+                payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Verwijderd" };
+            } else {
+                // Melder methode (eigen defect)
+                payload = { type: "DELETE_OWN_DEFECT", rowId: rowId, medewerker: ingelogdeNaam };
             }
-        };
+
+            callApi(payload)
+                .then(result => {
+                    toonDefectStatus("Verwijderd.", "success");
+                    closeEditModal();
+                    laadDefectenDashboard();
+                })
+                .catch(err => alert(err.message))
+                .finally(() => {
+                    deleteButton.disabled = false; deleteButton.textContent = "Verwijderen";
+                });
+        });
     }
 }
 
-// Functie wordt aangeroepen door de onclick in de HTML knop
-window.openEditModal = function(dataset) {
-    // Velden vullen
+/* --- De nieuwe openEditModal --- */
+/* --- AANGEPASTE openEditModal --- */
+function openEditModal(dataset) {
+    // 1. Vul de standaard velden
     document.getElementById('edit-row-id').value = dataset.rowId;
-    document.getElementById('edit-kart-select').value = dataset.nummer; // Let op: dataset.nummer
-    document.getElementById('edit-defect-omschrijving').value = dataset.omschrijving; // Is al escaped?
-    
-    // TD velden (indien aanwezig)
-    const benod = document.getElementById('edit-benodigdheden');
-    const onder = document.getElementById('edit-onderdelen-status');
-    if(benod) benod.value = dataset.benodigdheden || '';
-    if(onder) onder.value = dataset.onderdelen || '';
+    document.getElementById('edit-kart-select').value = dataset.kart;
+    document.getElementById('edit-defect-omschrijving').value = unescape(dataset.omschrijving);
+    document.getElementById('original-status').value = dataset.status;
 
-    // TD Sectie tonen/verbergen
+    // 2. TD Logic & Layout Switch
     const tdSection = document.getElementById('td-fields');
-    const modalBox = document.getElementById('edit-modal');
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+    const resolveBtn = document.getElementById('modal-resolve-btn');
+    
+    // HET MODAL ELEMENT (voor de breedte class)
+    const modalBox = document.getElementById('edit-modal');
 
-    if (tdSection) {
-        if (isTD) {
-            tdSection.style.display = 'block';
-            if(modalBox) modalBox.classList.add('wide-mode');
-        } else {
-            tdSection.style.display = 'none';
-            if(modalBox) modalBox.classList.remove('wide-mode');
-        }
+    if (isTD) {
+        // TOON TD VELDEN
+        tdSection.style.display = 'block';
+        
+        // --- NIEUW: Schakel 'Breedbeeld' modus in voor 2 kolommen ---
+        if(modalBox) modalBox.classList.add('wide-mode'); 
+
+        // Vul de data
+        document.getElementById('edit-benodigdheden').value = dataset.benodigdheden ? unescape(dataset.benodigdheden) : '';
+        document.getElementById('edit-onderdelen-status').value = dataset.onderdelen || '';
+        
+        if (resolveBtn) resolveBtn.style.display = 'block';
+    } else {
+        // VERBERG TD VELDEN
+        tdSection.style.display = 'none';
+        
+        // --- NIEUW: Terug naar smalle modus ---
+        if(modalBox) modalBox.classList.remove('wide-mode');
+        
+        if (resolveBtn) resolveBtn.style.display = 'none';
     }
 
-    // Delete knop tonen?
-    const delBtn = document.getElementById('modal-delete-btn');
-    if(delBtn) delBtn.style.display = (isTD) ? 'block' : 'none'; // Alleen TD mag verwijderen in dit ontwerp
+    // 3. DELETE KNOP LOGICA
+    const deleteBtn = document.getElementById('modal-delete-btn');
+    const isEigenaar = (dataset.medewerker === ingelogdeNaam);
+    const isVers = (Date.now() - new Date(dataset.timestamp).getTime() < 86400000);
 
-    // Openen
+    if ((isEigenaar && isVers) || isTD) {
+        deleteBtn.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+
+    // 4. Open de modal
     if(modalBox) modalBox.style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
 }
 
-function updateStatus(rowId, newStatus, callback) {
-    callApi({
-        type: "UPDATE_OBJECT_STATUS",
-        subType: ACTIVE_TYPE,
-        rowId: rowId,
-        newStatus: newStatus
-    }).then(() => {
-        toonDefectStatus("Status: " + newStatus, "success");
-        if(callback) callback();
-        laadDefectenDashboard();
-    }).catch(err => alert(err.message));
+function markeerDefectOpgelost(rowId, buttonEl) {
+    if (!confirm("Weet je zeker dat je dit defect als opgelost wilt markeren?")) return;
+    buttonEl.disabled = true; buttonEl.textContent = "Bezig...";
+
+    // API Call update: we sturen nu impliciet permissies mee via callApi
+    const payload = { type: "UPDATE_DEFECT_STATUS", rowId: rowId, newStatus: "Opgelost" };
+
+    callApi(payload)
+        .then(result => {
+            toonDefectStatus("Defect gemarkeerd als opgelost.", "success");
+            laadDefectenDashboard();
+        }).catch(error => {
+            toonDefectStatus(error.message, "error");
+            buttonEl.disabled = false; buttonEl.textContent = "Markeer als Opgelost";
+        });
 }
 
+function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    const overlay = document.getElementById('modal-overlay');
 
-/* ===============================
-   DEEL 6: HELPERS (FILTER, API, TIJD)
-   =============================== */
-
-function setupKartFilter() {
-    const filterSelect = document.getElementById('filter-kart-select');
-    if(!filterSelect) return;
-
-    filterSelect.addEventListener('change', function() {
-        const val = this.value;
-        if(val === "") {
-            renderDefectCards(alleDefecten);
-        } else {
-            // Filter op nummer. Let op: nummer in data is vaak number, value is string.
-            const gefilterd = alleDefecten.filter(d => d.nummer == val);
-            renderDefectCards(gefilterd);
-        }
-    });
+    if (modal && overlay) {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }
 }
 
-async function callApi(payload) {
-    // Permissies altijd meesturen
+function toonDefectStatus(bericht, type) {
+    var statusDiv = document.getElementById('status-message-defect');
+    if (statusDiv) {
+        statusDiv.textContent = bericht;
+        statusDiv.className = `status-bericht ${type}`;
+        statusDiv.style.display = 'block';
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 4000);
+    }
+}
+
+// --- ALGEMENE API CALL (AANGEPAST VOOR PERMISSIES) ---
+async function callApi(type, extraData = {}) {
+    const url = WEB_APP_URL + "?v=" + new Date().getTime();
+    let payload;
+
+    // Support voor beide aanroep-stijlen (string of object)
+    if (typeof type === 'string') {
+        payload = { type: type, ...extraData };
+    } else {
+        payload = type;
+    }
+
+    // VOEG PERMISSIES TOE
     if (typeof ingelogdePermissies !== 'undefined') {
         payload.perms = ingelogdePermissies;
     }
 
-    const url = WEB_APP_URL + "?v=" + new Date().getTime(); // Cache buster
     const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { "Content-Type": "text/plain;charset=utf-8" }
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: 'cors'
     });
-    
     const result = await response.json();
-    if (result.status === "success") return result;
-    else throw new Error(result.message);
+    if (result.status === "success") { return result; }
+    else { throw new Error(result.message); }
+}
+
+function tijdGeleden(dateString) {
+    const date = new Date(dateString);
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " jaar geleden";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " maanden geleden";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " dagen geleden";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " uur geleden";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " min geleden";
+
+    return "Zojuist";
 }
 
 function toonSkeletonKaarten(containerId, aantal) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    let html = "";
+    let html = '';
     for (let i = 0; i < aantal; i++) {
-        html += `
-        <div class="defect-card skeleton-card">
-            <div class="skeleton skeleton-title"></div>
-            <div class="skeleton skeleton-text"></div>
-            <div class="skeleton skeleton-text" style="width: 60%"></div>
-        </div>`;
+        html += `<div class="defect-card skeleton-card skeleton"></div>`;
     }
     container.innerHTML = html;
 }
 
-function toonDefectStatus(msg, type) {
-    const el = document.getElementById('status-message-defect');
-    if(!el) return;
-    el.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
-    el.className = 'status-bericht ' + type;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 3000);
-}
+function haalInstellingenOp() {
+    callApi("GET_SETTINGS").then(result => {
+        if (result.data && result.data['totaal_karts']) {
+            // Update de variabele met de waarde uit de spreadsheet
+            TOTAAL_KARTS = parseInt(result.data['totaal_karts']);
 
-function escapeHtml(text) {
-    if (!text) return "";
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
+            // Ververs de dropdowns en statistieken met het nieuwe aantal
+            vulKartDropdowns();
 
-function tijdGeleden(dateString) {
-    const diff = Math.floor((new Date() - new Date(dateString)) / 1000);
-    if (diff < 60) return "Zojuist";
-    if (diff < 3600) return Math.floor(diff / 60) + "m geleden";
-    if (diff < 86400) return Math.floor(diff / 3600) + "u geleden";
-    return Math.floor(diff / 86400) + "d geleden";
+            // Als we defecten al geladen hadden, update de statistiek-boxen dan ook
+            if (typeof alleDefecten !== 'undefined') {
+                updateStatBoxes(alleDefecten);
+            }
+        }
+    }).catch(err => console.log("Kon instellingen niet laden, gebruik standaard 40."));
 }

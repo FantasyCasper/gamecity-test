@@ -195,18 +195,10 @@
                 <div class="settings-grid">
 
                     <div class="settings-card">
-                        <h3>Aantallen Instellen</h3>
+                        <h3>Algemeen</h3>
                         <div class="form-veld">
-                            <label>Totaal Karts</label>
-                            <input type="number" id="setting-totaal_karts">
-                        </div>
-                        <div class="form-veld">
-                            <label>Totaal Lasergame Pakken</label>
-                            <input type="number" id="setting-totaal_lasergame">
-                        </div>
-                        <div class="form-veld">
-                            <label>Totaal Prison Cellen</label>
-                            <input type="number" id="setting-totaal_pi">
+                            <label for="setting-totaal-karts">Totaal Aantal Karts</label>
+                            <input type="number" id="setting-totaal-karts" required placeholder="40">
                         </div>
                     </div>
 
@@ -259,20 +251,17 @@
     </div>
     <div id="modal-overlay-admin-defect" class="modal-overlay"></div>
     <div id="modal-admin-defect" class="modal-box" style="display:none; text-align: left; max-width: 500px;">
-        <div class="modal-header"
-            style="display:flex; justify-content:space-between; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">
+        <div class="modal-header" style="display:flex; justify-content:space-between; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">
             <h2 style="margin:0;">Defect Beheren</h2>
-            <button id="close-admin-defect-btn"
-                style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
+            <button id="close-admin-defect-btn" style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
         </div>
 
         <form id="admin-defect-form">
             <input type="hidden" id="admin-defect-id">
-
+            
             <div class="form-veld">
                 <label>Locatie & Defect:</label>
-                <div id="admin-defect-info"
-                    style="padding:10px; background:#333; border-radius:4px; color:#ccc; font-style:italic; margin-bottom:15px;">
+                <div id="admin-defect-info" style="padding:10px; background:#333; border-radius:4px; color:#ccc; font-style:italic; margin-bottom:15px;">
                     ...
                 </div>
             </div>
@@ -293,21 +282,18 @@
             </div>
 
             <div class="form-veld" style="margin-top:15px; border-top:1px solid #444; padding-top:15px;">
-                <label>Status Defect:</label>
-                <select id="admin-defect-status">
+                 <label>Status Defect:</label>
+                 <select id="admin-defect-status">
                     <option value="Open">Open</option>
                     <option value="Opgelost">Opgelost</option>
-                </select>
+                 </select>
             </div>
 
             <div class="modal-footer" style="display:flex; justify-content:space-between; margin-top:20px;">
-                <button type="button" id="btn-delete-admin-defect"
-                    style="background-color:#dc3545; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Verwijderen</button>
+                <button type="button" id="btn-delete-admin-defect" style="background-color:#dc3545; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Verwijderen</button>
                 <div style="display:flex; gap:10px;">
-                    <button type="button" id="btn-cancel-admin-defect"
-                        style="background-color:#555; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Annuleren</button>
-                    <button type="submit" id="btn-save-admin-defect"
-                        style="background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Opslaan</button>
+                    <button type="button" id="btn-cancel-admin-defect" style="background-color:#555; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Annuleren</button>
+                    <button type="submit" id="btn-save-admin-defect" style="background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Opslaan</button>
                 </div>
             </div>
         </form>
