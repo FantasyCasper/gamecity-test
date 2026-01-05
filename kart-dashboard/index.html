@@ -1,137 +1,193 @@
 <!DOCTYPE html>
 <html lang="nl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kart Dashboard</title>
+    <title>Defecten Dashboard</title>
+
+    <!-- Globale & dashboard styles -->
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
+
     <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
 </head>
 
 <body>
-    <a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
 
-    <div class="container">
+<a href="../index.html" id="back-button">&laquo; Terug naar de app</a>
 
-        <div class="defect-nav">
-            <a href="kart-dashboard/index.html?type=kart" class="main-tab-link">Kart Defecten</a>
-            <a href="kart-dashboard/index.html?type=lasergame" class="main-tab-link">Lasergame Defecten</a>
-            <a href="kart-dashboard/index.html?type=prisonisland" class="main-tab-link">PrisonIsland Defecten</a>
-        </div>
+<div class="container">
 
-        <h1 id="dashboard-title">Kart Defecten</h1>
-
-        <div class="stat-box-grid">
-            <div class="stat-box">
-                <span id="stat-totaal">...</span>
-                <div id="stat-label-totaal">Totaal</div>
-            </div>
-            <div class="stat-box">
-                <span id="stat-problemen">0</span>
-                <div id="stat-label-probleem">Defect</div>
-            </div>
-            <div class="stat-box">
-                <span id="stat-werkend">0</span>
-                <div id="stat-label-werkend">Werkend</div>
-            </div>
-        </div>
-        <h1>Kart Dashboard</h1>
-
-        <div class="stat-box-grid">
-            <div class="stat-box"><span id="stat-totaal-karts">40</span>Totaal Karts</div>
-            <div class="stat-box"><span id="stat-karts-problemen">0</span>Karts met
-                Problemen</div>
-            <div class="stat-box"><span id="stat-werkende-karts">0</span>Werkende Karts</div>
-        </div>
-
-        <form id="new-defect-form" class="form-bar user-info">
-            <select id="new-defect-kart" required>
-                <option value>Kart...</option>
-            </select>
-            <input type="text" id="new-defect-problem" placeholder="Probleem omschrijving..." required>
-            <button type="submit" id="new-defect-submit">+
-                Toevoegen</button>
-        </form>
-
-        <div id="new-filter-bar" class="form-bar user-info">
-            <span>Filter:</span>
-            <select id="filter-status">
-                <option value="open">Status: Open</option>
-                <option value="opgelost">Status: Opgelost</option>
-                <option value="alle">Status: Alle</option>
-            </select>
-            <button id="filter-wissen-btn">X Wissen</button>
-        </div>
-
-        <div id="status-message-defect" class="status-bericht"></div>
-
-        <h2>Openstaande Defecten</h2>
-        <div id="defect-card-container" class="problem-card-grid">
-        </div>
-
+    <!-- =========================
+         NAVIGATIE
+         ========================= -->
+    <div class="defect-nav">
+        <button class="defect-nav-btn" onclick="switchDashboard('kart')">
+            Kart Defecten
+        </button>
+        <button class="defect-nav-btn" onclick="switchDashboard('lasergame')">
+            Lasergame Defecten
+        </button>
+        <button class="defect-nav-btn" onclick="switchDashboard('prisonisland')">
+            Prison Island Defecten
+        </button>
     </div>
-    <div id="modal-overlay"></div>
-    <div id="edit-modal" class="modal-container">
-        <div class="modal-header">
-            <h2>Defect Beheren</h2> <button id="modal-close-btn">×</button>
+
+    <!-- =========================
+         TITEL
+         ========================= -->
+    <h1 id="dashboard-title">Defecten</h1>
+
+    <!-- =========================
+         STATISTIEKEN
+         ========================= -->
+    <div class="stat-box-grid">
+        <div class="stat-box">
+            <span id="stat-totaal">–</span>
+            <div id="stat-label-totaal">Totaal</div>
         </div>
-        <form id="edit-defect-form">
-            <input type="hidden" id="edit-row-id">
-            <input type="hidden" id="original-status">
 
-            <div id="modal-grid-wrapper">
+        <div class="stat-box">
+            <span id="stat-problemen">–</span>
+            <div id="stat-label-probleem">Defect</div>
+        </div>
 
-                <div class="modal-col-left">
-                    <div class="form-veld">
-                        <label for="edit-kart-select">Kart Nummer:</label>
-                        <select id="edit-kart-select" required></select>
-                    </div>
-                    <div class="form-veld" style="flex-grow: 1; display: flex; flex-direction: column;">
-                        <label for="edit-defect-omschrijving">Omschrijving:</label>
-                        <textarea id="edit-defect-omschrijving" rows="5" required
-                            style="flex-grow: 1; resize: vertical;"></textarea>
-                    </div>
-                </div>
-
-                <div id="td-fields" class="modal-col-right" style="display:none;">
-                    <h3 class="td-header">TD Opties</h3>
-
-                    <div class="form-veld">
-                        <label for="edit-benodigdheden">Benodigdheden:</label>
-                        <input type="text" id="edit-benodigdheden" placeholder="Bijv. Nieuwe band, Bougie...">
-                    </div>
-
-                    <div class="form-veld">
-                        <label for="edit-onderdelen-status">Status Onderdelen:</label>
-                        <select id="edit-onderdelen-status">
-                            <option value="">-- Status --</option>
-                            <option value="Niet nodig">Niet nodig</option>
-                            <option value="Aanwezig">Aanwezig</option>
-                            <option value="Besteld">Besteld</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer"
-                style="justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 20px;">
-                <button type="button" id="modal-delete-btn" class="manager-btn-danger"
-                    style="display:none;">Verwijderen</button>
-
-                <div style="display: flex; gap: 10px; margin-left: auto;">
-                    <button type="button" id="modal-cancel-btn">Annuleren</button>
-                    <button type="submit" id="modal-save-btn">Opslaan</button>
-                    <button type="button" id="modal-resolve-btn"
-                        style="background-color: #28a745; color: white; border:none; border-radius:5px; padding: 10px 15px; font-weight:bold; cursor:pointer;">
-                        ✓ Markeer als Opgelost
-                    </button>
-                </div>
-            </div>
-        </form>
+        <div class="stat-box">
+            <span id="stat-werkend">–</span>
+            <div id="stat-label-werkend">Werkend</div>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <!-- =========================
+         NIEUW DEFECT MELDEN
+         ========================= -->
+    <form id="new-defect-form" class="form-bar user-info">
+        <select id="new-defect-kart" required>
+            <option value="">Kies item...</option>
+        </select>
+
+        <input
+            type="text"
+            id="new-defect-problem"
+            placeholder="Probleem omschrijving..."
+            required
+        >
+
+        <button type="submit" id="new-defect-submit">
+            + Toevoegen
+        </button>
+    </form>
+
+    <!-- =========================
+         FILTER
+         ========================= -->
+    <div class="form-bar user-info">
+        <span>Filter:</span>
+        <select id="filter-kart-select">
+            <option value="">Alles tonen</option>
+        </select>
+    </div>
+
+    <!-- Statusmelding -->
+    <div id="status-message-defect" class="status-bericht"></div>
+
+    <!-- =========================
+         DEFECT KAARTEN
+         ========================= -->
+    <div id="defect-card-container" class="problem-card-grid"></div>
+
+</div>
+
+<!-- =========================
+     MODAL
+     ========================= -->
+<div id="modal-overlay"></div>
+
+<div id="edit-modal" class="modal-container">
+
+    <div class="modal-header">
+        <h2>Defect beheren</h2>
+        <button id="modal-close-btn">×</button>
+    </div>
+
+    <form id="edit-defect-form">
+
+        <input type="hidden" id="edit-row-id">
+
+        <div id="modal-grid-wrapper">
+
+            <!-- LINKS -->
+            <div class="modal-col-left">
+
+                <div class="form-veld">
+                    <label for="edit-kart-select">Item:</label>
+                    <select id="edit-kart-select" required></select>
+                </div>
+
+                <div class="form-veld">
+                    <label for="edit-defect-omschrijving">Omschrijving:</label>
+                    <textarea
+                        id="edit-defect-omschrijving"
+                        rows="5"
+                        required
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <!-- RECHTS (TD / ADMIN) -->
+            <div id="td-fields" class="modal-col-right" style="display:none;">
+                <h3 class="td-header">TD opties</h3>
+
+                <div class="form-veld">
+                    <label for="edit-benodigdheden">Benodigdheden</label>
+                    <input type="text" id="edit-benodigdheden">
+                </div>
+
+                <div class="form-veld">
+                    <label for="edit-onderdelen-status">Status onderdelen</label>
+                    <select id="edit-onderdelen-status">
+                        <option value="">-- kies --</option>
+                        <option value="Niet nodig">Niet nodig</option>
+                        <option value="Aanwezig">Aanwezig</option>
+                        <option value="Besteld">Besteld</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                id="modal-delete-btn"
+                class="manager-btn-danger"
+                style="display:none;"
+            >
+                Verwijderen
+            </button>
+
+            <div class="modal-actions">
+                <button type="button" id="modal-cancel-btn">Annuleren</button>
+                <button type="submit" id="modal-save-btn">Opslaan</button>
+                <button
+                    type="button"
+                    id="modal-resolve-btn"
+                    class="resolve-btn"
+                >
+                    ✓ Opgelost
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+<!-- Script -->
+<script src="script.js"></script>
+
 </body>
-
 </html>
