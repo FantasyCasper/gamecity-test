@@ -1017,44 +1017,49 @@ function getDragAfterElement(container, y) {
 
 // --- DEEL 7: INSTELLINGEN (Admin Only) ---
 
+/* IN ADMIN/ADMIN.JS */
+
+// 1. Data ophalen en invullen
 function fetchSettings() {
     callApi("GET_SETTINGS").then(result => {
         const settings = result.data;
 
-        // 1. Vul Totaal Karts
+        // Karts invullen
         if (settings['totaal_karts']) {
             document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
         }
+        
+        // NIEUW: Lasergame invullen
+        if (settings['totaal_lasergame']) {
+            document.getElementById('setting-totaal-lasergame').value = settings['totaal_lasergame'];
+        }
 
-        // 2. Vul Activiteiten Lijst & Variabele
+        // NIEUW: Prison Island invullen
+        if (settings['totaal_pi']) {
+            document.getElementById('setting-totaal-pi').value = settings['totaal_pi'];
+        }
+
+        // Activiteiten lijst logica (ongewijzigd laten)
         const list = document.getElementById('setting-activiteiten-list');
         if (settings['activiteiten']) {
             try {
-                // Sla op in de variabele voor de dropdown
                 BESCHIKBARE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
-
-                // Update de dropdown in Checklist Beheer direct!
                 updateChecklistDropdown();
-
-                // Vul de lijst in het Instellingen scherm
                 if (list) {
                     list.innerHTML = '';
                     BESCHIKBARE_ACTIVITEITEN.forEach(act => {
                         list.appendChild(createTaakLi(act));
                     });
                 }
-            } catch (e) {
-                console.error("Fout bij parsen activiteiten:", e);
-            }
+            } catch (e) { console.error(e); }
         }
     }).catch(error => handleError(error, "Kon instellingen niet laden: "));
 }
 
+// 2. Data opslaan
 function setupSettingsForm() {
     const form = document.getElementById('settings-form');
     const btn = document.getElementById('save-settings-btn');
-
-    // Start de logica voor de lijst (toevoegen/verwijderen)
     setupActivityListLogic();
 
     if (!form) return;
@@ -1063,23 +1068,33 @@ function setupSettingsForm() {
         e.preventDefault();
         btn.disabled = true; btn.textContent = "Opslaan...";
 
+        // Waardes ophalen
         const karts = document.getElementById('setting-totaal-karts').value;
+        const lasergame = document.getElementById('setting-totaal-lasergame').value; // NIEUW
+        const pi = document.getElementById('setting-totaal-pi').value;               // NIEUW
 
-        // Verzamelen van de activiteiten uit de lijst
+        // Activiteiten ophalen
         const activiteitenLijst = [];
         document.querySelectorAll('#setting-activiteiten-list li span:nth-child(2)').forEach(span => {
             activiteitenLijst.push(span.textContent);
         });
 
-        // We sturen twee verzoeken naar de server
-        // 1. Karts opslaan
+        // Alles opslaan in een ketting (chain)
         callApi({ type: "SAVE_SETTING", key: "totaal_karts", value: karts })
             .then(() => {
-                // 2. Activiteiten opslaan (als JSON string, bv: '["Baan","Lasergame"]')
+                // NIEUW: Lasergame opslaan
+                return callApi({ type: "SAVE_SETTING", key: "totaal_lasergame", value: lasergame });
+            })
+            .then(() => {
+                // NIEUW: Prison Island opslaan
+                return callApi({ type: "SAVE_SETTING", key: "totaal_pi", value: pi });
+            })
+            .then(() => {
+                // Activiteiten opslaan
                 return callApi({ type: "SAVE_SETTING", key: "activiteiten", value: JSON.stringify(activiteitenLijst) });
             })
             .then(result => {
-                toonMooieModal("Succes", "Alle instellingen zijn bijgewerkt.");
+                toonMooieModal("Succes", "Alle instellingen (Karts, Lasergame, PI & Activiteiten) zijn bijgewerkt.");
             })
             .catch(error => handleError(error, "Fout bij opslaan: "))
             .finally(() => {

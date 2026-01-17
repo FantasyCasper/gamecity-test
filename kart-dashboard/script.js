@@ -102,19 +102,21 @@ window.switchDashboard = function(type) {
 /* ===============================
    DEEL 3: DATA OPHALEN
    =============================== */
+
 function haalInstellingenOp(key, fallback) {
     TOTAAL_ITEMS = fallback;
     
-    // Probeer echte instellingen te halen
-    callApi({ type: "GET_SETTINGS" }).then(res => { 
-        if(res.data && res.data[key]) {
-            TOTAAL_ITEMS = parseInt(res.data[key]);
-        }
-        laadDefectenDashboard();
-    }).catch(err => {
-        console.warn("Instellingen niet geladen, gebruik fallback.", err);
-        laadDefectenDashboard();
-    });
+    callApi({ type: "GET_SETTINGS" }) 
+        .then(res => {
+            if(res.data && res.data[key]) {
+                TOTAAL_ITEMS = parseInt(res.data[key]);
+            }
+            laadDefectenDashboard();
+        })
+        .catch(err => {
+            console.warn("Instellingen niet geladen, gebruik fallback.", err);
+            laadDefectenDashboard();
+        });
 }
 
 function laadDefectenDashboard() {
