@@ -882,24 +882,7 @@ function setupChecklistEditor() {
     });
 }
 
-/* Voeg deze functie toe aan sectie 6 in code.gs */
-function updateAlgemeenDefectExtended(data) {
-  var s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SPREADSHEET_ALGEMEEN_DEFECTEN_NAAM);
-  var rowId = parseInt(data.rowId);
-  
-  // Controleer of de rij geldig is
-  if (isNaN(rowId) || rowId < 2) return { status: "error", message: "Ongeldig ID" };
 
-  // Aanname kolommen in 'AlgemeneDefecten':
-  // A=Tijd, B=Medewerker, C=Locatie, D=Defect, E=Status
-  // We voegen nu toe: F=Benodigdheden, G=Onderdelen Status
-  
-  if (data.benodigdheden !== undefined) s.getRange(rowId, 6).setValue(data.benodigdheden); // Kolom F
-  if (data.onderdelenStatus !== undefined) s.getRange(rowId, 7).setValue(data.onderdelenStatus); // Kolom G
-  if (data.newStatus) s.getRange(rowId, 5).setValue(data.newStatus); // Kolom E (Status)
-
-  return { status: "success", message: "Algemeen defect bijgewerkt." };
-}
 
 // --- API HELPER (MET PERMISSIES) ---
 async function callApi(type, extraData = {}) {

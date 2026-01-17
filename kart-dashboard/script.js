@@ -106,7 +106,7 @@ function haalInstellingenOp(key, fallback) {
     TOTAAL_ITEMS = fallback;
     
     // Probeer echte instellingen te halen
-    callApi("GET_SETTINGS").then(res => {
+    callApi({ type: "GET_SETTINGS" }).then(res => { 
         if(res.data && res.data[key]) {
             TOTAAL_ITEMS = parseInt(res.data[key]);
         }
