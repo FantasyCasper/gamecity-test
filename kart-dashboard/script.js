@@ -3,11 +3,6 @@
    Locatie: kart-dashboard/script.js
    ======================================================= */
 
-window.onerror = function (msg, url, line, col, error) {
-    console.error("❌ JS ERROR:", msg, "op", line + ":" + col);
-};
-
-
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 // --- CONFIGURATIE PER ACTIVITEIT ---
@@ -35,54 +30,20 @@ const CONFIG = {
 // Globale Variabelen
 let ingelogdeNaam = "";
 let ingelogdePermissies = {};
-let alleDefecten = [];
+let alleDefecten = []; 
 let ACTIVE_TYPE = 'kart'; // Huidige tabblad
-let TOTAAL_ITEMS = 40;
-
-
-/* ===============================
-   DEEL 1: SCHAKELEN TUSSEN DASHBOARDS
-   ================================ */
-window.switchDashboard = function (type) {
-    if (!CONFIG[type]) type = 'kart';
-
-    ACTIVE_TYPE = type;
-    const conf = CONFIG[type];
-
-    // Titel
-    const titleEl = document.getElementById('dashboard-title');
-    if (titleEl) titleEl.textContent = conf.titel;
-
-    // Menu actief
-    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === type);
-    });
-
-    // URL bijwerken
-    const newUrl =
-        window.location.protocol +
-        "//" +
-        window.location.host +
-        window.location.pathname +
-        '?type=' + type;
-
-    window.history.replaceState({}, '', newUrl);
-
-    // Instellingen + data laden
-    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
-};
+let TOTAAL_ITEMS = 40; 
 
 /* ===============================
-   DEEL 2: INITIALISATIE
+   DEEL 1: INITIALISATIE
    =============================== */
-
 (function () {
     // 1. Login Check
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     const rawPerms = localStorage.getItem('ingelogdePermissies');
 
     if (!ingelogdeNaam || !rawPerms) {
-        window.location.href = "../login/";
+        window.location.href = "../login/"; 
         return;
     }
     ingelogdePermissies = JSON.parse(rawPerms);
@@ -100,9 +61,9 @@ window.switchDashboard = function (type) {
     // 4. Start het dashboard (kijk naar URL ?type=...)
     const urlParams = new URLSearchParams(window.location.search);
     const startType = urlParams.get('type');
-
+    
     // Start met het gevraagde type, of anders standaard 'kart'
-    if (startType && CONFIG[startType]) {
+    if(startType && CONFIG[startType]) {
         switchDashboard(startType);
     } else {
         switchDashboard('kart');
@@ -111,16 +72,47 @@ window.switchDashboard = function (type) {
 })();
 
 
+/* ===============================
+   DEEL 2: SCHAKELEN TUSSEN DASHBOARDS
+   ================================ */
+// Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
+window.switchDashboard = function(type) {
+    if (!CONFIG[type]) type = 'kart'; // Fallback
+
+    ACTIVE_TYPE = type;
+    const conf = CONFIG[type];
+
+    // 1. Update de Titel
+    const titleEl = document.getElementById('dashboard-title');
+    if(titleEl) titleEl.textContent = conf.titel;
+
+    // 2. Update de Menu Knoppen (Visueel actief maken)
+    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        // Simpele check: als de tekst van de knop overeenkomt met het type
+        if (btn.innerText.toLowerCase().includes(type === 'prisonisland' ? 'prison' : type)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // 3. Update de URL (zonder pagina herladen)
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
+    window.history.replaceState({path:newUrl}, '', newUrl);
+
+    // 4. Haal instellingen op (aantal items) en laad daarna de data
+    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
+}
+
 
 /* ===============================
    DEEL 3: DATA OPHALEN
    =============================== */
 function haalInstellingenOp(key, fallback) {
     TOTAAL_ITEMS = fallback;
-
+    
     // Probeer echte instellingen te halen
     callApi("GET_SETTINGS").then(res => {
-        if (res.data && res.data[key]) {
+        if(res.data && res.data[key]) {
             TOTAAL_ITEMS = parseInt(res.data[key]);
         }
         laadDefectenDashboard();
@@ -178,14 +170,14 @@ function updateUI() {
 
 function vulDropdowns(naam, totaal) {
     const ids = ['new-defect-kart', 'edit-kart-select', 'filter-kart-select'];
-
+    
     ids.forEach(id => {
         const select = document.getElementById(id);
-        if (!select) return;
+        if(!select) return;
 
         // Bepaal de standaard tekst
         let eersteOptie = (id === 'filter-kart-select') ? "Alle nummers" : `Kies ${naam}...`;
-
+        
         select.innerHTML = `<option value="">${eersteOptie}</option>`;
         for (let i = 1; i <= totaal; i++) {
             select.add(new Option(`${naam} ${i}`, i));
@@ -200,19 +192,19 @@ function vulDropdowns(naam, totaal) {
 function renderCards(lijst) {
     const container = document.getElementById("defect-card-container");
     container.innerHTML = "";
-
+    
     // Filters toepassen (vanuit UI)
     const filterStatusEl = document.getElementById('filter-status');
-    const filterStatus = filterStatusEl ? filterStatusEl.value : "";
+const filterStatus = filterStatusEl ? filterStatusEl.value : "";
     const filterNummer = document.getElementById('filter-kart-select').value;
-
+    
     let items = lijst.filter(d => d.status !== 'Verwijderd');
-
-    if (filterStatus) items = items.filter(d => d.status === filterStatus);
-    if (filterNummer) items = items.filter(d => d.nummer == filterNummer);
+    
+    if(filterStatus) items = items.filter(d => d.status === filterStatus);
+    if(filterNummer) items = items.filter(d => d.nummer == filterNummer);
 
     if (items.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Geen defecten gevonden.</p>";
+        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Geen defecten gevonden.</p>"; 
         return;
     }
 
@@ -221,7 +213,7 @@ function renderCards(lijst) {
 
     items.forEach(defect => {
         const conf = CONFIG[ACTIVE_TYPE];
-
+        
         const kaart = document.createElement("div");
         kaart.className = "defect-card";
         if (defect.status === "Opgelost") kaart.classList.add("status-opgelost");
@@ -267,47 +259,47 @@ function renderCards(lijst) {
 
 function setupDefectForm() {
     const form = document.getElementById('new-defect-form');
-    if (!form) return;
+    if(!form) return;
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
-
+        
         const nummer = document.getElementById('new-defect-kart').value;
         const omschrijving = document.getElementById('new-defect-problem').value.trim();
         const btn = document.getElementById('new-defect-submit');
 
         if (!nummer || !omschrijving) return;
-
+        
         btn.disabled = true; btn.textContent = "Versturen...";
 
         // BELANGRIJK: subType meesturen!
-        const payload = {
-            type: "LOG_OBJECT_DEFECT",
+        const payload = { 
+            type: "LOG_OBJECT_DEFECT", 
             subType: ACTIVE_TYPE,
-            medewerker: ingelogdeNaam,
-            nummer: nummer,
-            defect: omschrijving
+            medewerker: ingelogdeNaam, 
+            nummer: nummer, 
+            defect: omschrijving 
         };
 
         callApi(payload).then(() => {
             toonDefectStatus("Gemeld!", "success");
-            form.reset();
+            form.reset(); 
             laadDefectenDashboard();
         }).catch(err => {
             toonDefectStatus(err.message, "error");
-        }).finally(() => {
-            btn.disabled = false; btn.textContent = "+ Toevoegen";
+        }).finally(() => { 
+            btn.disabled = false; btn.textContent = "+ Toevoegen"; 
         });
     });
 }
 
 // Functie om de modal te openen (aangeroepen vanuit HTML button)
-window.openEditModal = function (d) {
+window.openEditModal = function(d) {
     // Velden vullen
     document.getElementById('edit-row-id').value = d.rowId;
     document.getElementById('edit-kart-select').value = d.nummer;
     document.getElementById('edit-defect-omschrijving').value = d.defect;
-
+    
     // TD velden
     document.getElementById('edit-benodigdheden').value = d.benodigdheden || '';
     document.getElementById('edit-onderdelen-status').value = d.onderdelenStatus || '';
@@ -320,10 +312,10 @@ window.openEditModal = function (d) {
 
     if (tdSec) tdSec.style.display = isTD ? 'block' : 'none';
     if (delBtn) delBtn.style.display = isTD ? 'block' : 'none';
-
+    
     // 'Wide mode' voor desktop als TD velden zichtbaar zijn
     if (modalBox) {
-        if (isTD) modalBox.classList.add('wide-mode');
+        if(isTD) modalBox.classList.add('wide-mode');
         else modalBox.classList.remove('wide-mode');
     }
 
@@ -333,9 +325,9 @@ window.openEditModal = function (d) {
 }
 
 function setupEditModal() {
-    const sluit = () => {
-        document.getElementById('edit-modal').style.display = 'none';
-        document.getElementById('modal-overlay').style.display = 'none';
+    const sluit = () => { 
+        document.getElementById('edit-modal').style.display = 'none'; 
+        document.getElementById('modal-overlay').style.display = 'none'; 
     };
 
     // Sluit knoppen
@@ -343,10 +335,10 @@ function setupEditModal() {
     document.getElementById('modal-overlay').onclick = sluit;
     // (Optioneel kruisje als je die hebt toegevoegd in HTML)
     const closeBtn = document.getElementById('modal-close-btn');
-    if (closeBtn) closeBtn.onclick = sluit;
+    if(closeBtn) closeBtn.onclick = sluit;
 
     // Opslaan
-    document.getElementById('edit-defect-form').addEventListener('submit', function (e) {
+    document.getElementById('edit-defect-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('modal-save-btn');
         btn.disabled = true; btn.textContent = "...";
@@ -367,19 +359,19 @@ function setupEditModal() {
             sluit();
             laadDefectenDashboard();
         }).catch(err => alert("Fout: " + err.message))
-            .finally(() => { btn.disabled = false; btn.textContent = "Opslaan"; });
+          .finally(() => { btn.disabled = false; btn.textContent = "Opslaan"; });
     });
 
     // Oplossen
-    document.getElementById('modal-resolve-btn').onclick = function () {
-        if (confirm("Markeren als Opgelost?")) {
+    document.getElementById('modal-resolve-btn').onclick = function() {
+        if(confirm("Markeren als Opgelost?")) {
             updateStatus(document.getElementById('edit-row-id').value, "Opgelost", sluit);
         }
     };
 
     // Verwijderen
-    document.getElementById('modal-delete-btn').onclick = function () {
-        if (confirm("Definitief verwijderen?")) {
+    document.getElementById('modal-delete-btn').onclick = function() {
+        if(confirm("Definitief verwijderen?")) {
             updateStatus(document.getElementById('edit-row-id').value, "Verwijderd", sluit);
         }
     };
@@ -393,7 +385,7 @@ function updateStatus(rowId, newStatus, callback) {
         newStatus: newStatus
     }).then(() => {
         toonDefectStatus("Status: " + newStatus, "success");
-        if (callback) callback();
+        if(callback) callback();
         laadDefectenDashboard();
     }).catch(err => alert(err.message));
 }
@@ -401,8 +393,8 @@ function updateStatus(rowId, newStatus, callback) {
 function setupFilters() {
     const s1 = document.getElementById('filter-status');
     const s2 = document.getElementById('filter-kart-select');
-    if (s1) s1.addEventListener('change', () => renderCards(alleDefecten));
-    if (s2) s2.addEventListener('change', () => renderCards(alleDefecten));
+    if(s1) s1.addEventListener('change', () => renderCards(alleDefecten));
+    if(s2) s2.addEventListener('change', () => renderCards(alleDefecten));
 }
 
 
@@ -416,24 +408,16 @@ async function callApi(payload) {
     const url = WEB_APP_URL + "?v=" + Date.now();
     const response = await fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
         body: JSON.stringify(payload)
     });
-    let result;
-    try {
-        result = await response.json();
-    } catch (e) {
-        throw new Error("API gaf geen geldige JSON terug");
-    }
+    const result = await response.json();
     if (result.status === "success") return result;
     else throw new Error(result.message);
 }
 
 function toonDefectStatus(msg, type) {
     const el = document.getElementById('status-message-defect');
-    if (!el) return;
+    if(!el) return;
     el.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
     el.className = 'status-bericht ' + type;
     el.style.display = 'block';
