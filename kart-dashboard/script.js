@@ -3,6 +3,10 @@
    Locatie: kart-dashboard/script.js
    ======================================================= */
 
+window.onerror = function(msg, url, line, col, error) {
+    console.error("❌ JS ERROR:", msg, "op", line + ":" + col);
+};
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 // --- CONFIGURATIE PER ACTIVITEIT ---
@@ -39,67 +43,60 @@ let TOTAAL_ITEMS = 40;
    ================================ */
 // Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
 window.switchDashboard = function(type) {
-    if (!CONFIG[type]) type = 'kart'; // Fallback
+    if (!CONFIG[type]) type = 'kart';
 
     ACTIVE_TYPE = type;
     const conf = CONFIG[type];
 
-    // 1. Update de Titel
+    // Titel
     const titleEl = document.getElementById('dashboard-title');
-    if(titleEl) titleEl.textContent = conf.titel;
+    if (titleEl) titleEl.textContent = conf.titel;
 
-    // 2. Update de Menu Knoppen (Visueel actief maken)
+    // Menu actief
     document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        // Simpele check: als de tekst van de knop overeenkomt met het type
-        if (btn.innerText.toLowerCase().includes(type === 'prisonisland' ? 'prison' : type)) {
-            btn.classList.add('active');
-        }
+        btn.classList.toggle('active', btn.dataset.type === type);
     });
 
-    // 3. Update de URL (zonder pagina herladen)
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
-    window.history.replaceState({path:newUrl}, '', newUrl);
+    // URL bijwerken
+    const newUrl =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        '?type=' + type;
 
-    // 4. Haal instellingen op (aantal items) en laad daarna de data
+    window.history.replaceState({}, '', newUrl);
+
+    // Instellingen + data laden
     haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
-}
+};
 
 /* ===============================
    DEEL 2: INITIALISATIE
    =============================== */
 (function () {
-    // 1. Login Check
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
     const rawPerms = localStorage.getItem('ingelogdePermissies');
 
     if (!ingelogdeNaam || !rawPerms) {
-        window.location.href = "../login/"; 
+        window.location.href = "../login/";
         return;
     }
+
     ingelogdePermissies = JSON.parse(rawPerms);
 
-    // 2. Manager UI (TD/Admin)
     if (ingelogdePermissies.admin || ingelogdePermissies.td) {
         document.body.classList.add('is-manager');
     }
 
-    // 3. Start modules
     setupDefectForm();
     setupEditModal();
     setupFilters();
 
-    // 4. Start het dashboard (kijk naar URL ?type=...)
     const urlParams = new URLSearchParams(window.location.search);
     const startType = urlParams.get('type');
-    
-    // Start met het gevraagde type, of anders standaard 'kart'
-    if(startType && CONFIG[startType]) {
-        switchDashboard(startType);
-    } else {
-        switchDashboard('kart');
-    }
 
+    switchDashboard(startType && CONFIG[startType] ? startType : 'kart');
 })();
 
 /* ===============================
