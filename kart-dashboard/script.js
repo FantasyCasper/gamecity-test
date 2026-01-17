@@ -42,33 +42,81 @@ let TOTAAL_ITEMS = 40;
    DEEL 1: SCHAKELEN TUSSEN DASHBOARDS
    ================================ */
 // Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
+/* ===============================
+   GEOPTIMALISEERDE LAAD LOGICA
+   =============================== */
+
+// 1. Hulpfunctie om UI te blokkeren/vrijgeven
+function setLoadingState(isLoading) {
+    const overlay = document.getElementById('loading-overlay');
+    const inputs = document.querySelectorAll('#new-defect-form input, #new-defect-form select, #new-defect-form button');
+    
+    if (isLoading) {
+        if(overlay) overlay.style.display = 'flex';
+        inputs.forEach(el => el.disabled = true);
+    } else {
+        if(overlay) overlay.style.display = 'none';
+        inputs.forEach(el => {
+            el.disabled = false;
+            // Reset placeholders als nodig
+            if(el.tagName === 'INPUT') el.placeholder = "Omschrijving...";
+        });
+    }
+}
+
+// 2. Vernieuwde switchDashboard (Sneller & Veiliger)
 window.switchDashboard = function(type) {
     if (!CONFIG[type]) type = 'kart';
-
     ACTIVE_TYPE = type;
     const conf = CONFIG[type];
 
-    // Titel
+    // Update UI titels direct
     const titleEl = document.getElementById('dashboard-title');
     if (titleEl) titleEl.textContent = conf.titel;
 
-    // Menu actief
+    // Knoppen status
     document.querySelectorAll('.defect-nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
     });
 
-    // URL bijwerken
-    const newUrl =
-        window.location.protocol +
-        "//" +
-        window.location.host +
-        window.location.pathname +
-        '?type=' + type;
-
+    // URL update
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
     window.history.replaceState({}, '', newUrl);
 
-    // Instellingen + data laden
-    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
+    // START LADEN: Blokkeer scherm
+    setLoadingState(true);
+
+    // PARALLEL OPHALEN: We vragen Instellingen EN Defecten tegelijk op
+    const promiseSettings = callApi({ type: "GET_SETTINGS" });
+    const promiseDefects = callApi({ type: "GET_OBJECT_DEFECTS", subType: ACTIVE_TYPE });
+
+    Promise.all([promiseSettings, promiseDefects])
+        .then(results => {
+            const settingsData = results[0].data; // Resultaat van 1e call
+            const defectsData = results[1].data;  // Resultaat van 2e call
+
+            // 1. Instellingen verwerken
+            if (settingsData && settingsData[conf.settingKey]) {
+                TOTAAL_ITEMS = parseInt(settingsData[conf.settingKey]);
+            } else {
+                TOTAAL_ITEMS = conf.defaultTotaal;
+            }
+
+            // 2. Defecten opslaan
+            alleDefecten = defectsData || [];
+
+            // 3. UI Tekenen
+            updateUI();
+        })
+        .catch(error => {
+            console.error("Laadfout:", error);
+            document.getElementById('defect-card-container').innerHTML = 
+                `<p style="color: red; text-align:center;">Fout bij laden: ${error.message}<br><button onclick="location.reload()">Opnieuw proberen</button></p>`;
+        })
+        .finally(() => {
+            // STOP LADEN: Geef scherm vrij
+            setLoadingState(false);
+        });
 };
 
 /* ===============================
@@ -267,9 +315,11 @@ function setupDefectForm() {
 
         if (!nummer || !omschrijving) return;
         
-        btn.disabled = true; btn.textContent = "Versturen...";
+        // BEVEILIGING: Knoppen uitschakelen tijdens verzenden
+        btn.disabled = true; 
+        btn.textContent = "Versturen...";
+        document.getElementById('new-defect-problem').disabled = true;
 
-        // BELANGRIJK: subType meesturen!
         const payload = { 
             type: "LOG_OBJECT_DEFECT", 
             subType: ACTIVE_TYPE,
@@ -281,11 +331,14 @@ function setupDefectForm() {
         callApi(payload).then(() => {
             toonDefectStatus("Gemeld!", "success");
             form.reset(); 
-            laadDefectenDashboard();
+            // Herlaad data (dit triggert de overlay weer)
+            switchDashboard(ACTIVE_TYPE); 
         }).catch(err => {
             toonDefectStatus(err.message, "error");
-        }).finally(() => { 
-            btn.disabled = false; btn.textContent = "+ Toevoegen"; 
+            // Bij fout: knoppen weer aanzetten
+            btn.disabled = false; 
+            btn.textContent = "+ Toevoegen";
+            document.getElementById('new-defect-problem').disabled = false;
         });
     });
 }

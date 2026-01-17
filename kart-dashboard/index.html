@@ -17,8 +17,10 @@
 
         <div class="defect-nav">
             <button class="defect-nav-btn" data-type="kart" onclick="switchDashboard('kart')">🏎️ Karts</button>
-            <button class="defect-nav-btn" data-type="lasergame" onclick="switchDashboard('lasergame')">🔫 Lasergame</button>
-            <button class="defect-nav-btn" data-type="prisonisland" onclick="switchDashboard('prisonisland')">🔑 Prison Island</button>
+            <button class="defect-nav-btn" data-type="lasergame" onclick="switchDashboard('lasergame')">🔫
+                Lasergame</button>
+            <button class="defect-nav-btn" data-type="prisonisland" onclick="switchDashboard('prisonisland')">🔑 Prison
+                Island</button>
         </div>
 
         <h1 id="dashboard-title">Kart Defecten</h1>
@@ -35,12 +37,17 @@
             </div>
         </div>
 
+        <div id="loading-overlay" class="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+            <p>Gegevens ophalen...</p>
+        </div>
+
         <form id="new-defect-form" class="form-bar user-info">
-            <select id="new-defect-kart" required>
+            <select id="new-defect-kart" required disabled>
                 <option value>Laden...</option>
             </select>
-            <input type="text" id="new-defect-problem" placeholder="Omschrijving..." required>
-            <button type="submit" id="new-defect-submit">+ Toevoegen</button>
+            <input type="text" id="new-defect-problem" placeholder="Wacht op laden..." required disabled>
+            <button type="submit" id="new-defect-submit" disabled>+ Toevoegen</button>
         </form>
 
         <div id="new-filter-bar" class="form-bar user-info">
