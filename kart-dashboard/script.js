@@ -35,7 +35,38 @@ let ACTIVE_TYPE = 'kart'; // Huidige tabblad
 let TOTAAL_ITEMS = 40; 
 
 /* ===============================
-   DEEL 1: INITIALISATIE
+   DEEL 1: SCHAKELEN TUSSEN DASHBOARDS
+   ================================ */
+// Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
+window.switchDashboard = function(type) {
+    if (!CONFIG[type]) type = 'kart'; // Fallback
+
+    ACTIVE_TYPE = type;
+    const conf = CONFIG[type];
+
+    // 1. Update de Titel
+    const titleEl = document.getElementById('dashboard-title');
+    if(titleEl) titleEl.textContent = conf.titel;
+
+    // 2. Update de Menu Knoppen (Visueel actief maken)
+    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        // Simpele check: als de tekst van de knop overeenkomt met het type
+        if (btn.innerText.toLowerCase().includes(type === 'prisonisland' ? 'prison' : type)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // 3. Update de URL (zonder pagina herladen)
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
+    window.history.replaceState({path:newUrl}, '', newUrl);
+
+    // 4. Haal instellingen op (aantal items) en laad daarna de data
+    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
+}
+
+/* ===============================
+   DEEL 2: INITIALISATIE
    =============================== */
 (function () {
     // 1. Login Check
@@ -70,39 +101,6 @@ let TOTAAL_ITEMS = 40;
     }
 
 })();
-
-
-/* ===============================
-   DEEL 2: SCHAKELEN TUSSEN DASHBOARDS
-   ================================ */
-// Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
-window.switchDashboard = function(type) {
-    if (!CONFIG[type]) type = 'kart'; // Fallback
-
-    ACTIVE_TYPE = type;
-    const conf = CONFIG[type];
-
-    // 1. Update de Titel
-    const titleEl = document.getElementById('dashboard-title');
-    if(titleEl) titleEl.textContent = conf.titel;
-
-    // 2. Update de Menu Knoppen (Visueel actief maken)
-    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        // Simpele check: als de tekst van de knop overeenkomt met het type
-        if (btn.innerText.toLowerCase().includes(type === 'prisonisland' ? 'prison' : type)) {
-            btn.classList.add('active');
-        }
-    });
-
-    // 3. Update de URL (zonder pagina herladen)
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
-    window.history.replaceState({path:newUrl}, '', newUrl);
-
-    // 4. Haal instellingen op (aantal items) en laad daarna de data
-    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
-}
-
 
 /* ===============================
    DEEL 3: DATA OPHALEN
