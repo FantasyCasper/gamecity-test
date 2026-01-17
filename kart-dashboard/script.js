@@ -3,6 +3,11 @@
    Locatie: kart-dashboard/script.js
    ======================================================= */
 
+window.onerror = function (msg, url, line, col, error) {
+    console.error("❌ JS ERROR:", msg, "op", line + ":" + col);
+};
+
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP4Fl1Na2AqjM-t_GtEsvCd_FbgfApY-_vHd-5CBYNGWUaOeGoYw/exec";
 
 // --- CONFIGURATIE PER ACTIVITEIT ---
@@ -34,9 +39,43 @@ let alleDefecten = [];
 let ACTIVE_TYPE = 'kart'; // Huidige tabblad
 let TOTAAL_ITEMS = 40;
 
+
 /* ===============================
-   DEEL 1: INITIALISATIE
+   DEEL 1: SCHAKELEN TUSSEN DASHBOARDS
+   ================================ */
+window.switchDashboard = function (type) {
+    if (!CONFIG[type]) type = 'kart';
+
+    ACTIVE_TYPE = type;
+    const conf = CONFIG[type];
+
+    // Titel
+    const titleEl = document.getElementById('dashboard-title');
+    if (titleEl) titleEl.textContent = conf.titel;
+
+    // Menu actief
+    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+
+    // URL bijwerken
+    const newUrl =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        '?type=' + type;
+
+    window.history.replaceState({}, '', newUrl);
+
+    // Instellingen + data laden
+    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
+};
+
+/* ===============================
+   DEEL 2: INITIALISATIE
    =============================== */
+
 (function () {
     // 1. Login Check
     ingelogdeNaam = localStorage.getItem('ingelogdeMedewerker');
@@ -71,34 +110,6 @@ let TOTAAL_ITEMS = 40;
 
 })();
 
-
-/* ===============================
-   DEEL 2: SCHAKELEN TUSSEN DASHBOARDS
-   ================================ */
-// Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
-window.switchDashboard = function (type) {
-    if (!CONFIG[type]) type = 'kart'; // Fallback
-
-    ACTIVE_TYPE = type;
-    const conf = CONFIG[type];
-
-    // 1. Update de Titel
-    const titleEl = document.getElementById('dashboard-title');
-    if (titleEl) titleEl.textContent = conf.titel;
-
-    // 2. Update de Menu Knoppen (Visueel actief maken)
-    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === type);
-    });
-
-
-    // 3. Update de URL (zonder pagina herladen)
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
-    window.history.replaceState({ path: newUrl }, '', newUrl);
-
-    // 4. Haal instellingen op (aantal items) en laad daarna de data
-    haalInstellingenOp(conf.settingKey, conf.defaultTotaal);
-}
 
 
 /* ===============================
@@ -410,7 +421,12 @@ async function callApi(payload) {
         },
         body: JSON.stringify(payload)
     });
-    const result = await response.json();
+    let result;
+    try {
+        result = await response.json();
+    } catch (e) {
+        throw new Error("API gaf geen geldige JSON terug");
+    }
     if (result.status === "success") return result;
     else throw new Error(result.message);
 }
