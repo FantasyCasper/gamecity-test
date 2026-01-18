@@ -344,35 +344,58 @@ function setupDefectForm() {
 }
 
 // Functie om de modal te openen (aangeroepen vanuit HTML button)
+// AANGEPASTE VERSIE: openEditModal
 window.openEditModal = function(d) {
-    // Velden vullen
+    // 1. Velden vullen
     document.getElementById('edit-row-id').value = d.rowId;
     document.getElementById('edit-kart-select').value = d.nummer;
     document.getElementById('edit-defect-omschrijving').value = d.defect;
     
-    // TD velden
+    // TD velden vullen (veilig)
     document.getElementById('edit-benodigdheden').value = d.benodigdheden || '';
     document.getElementById('edit-onderdelen-status').value = d.onderdelenStatus || '';
 
-    // Layout aanpassen voor TD
+    // 2. Rechten Bepalen
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
-    const tdSec = document.getElementById('td-fields');
-    const modalBox = document.getElementById('edit-modal');
-    const delBtn = document.getElementById('modal-delete-btn');
+    const isEigenaar = (d.medewerker === ingelogdeNaam);
+    // Check of melding vers is (< 24 uur)
+    const isVers = (Date.now() - new Date(d.timestamp).getTime() < 86400000);
 
+    // 3. Elementen ophalen
+    const tdSec = document.getElementById('td-fields');
+    const delBtn = document.getElementById('modal-delete-btn');
+    const resolveBtn = document.getElementById('modal-resolve-btn'); // DEZE IS BELANGRIJK
+    const modalBox = document.getElementById('edit-modal');
+
+    // --- LOGICA TOEPASSEN ---
+
+    // A. TD Sectie: Alleen voor TD zichtbaar
     if (tdSec) tdSec.style.display = isTD ? 'block' : 'none';
-    if (delBtn) delBtn.style.display = isTD ? 'block' : 'none';
+
+    // B. Verwijder Knop: Voor TD *OF* (Eigenaar die "vers" is)
+    if (delBtn) {
+        if (isTD || (isEigenaar && isVers)) {
+            delBtn.style.display = 'block';
+        } else {
+            delBtn.style.display = 'none';
+        }
+    }
+
+    // C. Oplossen Knop: ALLEEN voor TD! (Hier zat de fout)
+    if (resolveBtn) {
+        resolveBtn.style.display = isTD ? 'block' : 'none';
+    }
     
-    // 'Wide mode' voor desktop als TD velden zichtbaar zijn
+    // D. Breedte aanpassen (Alleen breed als TD velden zichtbaar zijn)
     if (modalBox) {
         if(isTD) modalBox.classList.add('wide-mode');
         else modalBox.classList.remove('wide-mode');
     }
 
-    // Openen
+    // 4. Openen
     document.getElementById('edit-modal').style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
-}
+};
 
 function setupEditModal() {
     const sluit = () => { 
