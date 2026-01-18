@@ -128,23 +128,23 @@ function handleFormSubmit(e) {
         nieuweOmschrijving: document.getElementById('task-desc').value   // Lange tekst
     };
 
-    if (isEdit) {
-        payload.type = "UPDATE_ALGEMEEN_DEFECT_EXTENDED"; // Gebruikt de functie die we net in code.gs update hebben
+if (isEdit) {
+        // ... (Dit gedeelte voor bewerken was al goed) ...
+        payload.type = "UPDATE_ALGEMEEN_DEFECT_EXTENDED";
         payload.rowId = id;
-        payload.newStatus = "Open"; 
+        payload.newStatus = "Open";
     } else {
-        payload.type = "LOG_ALGEMEEN_DEFECT"; // Let op: backend moet prio accepteren als 4e arg in LOG_ALGEMEEN_DEFECT (heb ik in code.gs aangepast)
+        // --- DIT GEDEELTE MOET JE UPDATEN ---
+        payload.type = "LOG_ALGEMEEN_DEFECT";
         payload.medewerker = currentUser;
-        payload.nummer = ""; // niet gebruikt
-        // Mapping voor LOG: LOG(medewerker, locatie(kop), defect(tekst), prio)
-        // De payload structuur voor LOG is anders in de backend functie 'doPost' wrapper
-        // We moeten even checken hoe doPost LOG_ALGEMEEN_DEFECT aanroept.
-        // Code.gs: logAlgemeenDefect(data.medewerker, data.locatie, data.defect)
-        // We moeten zorgen dat Code.gs doPost ook data.prio doorgeeft!
-        // CHECK STAP HIERONDER VOOR CODE.GS DOPOST AANPASSING
-        payload.locatie = document.getElementById('task-title').value;
-        payload.defect = document.getElementById('task-desc').value;
-        payload.prio = document.getElementById('task-prio').value; 
+        payload.nummer = ""; // Wordt niet gebruikt bij algemeen, maar voor de vorm
+        
+        // Data uit het formulier halen
+        payload.locatie = document.getElementById('task-title').value;       // De Kop
+        payload.defect = document.getElementById('task-desc').value;         // De Beschrijving
+        payload.prio = document.getElementById('task-prio').value;           // De Prio
+        payload.benodigdheden = document.getElementById('task-needs').value; // De Spullen
+        payload.onderdelenStatus = document.getElementById('task-parts-status').value; // De Status
     }
 
     callApi(payload).then(() => {
