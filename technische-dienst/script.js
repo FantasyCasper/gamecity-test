@@ -300,4 +300,7 @@ async function callApi(payload) {
 
 // Globale scope voor HTML onclicks
 window.finishTask = finishTask;
-window.editTask = function (t) { openModal(t); };
+window.editTask = function(task) { 
+    // Omdat de HTML onclick data als object stuurt, geven we die door aan openModal
+    openModal(task); 
+};
