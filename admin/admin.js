@@ -484,7 +484,7 @@ function renderAlgemeenDefects(defects) {
     defects.forEach(defect => {
         let ts = new Date(defect.timestamp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
         const tr = document.createElement('tr');
-        
+
         // Visuele feedback als het opgelost is
         if (defect.status === 'Opgelost') {
             tr.style.opacity = "0.6";
@@ -521,7 +521,7 @@ function setupAdminDefectModal() {
     const modal = document.getElementById('modal-admin-defect');
     const overlay = document.getElementById('modal-overlay-admin-defect');
     const form = document.getElementById('admin-defect-form');
-    
+
     // Knoppen
     const closeBtn = document.getElementById('close-admin-defect-btn');
     const cancelBtn = document.getElementById('btn-cancel-admin-defect');
@@ -542,7 +542,7 @@ function setupAdminDefectModal() {
                 // Vul de modal met data uit de knop
                 document.getElementById('admin-defect-id').value = btn.dataset.rowId;
                 document.getElementById('admin-defect-info').textContent = `${btn.dataset.locatie}: ${unescape(btn.dataset.descr)}`;
-                
+
                 document.getElementById('admin-benodigdheden').value = unescape(btn.dataset.benodigdheden);
                 document.getElementById('admin-onderdelen-status').value = unescape(btn.dataset.onderdelen);
                 document.getElementById('admin-defect-status').value = btn.dataset.status;
@@ -555,9 +555,9 @@ function setupAdminDefectModal() {
     }
 
     // 2. SLUITEN
-    if(closeBtn) closeBtn.onclick = sluitModal;
-    if(cancelBtn) cancelBtn.onclick = sluitModal;
-    if(overlay) overlay.onclick = sluitModal;
+    if (closeBtn) closeBtn.onclick = sluitModal;
+    if (cancelBtn) cancelBtn.onclick = sluitModal;
+    if (overlay) overlay.onclick = sluitModal;
 
     // 3. OPSLAAN
     if (form) {
@@ -570,7 +570,7 @@ function setupAdminDefectModal() {
                 // LET OP: In stap 2 noemde ik de functie updateAlgemeenDefectExtended. 
                 // Je moet in Code.gs zorgen dat doPost dit type herkent!
                 // Zie STAP 2b hieronder voor de doPost fix.
-                
+
                 rowId: document.getElementById('admin-defect-id').value,
                 benodigdheden: document.getElementById('admin-benodigdheden').value,
                 onderdelenStatus: document.getElementById('admin-onderdelen-status').value,
@@ -591,8 +591,8 @@ function setupAdminDefectModal() {
     // 4. VERWIJDEREN
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
-            if(!confirm("Weet je zeker dat je dit defect definitief wilt verwijderen?")) return;
-            
+            if (!confirm("Weet je zeker dat je dit defect definitief wilt verwijderen?")) return;
+
             deleteBtn.disabled = true; deleteBtn.textContent = "...";
             const rowId = document.getElementById('admin-defect-id').value;
 
@@ -1028,7 +1028,7 @@ function fetchSettings() {
         if (settings['totaal_karts']) {
             document.getElementById('setting-totaal-karts').value = settings['totaal_karts'];
         }
-        
+
         // NIEUW: Lasergame invullen
         if (settings['totaal_lasergame']) {
             document.getElementById('setting-totaal-lasergame').value = settings['totaal_lasergame'];
@@ -1037,6 +1037,9 @@ function fetchSettings() {
         // NIEUW: Prison Island invullen
         if (settings['totaal_pi']) {
             document.getElementById('setting-totaal-pi').value = settings['totaal_pi'];
+        }
+        if (settings['totaal_minigolf']) {
+            document.getElementById('setting-totaal-minigolf').value = settings['totaal_minigolf'];
         }
 
         // Activiteiten lijst logica (ongewijzigd laten)
@@ -1072,6 +1075,7 @@ function setupSettingsForm() {
         const karts = document.getElementById('setting-totaal-karts').value;
         const lasergame = document.getElementById('setting-totaal-lasergame').value; // NIEUW
         const pi = document.getElementById('setting-totaal-pi').value;               // NIEUW
+        const minigolf = document.getElementById('setting-totaal-minigolf').value;
 
         // Activiteiten ophalen
         const activiteitenLijst = [];
@@ -1093,8 +1097,12 @@ function setupSettingsForm() {
                 // Activiteiten opslaan
                 return callApi({ type: "SAVE_SETTING", key: "activiteiten", value: JSON.stringify(activiteitenLijst) });
             })
+            .then(() => {
+                // NIEUW: Minigolf opslaan
+                return callApi({ type: "SAVE_SETTING", key: "totaal_minigolf", value: minigolf });
+            })
             .then(result => {
-                toonMooieModal("Succes", "Alle instellingen (Karts, Lasergame, PI & Activiteiten) zijn bijgewerkt.");
+                toonMooieModal("Succes", "Alle instellingen (Karts, Lasergame, PI, Minigolf & Activiteiten) zijn bijgewerkt.");
             })
             .catch(error => handleError(error, "Fout bij opslaan: "))
             .finally(() => {

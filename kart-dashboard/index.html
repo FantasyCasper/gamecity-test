@@ -21,50 +21,52 @@
                 Lasergame</button>
             <button class="defect-nav-btn" data-type="prisonisland" onclick="switchDashboard('prisonisland')">🔑 Prison
                 Island</button>
+            <button class="defect-nav-btn" onclick="switchDashboard('minigolf')">⛳ Minigolf</button>
         </div>
+    </div>
 
-        <h1 id="dashboard-title">Kart Defecten</h1>
+    <h1 id="dashboard-title">Kart Defecten</h1>
 
-        <div class="stat-box-grid">
-            <div class="stat-box"><span id="stat-totaal">...</span>
-                <div id="stat-label-totaal">Totaal</div>
-            </div>
-            <div class="stat-box"><span id="stat-problemen">0</span>
-                <div id="stat-label-probleem">Defect</div>
-            </div>
-            <div class="stat-box"><span id="stat-werkend">0</span>
-                <div id="stat-label-werkend">Werkend</div>
-            </div>
+    <div class="stat-box-grid">
+        <div class="stat-box"><span id="stat-totaal">...</span>
+            <div id="stat-label-totaal">Totaal</div>
         </div>
-
-        <div id="loading-overlay" class="loading-overlay" style="display:none;">
-            <div class="spinner"></div>
-            <p>Gegevens ophalen...</p>
+        <div class="stat-box"><span id="stat-problemen">0</span>
+            <div id="stat-label-probleem">Defect</div>
         </div>
-
-        <form id="new-defect-form" class="form-bar user-info">
-            <select id="new-defect-kart" required disabled>
-                <option value>Laden...</option>
-            </select>
-            <input type="text" id="new-defect-problem" placeholder="Wacht op laden..." required disabled>
-            <button type="submit" id="new-defect-submit" disabled>+ Toevoegen</button>
-        </form>
-
-        <div id="new-filter-bar" class="form-bar user-info">
-            <span>Filter:</span>
-            <select id="filter-status">
-                <option value="">Alles (Status)</option>
-                <option value="Open">Alleen Open</option>
-                <option value="Opgelost">Alleen Opgelost</option>
-            </select>
-            <select id="filter-kart-select" style="margin-left:5px;">
-                <option value="">Alles (Nummer)</option>
-            </select>
+        <div class="stat-box"><span id="stat-werkend">0</span>
+            <div id="stat-label-werkend">Werkend</div>
         </div>
+    </div>
 
-        <div id="status-message-defect" class="status-bericht"></div>
+    <div id="loading-overlay" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+        <p>Gegevens ophalen...</p>
+    </div>
 
-        <div id="defect-card-container" class="problem-card-grid"></div>
+    <form id="new-defect-form" class="form-bar user-info">
+        <select id="new-defect-kart" required disabled>
+            <option value>Laden...</option>
+        </select>
+        <input type="text" id="new-defect-problem" placeholder="Wacht op laden..." required disabled>
+        <button type="submit" id="new-defect-submit" disabled>+ Toevoegen</button>
+    </form>
+
+    <div id="new-filter-bar" class="form-bar user-info">
+        <span>Filter:</span>
+        <select id="filter-status">
+            <option value="">Alles (Status)</option>
+            <option value="Open">Alleen Open</option>
+            <option value="Opgelost">Alleen Opgelost</option>
+        </select>
+        <select id="filter-kart-select" style="margin-left:5px;">
+            <option value="">Alles (Nummer)</option>
+        </select>
+    </div>
+
+    <div id="status-message-defect" class="status-bericht"></div>
+
+    <div id="defect-card-container" class="problem-card-grid"></div>
     </div>
 
     <div id="modal-overlay"></div>

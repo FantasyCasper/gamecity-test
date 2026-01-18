@@ -32,6 +32,13 @@ const CONFIG = {
         itemNaamMeervoud: "Cellen",
         settingKey: "totaal_pi",
         defaultTotaal: 25
+    },
+    minigolf: {
+        titel: "Minigolf Defecten",
+        itemNaam: "Hole",
+        itemNaamMeervoud: "Holes",
+        settingKey: "totaal_minigolf",
+        defaultTotaal: 18
     }
 };
 
