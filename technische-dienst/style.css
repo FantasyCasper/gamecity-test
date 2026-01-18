@@ -161,3 +161,30 @@ h1 { text-align: center; color: #fff; margin-bottom: 20px; }
     font-size: 0.9em;
     text-decoration: none !important; /* Geen streep door de naam */
 }
+
+/* Voeg dit toe onderaan in technische-dienst/style.css */
+
+/* LAAD OVERLAY & SPINNER */
+.loading-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+}
+
+.spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #28a745; /* Groen */
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

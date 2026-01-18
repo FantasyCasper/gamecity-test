@@ -31,8 +31,8 @@ let currentPerms = {};
 
 // ================= FETCH =================
 async function fetchTasks() {
-    const grid = document.getElementById('td-grid');
-    grid.innerHTML = '<p style="text-align:center;">Laden...</p>';
+    // We gebruiken nu de overlay in plaats van tekst in het grid
+    setLoadingState(true);
     
     const type = (currentPerms.admin || currentPerms.td) ? "GET_ALGEMEEN_DEFECTS" : "GET_PUBLIC_ALGEMEEN_DEFECTS";
 
@@ -42,7 +42,24 @@ async function fetchTasks() {
         tasksCache = result.data.filter(t => t.status !== 'Verwijderd');
         renderGrid();
     } catch (e) {
+        const grid = document.getElementById('td-grid');
         grid.innerHTML = `<p style="color:red; text-align:center;">Fout: ${e.message}</p>`;
+    } finally {
+        // Klaar met laden (of error), dus overlay weg
+        setLoadingState(false);
+    }
+}
+
+/* === VOEG DEZE NIEUWE HULPFUNCTIE TOE (bijv. onderaan bij Utils) === */
+
+function setLoadingState(isLoading) {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return; // Veiligheid
+
+    if (isLoading) {
+        overlay.style.display = 'flex';
+    } else {
+        overlay.style.display = 'none';
     }
 }
 
