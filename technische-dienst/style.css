@@ -138,3 +138,26 @@ h1 { text-align: center; color: #fff; margin-bottom: 20px; }
     position: fixed; top: 15px; left: 15px; color: white; text-decoration: none; 
     background: #333; padding: 5px 10px; border-radius: 4px;
 }
+
+/* Voeg toe aan technische-dienst/style.css */
+
+.task-card.status-opgelost {
+    background-color: #222; /* Iets donkerder */
+    border-left-color: #2ecc71 !important; /* Groene rand */
+    opacity: 0.6; /* Half doorzichtig (Grijs effect) */
+}
+
+.task-card.status-opgelost h3,
+.task-card.status-opgelost .task-body {
+    color: #888; /* Tekst ook grijzer maken */
+    text-decoration: line-through; /* Optioneel: streep erdoor */
+}
+
+/* Zorg dat de info over wie het heeft opgelost wel goed leesbaar blijft */
+.afgerond-info {
+    font-weight: bold;
+    color: #2ecc71; /* Fel groen */
+    margin-top: 10px;
+    font-size: 0.9em;
+    text-decoration: none !important; /* Geen streep door de naam */
+}

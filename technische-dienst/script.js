@@ -48,34 +48,54 @@ function renderGrid() {
     const sortMode = document.getElementById('sort-select').value;
     grid.innerHTML = '';
 
-    // Sorteren
+    // Sorteren... (deze code had je al, laat ik even kort)
     let items = [...tasksCache];
-    if (sortMode === 'prio') {
-        items.sort((a, b) => (a.prioriteit || 3) - (b.prioriteit || 3));; // 1 laagste getal = hoogste prio
-    } else if (sortMode === 'date') {
-        items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Nieuwste eerst
-    } else if (sortMode === 'oldest') {
-        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    }
+    if (sortMode === 'prio') items.sort((a, b) => a.prioriteit - b.prioriteit);
+    else if (sortMode === 'date') items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    else if (sortMode === 'oldest') items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    if (items.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Geen open taken.</p>';
+    // Filter "Verwijderd" eruit, maar laat "Opgelost" staan (zodat we ze grijs kunnen zien)
+    items = items.filter(t => t.status !== 'Verwijderd');
+
+    if(items.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Geen taken gevonden.</p>';
         return;
     }
 
     items.forEach(task => {
         const daysAgo = calculateDaysAgo(task.timestamp);
-        const prio = task.prioriteit ? Number(task.prioriteit) : 3;
-        const prioClass = `prio-${prio}`;
         const prioBadgeClass = `bg-prio-${task.prioriteit || 3}`;
         const canEdit = (currentPerms.admin || currentPerms.td || task.medewerker === currentUser);
+        
+        // CHECK: Is hij opgelost?
+        const isOpgelost = (task.status === 'Opgelost');
+        const extraClass = isOpgelost ? 'status-opgelost' : `prio-${task.prioriteit || 3}`;
 
         const card = document.createElement('div');
-        card.className = `task-card ${prioClass}`;
+        card.className = `task-card ${extraClass}`;
+        
+        // Bouw de HTML voor "Afgerond door"
+        let afgerondHtml = '';
+        if (isOpgelost && task.opgelostDoor) {
+            afgerondHtml = `<div class="afgerond-info">✓ Afgerond door: ${task.opgelostDoor}</div>`;
+        }
+
+        // Knoppen tonen? Alleen als hij nog NIET opgelost is, OF als je admin bent (om evt te heropenen of verwijderen)
+        let buttonsHtml = '';
+        if (!isOpgelost && canEdit) {
+            buttonsHtml = `
+                <button class="btn-finish" onclick="finishTask(${task.rowId})">✔ Afronden</button>
+                <button class="btn-edit" onclick='editTask(${JSON.stringify(task)})'>✎</button>
+            `;
+        } else if (isOpgelost && (currentPerms.admin || currentPerms.td)) {
+            // Optioneel: Admins kunnen opgeloste taken nog bewerken/verwijderen
+             buttonsHtml = `<button class="btn-edit" onclick='editTask(${JSON.stringify(task)})' style="width:100%; background:#555;">Bewerken / Heropenen</button>`;
+        }
 
         card.innerHTML = `
             <div class="card-header">
-                <h3>${task.locatie}</h3> <span class="prio-badge ${prioBadgeClass}">Prio ${task.prioriteit || 3}</span>
+                <h3>${task.locatie}</h3>
+                <span class="prio-badge ${prioBadgeClass}">Prio ${task.prioriteit || 3}</span>
             </div>
             <div class="meta-info">
                 Aangemaakt door: <strong>${task.medewerker}</strong><br>
@@ -83,14 +103,14 @@ function renderGrid() {
             </div>
             <div class="task-body">${task.defect}</div>
             
+            ${afgerondHtml} ${!isOpgelost ? `
             <div class="td-details">
                 <span style="color:#ffc107;">🛠️ Nodig: ${task.benodigdheden || '-'}</span>
                 <span style="color:#aaa;">📦 Status: ${task.onderdelenStatus}</span>
-            </div>
+            </div>` : ''}
 
             <div class="card-actions">
-                ${canEdit ? `<button class="btn-finish" onclick="finishTask(${task.rowId})">✔ Afronden</button>` : ''}
-                ${canEdit ? `<button class="btn-edit" onclick='editTask(${JSON.stringify(task)})'>✎</button>` : ''}
+                ${buttonsHtml}
             </div>
         `;
         grid.appendChild(card);
@@ -98,18 +118,78 @@ function renderGrid() {
 }
 
 // ACTIONS
-function finishTask(id) {
-    if (!confirm("Is deze taak volledig afgerond?")) return;
+function renderGrid() {
+    const grid = document.getElementById('td-grid');
+    const sortMode = document.getElementById('sort-select').value;
+    grid.innerHTML = '';
 
-    callApi({
-        type: "UPDATE_ALGEMEEN_DEFECT_STATUS",
-        rowId: id,
-        newStatus: "Opgelost"
-    }).then(() => {
-        // Verwijder uit cache en re-render (sneller dan fetch)
-        tasksCache = tasksCache.filter(t => t.rowId != id);
-        renderGrid();
-    }).catch(e => alert(e.message));
+    // Sorteren... (deze code had je al, laat ik even kort)
+    let items = [...tasksCache];
+    if (sortMode === 'prio') items.sort((a, b) => a.prioriteit - b.prioriteit);
+    else if (sortMode === 'date') items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    else if (sortMode === 'oldest') items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Filter "Verwijderd" eruit, maar laat "Opgelost" staan (zodat we ze grijs kunnen zien)
+    items = items.filter(t => t.status !== 'Verwijderd');
+
+    if(items.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Geen taken gevonden.</p>';
+        return;
+    }
+
+    items.forEach(task => {
+        const daysAgo = calculateDaysAgo(task.timestamp);
+        const prioBadgeClass = `bg-prio-${task.prioriteit || 3}`;
+        const canEdit = (currentPerms.admin || currentPerms.td || task.medewerker === currentUser);
+        
+        // CHECK: Is hij opgelost?
+        const isOpgelost = (task.status === 'Opgelost');
+        const extraClass = isOpgelost ? 'status-opgelost' : `prio-${task.prioriteit || 3}`;
+
+        const card = document.createElement('div');
+        card.className = `task-card ${extraClass}`;
+        
+        // Bouw de HTML voor "Afgerond door"
+        let afgerondHtml = '';
+        if (isOpgelost && task.opgelostDoor) {
+            afgerondHtml = `<div class="afgerond-info">✓ Afgerond door: ${task.opgelostDoor}</div>`;
+        }
+
+        // Knoppen tonen? Alleen als hij nog NIET opgelost is, OF als je admin bent (om evt te heropenen of verwijderen)
+        let buttonsHtml = '';
+        if (!isOpgelost && canEdit) {
+            buttonsHtml = `
+                <button class="btn-finish" onclick="finishTask(${task.rowId})">✔ Afronden</button>
+                <button class="btn-edit" onclick='editTask(${JSON.stringify(task)})'>✎</button>
+            `;
+        } else if (isOpgelost && (currentPerms.admin || currentPerms.td)) {
+            // Optioneel: Admins kunnen opgeloste taken nog bewerken/verwijderen
+             buttonsHtml = `<button class="btn-edit" onclick='editTask(${JSON.stringify(task)})' style="width:100%; background:#555;">Bewerken / Heropenen</button>`;
+        }
+
+        card.innerHTML = `
+            <div class="card-header">
+                <h3>${task.locatie}</h3>
+                <span class="prio-badge ${prioBadgeClass}">Prio ${task.prioriteit || 3}</span>
+            </div>
+            <div class="meta-info">
+                Aangemaakt door: <strong>${task.medewerker}</strong><br>
+                Aangemaakt op: ${daysAgo}
+            </div>
+            <div class="task-body">${task.defect}</div>
+            
+            ${afgerondHtml} ${!isOpgelost ? `
+            <div class="td-details">
+                <span style="color:#ffc107;">🛠️ Nodig: ${task.benodigdheden || '-'}</span>
+                <span style="color:#aaa;">📦 Status: ${task.onderdelenStatus}</span>
+            </div>` : ''}
+
+            <div class="card-actions">
+                ${buttonsHtml}
+            </div>
+        `;
+        grid.appendChild(card);
+    });
 }
 
 function handleFormSubmit(e) {
