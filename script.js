@@ -569,26 +569,22 @@ function filterEnRenderDefecten() {
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
-
     if (!defecten) return;
 
     const openDefecten = defecten.filter(d => d.status === 'Open');
-
     if (openDefecten.length === 0) {
-        container.innerHTML = "<p>Geen openstaande defecten voor deze selectie.</p>";
+        container.innerHTML = "<p>Geen openstaande defecten.</p>";
         return;
     }
 
-    openDefecten.sort((a, b) => {
-        if (a.locatie < b.locatie) return -1;
-        if (a.locatie > b.locatie) return 1;
-        return new Date(b.timestamp) - new Date(a.timestamp);
-    });
+    openDefecten.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     openDefecten.forEach(defect => {
         const ts = tijdGeleden(defect.timestamp);
         const card = document.createElement('div');
-        card.className = 'defect-card';
+        
+        // Zorg voor de juiste classes voor styling en rode rand
+        card.className = 'defect-card status-open'; // 'status-open' toegevoegd voor zekerheid
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
@@ -596,29 +592,23 @@ function laadAlgemeneDefecten(defecten) {
 
         let editKnop = '';
         if (isEigenaar && isVers) {
-            editKnop = `
-                <button class="edit-icon-btn" 
-                    data-id="${defect.rowId}" 
-                    data-locatie="${defect.locatie}" 
-                    data-descr="${escape(defect.defect)}">
-                    ✎
-                </button>`;
+            editKnop = `<button class="edit-icon-btn" data-id="${defect.rowId}" data-locatie="${defect.locatie}" data-descr="${escape(defect.defect)}">✎</button>`;
         }
 
-        // --- NIEUW: Extra info (Benodigdheden & Onderdelen) tonen ---
+        // INFO BLOKJES (Geel/Groen)
         let extraInfo = '';
         if (defect.benodigdheden) {
-            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
+            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:8px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
         }
         if (defect.onderdelenStatus) {
-            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 ${defect.onderdelenStatus}</div>`;
+            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71; margin-top:2px;">📦 ${defect.onderdelenStatus}</div>`;
         }
 
         card.innerHTML = `
             <h3>${defect.locatie}</h3>
             <div class="meta">
                 <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
-                <span class="meta-item">Gemeld: ${ts}</span>
+                <span class="meta-item">${ts}</span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
             ${extraInfo}
