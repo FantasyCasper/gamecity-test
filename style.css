@@ -336,7 +336,7 @@ input[type="checkbox"]:checked+label {
     background-color: #2a2a2a;
     border-radius: 8px;
     padding: 20px;
-    border-left: 5px solid #e74c3c;
+    border-left: 5px solid #e74c3c !important; /* Forceer rood */
     /* Rood = Open */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -344,7 +344,7 @@ input[type="checkbox"]:checked+label {
 }
 
 .defect-card.status-opgelost {
-    border-left-color: #2ecc71;
+    border-left-color: #2ecc71 !important; /* Groen */
     opacity: 0.6;
 }
 

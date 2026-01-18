@@ -566,6 +566,7 @@ function filterEnRenderDefecten() {
 }
 
 // --- HIER IS DE AANPASSING VOOR DE EXTRA INFO ---
+/* --- HIER DE AANGEPASTE FUNCTIE VOOR script.js (hoofdmap) --- */
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
@@ -582,38 +583,26 @@ function laadAlgemeneDefecten(defecten) {
     openDefecten.forEach(defect => {
         const ts = tijdGeleden(defect.timestamp);
         const card = document.createElement('div');
-        
-        // Zorg voor de juiste classes voor styling en rode rand
-        card.className = 'defect-card status-open'; // 'status-open' toegevoegd voor zekerheid
+        card.className = 'defect-card status-open';
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
+        let editKnop = (isEigenaar && isVers) ? `<button class="edit-icon-btn" data-id="${defect.rowId}" data-locatie="${defect.locatie}" data-descr="${escape(defect.defect)}">✎</button>` : "";
 
-        let editKnop = '';
-        if (isEigenaar && isVers) {
-            editKnop = `<button class="edit-icon-btn" data-id="${defect.rowId}" data-locatie="${defect.locatie}" data-descr="${escape(defect.defect)}">✎</button>`;
-        }
+        // --- KLEUREN LOGICA (Hetzelfde als dashboard) ---
+        let statusColor = '#2ecc71'; // Groen
+        if (defect.onderdelenStatus === 'Niet aanwezig') statusColor = '#dc3545'; // Rood
+        if (defect.onderdelenStatus === 'Besteld') statusColor = '#e67e22'; // Oranje
+        if (defect.onderdelenStatus === 'Niet nodig') statusColor = '#aaa'; // Grijs
 
-        // INFO BLOKJES (Geel/Groen)
         let extraInfo = '';
-        if (defect.benodigdheden) {
-            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:8px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
-        }
-        if (defect.onderdelenStatus) {
-            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71; margin-top:2px;">📦 ${defect.onderdelenStatus}</div>`;
-        }
+        if (defect.benodigdheden) extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:8px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
+        if (defect.onderdelenStatus) extraInfo += `<div style="font-size: 0.85em; color: ${statusColor}; margin-top:2px;">📦 ${defect.onderdelenStatus}</div>`;
 
-        card.innerHTML = `
-            <h3>${defect.locatie}</h3>
-            <div class="meta">
-                <span class="meta-item">Gemeld door: ${defect.medewerker}</span>
-                <span class="meta-item">${ts}</span>
-            </div>
-            <p class="omschrijving">${defect.defect}</p>
-            ${extraInfo}
-            ${editKnop}
-        `;
+        card.innerHTML = `<h3>${defect.locatie}</h3>
+            <div class="meta"><span class="meta-item">Gemeld door: ${defect.medewerker}</span><span class="meta-item">Gemeld: ${ts}</span></div>
+            <p class="omschrijving">${defect.defect}</p>${extraInfo}${editKnop}`;
         container.appendChild(card);
     });
 }

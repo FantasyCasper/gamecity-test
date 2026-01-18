@@ -236,62 +236,37 @@ function renderCards(lijst) {
     const container = document.getElementById("defect-card-container");
     if(!container) return;
     container.innerHTML = "";
-    
-    // Filters toepassen
-    const filterStatusEl = document.getElementById('filter-status');
-    const filterStatus = filterStatusEl ? filterStatusEl.value : "";
-    const filterNummerEl = document.getElementById('filter-kart-select');
-    const filterNummer = filterNummerEl ? filterNummerEl.value : "";
-    
+    const fs = document.getElementById('filter-status') ? document.getElementById('filter-status').value : "";
+    const fn = document.getElementById('filter-kart-select').value;
     let items = lijst.filter(d => d.status !== 'Verwijderd');
-    
-    if(filterStatus) items = items.filter(d => d.status === filterStatus);
-    if(filterNummer) items = items.filter(d => d.nummer == filterNummer);
+    if(fs) items = items.filter(d => d.status === fs);
+    if(fn) items = items.filter(d => d.nummer == fn);
 
-    if (items.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Geen defecten gevonden.</p>"; 
-        return;
-    }
-
-    // Sorteren: Open eerst
+    if (items.length === 0) { container.innerHTML = "<p style='text-align:center; color:#888;'>Geen defecten gevonden.</p>"; return; }
     items.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
 
-    items.forEach(defect => {
+    items.forEach(d => {
         const conf = CONFIG[ACTIVE_TYPE];
-        
-        const kaart = document.createElement("div");
-        kaart.className = "defect-card";
-        if (defect.status === "Opgelost") kaart.classList.add("status-opgelost");
-
-        // --- Rechten Logica ---
-        let editKnopHtml = '';
-        const isEigenaar = (defect.medewerker === ingelogdeNaam);
-        const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000); // 24 uur
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
+        const isOwn = d.medewerker === ingelogdeNaam && (Date.now() - new Date(d.timestamp).getTime() < 86400000);
+        let btn = (isOwn && d.status === 'Open') || isTD ? `<button class="edit-icon-btn" onclick='openEditModal(${JSON.stringify(d).replace(/'/g, "&#39;")})'>✎</button>` : "";
+        
+        // --- KLEUREN LOGICA ---
+        let statusColor = '#2ecc71'; // Groen (Aanwezig)
+        if (d.onderdelenStatus === 'Niet aanwezig') statusColor = '#dc3545'; // Rood
+        if (d.onderdelenStatus === 'Besteld') statusColor = '#e67e22'; // Oranje
+        if (d.onderdelenStatus === 'Niet nodig') statusColor = '#aaa'; // Grijs
 
-        // Potloodje tonen als: (Eigen melding & Open & <24u) OF (TD/Admin)
-        if ((isEigenaar && defect.status === "Open" && isVers) || isTD) {
-            const jsonString = JSON.stringify(defect).replace(/'/g, "&#39;");
-            editKnopHtml = `<button class="edit-icon-btn" onclick='openEditModal(${jsonString})'>✎</button>`;
-        }
+        let extra = "";
+        if (d.benodigdheden) extra += `<div style="font-size:0.85em; color:#ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
+        if (d.onderdelenStatus) extra += `<div style="font-size:0.85em; color:${statusColor}; margin-top:2px;">📦 ${d.onderdelenStatus}</div>`;
 
-        // Extra info (TD velden)
-        let extraInfo = '';
-        if (defect.benodigdheden) extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
-        if (defect.onderdelenStatus) extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 ${defect.onderdelenStatus}</div>`;
-
-        kaart.innerHTML = `
-            <h3>${conf.itemNaam} ${defect.nummer}</h3>
-            <div class="meta">
-                <span>👤 ${defect.medewerker}</span>
-                <span>🕒 ${tijdGeleden(defect.timestamp)}</span>
-                <span>Status: <strong>${defect.status}</strong></span>
-            </div>
-            <p class="omschrijving">${defect.defect}</p>
-            ${extraInfo}
-            ${editKnopHtml}
-        `;
-        container.appendChild(kaart);
+        const div = document.createElement('div');
+        div.className = `defect-card ${d.status === 'Opgelost' ? 'status-opgelost' : ''}`;
+        div.innerHTML = `<h3>${conf.itemNaam} ${d.nummer}</h3>
+            <div class="meta"><span>👤 ${d.medewerker}</span> <span>🕒 ${tijdGeleden(d.timestamp)}</span> <span>Status: <strong>${d.status}</strong></span></div>
+            <p class="omschrijving">${d.defect}</p>${extra}${btn}`;
+        container.appendChild(div);
     });
 }
 
