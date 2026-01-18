@@ -33,14 +33,12 @@ let currentPerms = {};
 async function fetchTasks() {
     const grid = document.getElementById('td-grid');
     grid.innerHTML = '<p style="text-align:center;">Laden...</p>';
-
-    const type =
-        (currentPerms.admin || currentPerms.td)
-            ? "GET_ALGEMEEN_DEFECTS"
-            : "GET_PUBLIC_ALGEMEEN_DEFECTS";
+    
+    const type = (currentPerms.admin || currentPerms.td) ? "GET_ALGEMEEN_DEFECTS" : "GET_PUBLIC_ALGEMEEN_DEFECTS";
 
     try {
         const result = await callApi({ type });
+        // Filter verwijderde taken eruit
         tasksCache = result.data.filter(t => t.status !== 'Verwijderd');
         renderGrid();
     } catch (e) {
@@ -56,6 +54,7 @@ function renderGrid() {
 
     let items = [...tasksCache];
 
+    // Sorteren
     if (sortMode === 'prio')
         items.sort((a, b) => Number(a.prioriteit) - Number(b.prioriteit));
     else if (sortMode === 'date')
@@ -64,28 +63,38 @@ function renderGrid() {
         items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     if (!items.length) {
-        grid.innerHTML =
-            '<p style="text-align:center; width:100%; color:#666;">Geen taken gevonden.</p>';
+        grid.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Geen taken gevonden.</p>';
         return;
     }
 
+    // --- RECHTEN CHECK VOOR RENDEREN ---
+    const isTD = currentPerms.admin || currentPerms.td;
+
     items.forEach(task => {
         const isOpgelost = task.status === 'Opgelost';
-        const canEdit =
-            currentPerms.admin ||
-            currentPerms.td ||
-            task.medewerker === currentUser;
+        const isCreator = task.medewerker === currentUser;
+        
+        // CHECK: Is de taak minder dan 24 uur oud? (86400000 ms = 1 dag)
+        const isVers = (Date.now() - new Date(task.timestamp).getTime() < 86400000);
 
         const card = document.createElement('div');
         card.className = `task-card ${isOpgelost ? 'status-opgelost' : `prio-${task.prioriteit || 3}`}`;
 
+        // KNOPPEN LOGICA
         let buttonsHtml = '';
-        if (!isOpgelost && canEdit) {
-            buttonsHtml = `
-                <button class="btn-finish" onclick="finishTask(${task.rowId})">✔ Afronden</button>
-                <button class="btn-edit" onclick="editTaskById(${task.rowId})">✎</button>
-            `;
-        } else if (isOpgelost && (currentPerms.admin || currentPerms.td)) {
+
+        if (!isOpgelost) {
+            // 1. Afronden knop: ALLEEN voor TD of Admin
+            if (isTD) {
+                buttonsHtml += `<button class="btn-finish" onclick="finishTask(${task.rowId})">✔ Afronden</button>`;
+            }
+
+            // 2. Bewerk knop: Voor TD/Admin (altijd) OF de maker (alleen binnen 24u)
+            if (isTD || (isCreator && isVers)) {
+                buttonsHtml += `<button class="btn-edit" onclick="editTaskById(${task.rowId})">✎</button>`;
+            }
+        } else if (isOpgelost && isTD) {
+            // Als opgelost: Alleen TD/Admin mag heropenen/bewerken
             buttonsHtml = `
                 <button class="btn-edit"
                         onclick="editTaskById(${task.rowId})"
@@ -94,6 +103,7 @@ function renderGrid() {
                 </button>`;
         }
 
+        // HTML Opbouw
         card.innerHTML = `
             <div class="card-header">
                 <h3>${task.locatie}</h3>
@@ -190,6 +200,13 @@ function openModal(task = null) {
     document.getElementById('modal-task').style.display = 'block';
 
     const delBtn = document.getElementById('btn-delete');
+    
+    // RECHTEN CHECKS
+    const isTD = currentPerms.admin || currentPerms.td;
+    const tdSection = document.querySelector('.td-section');
+
+    // TD sectie alleen voor TD/Admin
+    tdSection.style.display = isTD ? 'block' : 'none';
 
     if (task) {
         document.getElementById('modal-title').textContent = "Taak Bewerken";
@@ -197,14 +214,25 @@ function openModal(task = null) {
         document.getElementById('task-title').value = task.locatie;
         document.getElementById('task-desc').value = task.defect;
         document.getElementById('task-prio').value = task.prioriteit || 3;
+        
         document.getElementById('task-needs').value = task.benodigdheden || "";
         document.getElementById('task-parts-status').value = task.onderdelenStatus || "Niet nodig";
-        delBtn.style.display = 'block';
+        
+        // CHECK: Mag je verwijderen? (TD/Admin altijd, Creator alleen binnen 24u)
+        const isCreator = (task.medewerker === currentUser);
+        const isVers = (Date.now() - new Date(task.timestamp).getTime() < 86400000);
+
+        if (isTD || (isCreator && isVers)) {
+            delBtn.style.display = 'block';
+        } else {
+            delBtn.style.display = 'none';
+        }
+
     } else {
         document.getElementById('modal-title').textContent = "Nieuwe Taak";
         document.getElementById('task-form').reset();
         document.getElementById('task-id').value = "";
-        delBtn.style.display = 'none';
+        delBtn.style.display = 'none'; // Bij nieuwe taak geen verwijderknop nodig
     }
 }
 
