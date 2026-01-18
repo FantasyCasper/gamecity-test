@@ -1041,6 +1041,9 @@ function fetchSettings() {
         if (settings['totaal_minigolf']) {
             document.getElementById('setting-totaal-minigolf').value = settings['totaal_minigolf'];
         }
+        if (settings['prison_cel_namen']) {
+            document.getElementById('setting-pi-names').value = settings['prison_cel_namen'];
+        }
 
         // Activiteiten lijst logica (ongewijzigd laten)
         const list = document.getElementById('setting-activiteiten-list');
@@ -1073,9 +1076,10 @@ function setupSettingsForm() {
 
         // Waardes ophalen
         const karts = document.getElementById('setting-totaal-karts').value;
-        const lasergame = document.getElementById('setting-totaal-lasergame').value; // NIEUW
-        const pi = document.getElementById('setting-totaal-pi').value;               // NIEUW
+        const lasergame = document.getElementById('setting-totaal-lasergame').value;
+        const pi = document.getElementById('setting-totaal-pi').value;               
         const minigolf = document.getElementById('setting-totaal-minigolf').value;
+        const piNamen = document.getElementById('setting-pi-names').value;
 
         // Activiteiten ophalen
         const activiteitenLijst = [];
@@ -1100,6 +1104,9 @@ function setupSettingsForm() {
             .then(() => {
                 // NIEUW: Minigolf opslaan
                 return callApi({ type: "SAVE_SETTING", key: "totaal_minigolf", value: minigolf });
+            })
+            .then(() => {
+                return callApi({ type: "SAVE_SETTING", key: "prison_cel_namen", value: piNamen });
             })
             .then(result => {
                 toonMooieModal("Succes", "Alle instellingen (Karts, Lasergame, PI, Minigolf & Activiteiten) zijn bijgewerkt.");
