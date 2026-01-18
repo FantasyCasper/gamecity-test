@@ -3,7 +3,7 @@
    =============================== */
 
 // De naam is veranderd om de cache te forceren
-const CACHE_NAAM = 'checklist-app-cache-v0.110.3';
+const CACHE_NAAM = 'checklist-app-cache-v0.110.5';
 
 // De lijst is bijgewerkt met de nieuwe map
 const urlsToCache = [

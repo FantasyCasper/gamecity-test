@@ -74,11 +74,6 @@ let GLOBALE_ACTIVITEITEN = [];
     fetchAlgemeneDefecten();
     setupAlgemeenFilter();
 
-    // 5. Checklists ophalen (Alleen als je rechten hebt)
-    if (ingelogdePermissies.checklists) {
-        laadChecklistConfiguratie();
-    }
-
 })();
 
 
@@ -171,9 +166,6 @@ function laadChecklistConfiguratie() {
         console.log("Cache gevonden! Direct tonen.");
         CHECKLIST_DATA = JSON.parse(cachedData);
         vulActiviteitDropdown(); // Hulpfunctie om dubbele code te voorkomen
-
-        // Als we cache hebben, hoeven we de gebruiker niet te laten wachten.
-        // We doen wel een 'silent update' op de achtergrond.
     }
 
     // 2. DAARNA: Haal verse data van de server (Silent update)
@@ -199,40 +191,30 @@ function laadChecklistConfiguratie() {
         });
 }
 
-// Haal dit stukje logica uit de oude functie en zet het apart, 
-// zodat we het op twee plekken kunnen aanroepen
 function vulActiviteitDropdown() {
     const activiteitSelect = document.getElementById('activiteit-select');
     if (activiteitSelect) {
-        // Huidige selectie onthouden (zodat hij niet verspringt als we verversen)
         const currentVal = activiteitSelect.value;
 
-        // Reset de dropdown (laat de eerste 'Selecteer' optie staan)
         while (activiteitSelect.options.length > 1) { activiteitSelect.remove(1); }
 
-        // 1. BEPAAL DE LIJST
-        // Is er een lijst uit de instellingen? Gebruik die.
-        // Zo niet? Gebruik de ouderwetse standaardlijst (fallback).
         let teTonenLijst = GLOBALE_ACTIVITEITEN;
 
         if (teTonenLijst.length === 0) {
             teTonenLijst = ["Baan", "Lasergame", "Prison Island", "Minigolf"];
         }
 
-        // 2. VUL DE DROPDOWN
         teTonenLijst.forEach(naam => {
             activiteitSelect.add(new Option(naam, naam));
         });
 
-        // 3. VANGNET (Voor oude data in checklists die niet meer in de lijst staat)
-        // Als er in CHECKLIST_DATA een activiteit zit die NIET in onze lijst staat, voeg hem toch toe (anders kun je er niet bij)
+        // Vangnet voor oude data
         for (const activiteit in CHECKLIST_DATA) {
             if (!teTonenLijst.includes(activiteit)) {
                 activiteitSelect.add(new Option(activiteit, activiteit));
             }
         }
 
-        // Probeer oude selectie te herstellen
         if (currentVal) activiteitSelect.value = currentVal;
     }
 }
@@ -270,7 +252,6 @@ function updateChecklists(activiteit) {
 
         if (container) container.classList.add('checklists-zichtbaar');
 
-        // UPDATE PROGRESS BAR BIJ LADEN
         updateProgress();
 
     } else {
@@ -324,7 +305,7 @@ function verstuurData(lijstNaam) {
 }
 
 
-// --- DEEL 4: PROGRESS BAR FUNCTIES (GESPLITST) ---
+// --- DEEL 4: PROGRESS BAR FUNCTIES ---
 
 function updateProgress() {
     updateSingleProgress('lijst-openen', 'progress-container-openen', 'progress-bar-openen', 'progress-text-openen');
@@ -350,7 +331,6 @@ function updateSingleProgress(listId, containerId, barId, textId) {
         bar.style.width = percentage + "%";
         text.textContent = percentage + "%";
 
-        // Kleurverandering bij 100%
         if (percentage === 100) {
             bar.style.backgroundColor = "#00d2d3"; // Cyaan/Blauw
             text.style.color = "#00d2d3";
@@ -363,7 +343,6 @@ function updateSingleProgress(listId, containerId, barId, textId) {
     }
 }
 
-// Luisteraar voor checkboxes
 document.addEventListener('change', function (e) {
     if (e.target.type === 'checkbox' && e.target.closest('#tab-checklists')) {
         updateProgress();
@@ -374,7 +353,6 @@ document.addEventListener('change', function (e) {
 // --- DEEL 5: ALGEMEEN TAB (BIJZONDERHEDEN) ---
 
 function laadBijzonderhedenVanGisteren() {
-    // NIEUW: Overschrijf de "Laden..." tekst direct met 3 skeleton rijen (4 kolommen breed)
     toonSkeletonRijen('bijzonderheden-body', 3, 4);
 
     const tabelBody = document.getElementById('bijzonderheden-body');
@@ -430,7 +408,6 @@ function setupAlgemeenModalLogic() {
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', closeModal);
 
-    // Maak closeModal globaal beschikbaar zodat we hem na verzenden kunnen aanroepen
     window.sluitAlgemeenDefectModal = closeModal;
 }
 
@@ -454,11 +431,7 @@ function setupAlgemeenDefectForm() {
             .then(data => {
                 toonAlgemeenDefectStatus("Defect succesvol gemeld!", "success");
                 form.reset();
-
-                // NIEUW: Sluit de modal als het gelukt is
                 if (window.sluitAlgemeenDefectModal) window.sluitAlgemeenDefectModal();
-
-                // Herlaad de data
                 fetchAlgemeneDefecten();
             })
             .catch(error => {
@@ -475,13 +448,11 @@ function setupAlgemeenEditLogic() {
     const modal = document.getElementById('modal-edit-algemeen');
     const overlay = document.getElementById('modal-overlay-edit-algemeen');
 
-    // Formulier elementen
     const form = document.getElementById('edit-algemeen-form');
     const inputId = document.getElementById('edit-algemeen-id');
     const inputLocatie = document.getElementById('edit-algemeen-locatie');
     const inputDescr = document.getElementById('edit-algemeen-omschrijving');
 
-    // Knoppen
     const closeBtn = document.getElementById('close-edit-algemeen-btn');
     const cancelBtn = document.getElementById('cancel-edit-algemeen-btn');
     const deleteBtn = document.getElementById('delete-algemeen-btn');
@@ -493,11 +464,9 @@ function setupAlgemeenEditLogic() {
         overlay.style.display = 'none';
     }
 
-    // 1. Luister naar klikken op de blauwe pennetjes (via delegation)
     container.addEventListener('click', (e) => {
         const knop = e.target.closest('.edit-icon-btn');
         if (knop) {
-            // Vul de modal met de data uit de knop
             inputId.value = knop.dataset.id;
             inputLocatie.value = knop.dataset.locatie;
             inputDescr.value = unescape(knop.dataset.descr);
@@ -507,7 +476,6 @@ function setupAlgemeenEditLogic() {
         }
     });
 
-    // 2. Opslaan (Submit)
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = document.getElementById('save-edit-algemeen-btn');
@@ -532,7 +500,6 @@ function setupAlgemeenEditLogic() {
         });
     });
 
-    // 3. Verwijderen
     deleteBtn.addEventListener('click', () => {
         if (!confirm("Weet je zeker dat je dit defect wilt verwijderen?")) return;
 
@@ -553,7 +520,6 @@ function setupAlgemeenEditLogic() {
         });
     });
 
-    // Sluit knoppen
     if (closeBtn) closeBtn.addEventListener('click', sluitModal);
     if (cancelBtn) cancelBtn.addEventListener('click', sluitModal);
     if (overlay) overlay.addEventListener('click', sluitModal);
@@ -569,7 +535,6 @@ function setupAlgemeenFilter() {
 }
 
 function fetchAlgemeneDefecten() {
-    // NIEUWE REGEL: Toon eerst 3 lege kaarten
     toonSkeletonKaarten('algemeen-defecten-grid', 3);
 
     callApi({ type: "GET_PUBLIC_ALGEMEEN_DEFECTS" })
@@ -600,13 +565,13 @@ function filterEnRenderDefecten() {
     laadAlgemeneDefecten(teTonenLijst);
 }
 
+// --- HIER IS DE AANPASSING VOOR DE EXTRA INFO ---
 function laadAlgemeneDefecten(defecten) {
     const container = document.getElementById('algemeen-defecten-grid');
     container.innerHTML = "";
 
     if (!defecten) return;
 
-    // Filter alleen 'Open' status
     const openDefecten = defecten.filter(d => d.status === 'Open');
 
     if (openDefecten.length === 0) {
@@ -614,7 +579,6 @@ function laadAlgemeneDefecten(defecten) {
         return;
     }
 
-    // Sorteer op Locatie, daarna op Tijd
     openDefecten.sort((a, b) => {
         if (a.locatie < b.locatie) return -1;
         if (a.locatie > b.locatie) return 1;
@@ -627,13 +591,11 @@ function laadAlgemeneDefecten(defecten) {
         card.className = 'defect-card';
         card.classList.add('locatie-' + defect.locatie.toLowerCase().replace(/\s+/g, '-'));
 
-        // Check: Is dit mijn defect? En is het < 24 uur oud?
         const isEigenaar = (defect.medewerker === ingelogdeNaam);
         const isVers = (Date.now() - new Date(defect.timestamp).getTime() < 86400000);
 
         let editKnop = '';
         if (isEigenaar && isVers) {
-            // We stoppen de data in attributen zodat we die straks makkelijk kunnen uitlezen
             editKnop = `
                 <button class="edit-icon-btn" 
                     data-id="${defect.rowId}" 
@@ -643,6 +605,15 @@ function laadAlgemeneDefecten(defecten) {
                 </button>`;
         }
 
+        // --- NIEUW: Extra info (Benodigdheden & Onderdelen) tonen ---
+        let extraInfo = '';
+        if (defect.benodigdheden) {
+            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${defect.benodigdheden}</div>`;
+        }
+        if (defect.onderdelenStatus) {
+            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 ${defect.onderdelenStatus}</div>`;
+        }
+
         card.innerHTML = `
             <h3>${defect.locatie}</h3>
             <div class="meta">
@@ -650,6 +621,7 @@ function laadAlgemeneDefecten(defecten) {
                 <span class="meta-item">Gemeld: ${ts}</span>
             </div>
             <p class="omschrijving">${defect.defect}</p>
+            ${extraInfo}
             ${editKnop}
         `;
         container.appendChild(card);
@@ -664,7 +636,7 @@ function laadDefectenDashboard() { }
 function setupKartFilter() { }
 
 
-// --- DEEL 9: STATUS HELPERS (VERBETERD) ---
+// --- DEEL 9: STATUS HELPERS ---
 
 let statusTimeout;
 let algemeenDefectTimeout;
@@ -688,7 +660,7 @@ function toonMeldingOpElement(elementId, bericht, type, currentTimeout, setTimeo
         if (currentTimeout) clearTimeout(currentTimeout);
 
         statusDiv.style.display = 'none';
-        void statusDiv.offsetWidth; // Reset animatie
+        void statusDiv.offsetWidth; 
 
         var icon = type === 'success' ? '✅ ' : '⚠️ ';
         statusDiv.textContent = icon + bericht;
@@ -751,67 +723,16 @@ function toonSkeletonRijen(bodyId, aantalRijen, aantalKolommen) {
 }
 
 function laadGlobaleInstellingen() {
-    callApi("GET_SETTINGS").then(result => {
+    callApi({type: "GET_SETTINGS"}).then(result => {
         const settings = result.data;
-
-        // Hebben we een lijst met activiteiten in de database?
         if (settings && settings['activiteiten']) {
             try {
-                // De database geeft tekst terug (bv '["Baan","Bowling"]'), wij maken er een lijst van
                 GLOBALE_ACTIVITEITEN = JSON.parse(settings['activiteiten']);
                 console.log("Activiteiten geladen uit instellingen:", GLOBALE_ACTIVITEITEN);
-
-                // Ververs de dropdown direct met deze nieuwe kennis
                 vulActiviteitDropdown();
             } catch (e) {
                 console.error("Kon activiteiten niet lezen, we gebruiken de standaard.", e);
             }
-        }/* --- UPDATE: renderAlgemeenDefectCards --- */
-/* --- UPDATE: renderAlgemeenDefectCards --- */
-function renderAlgemeenDefectCards(defecten) {
-    const container = document.getElementById('algemeen-defecten-grid');
-    if (!container) return; // Veiligheidscheck
-    
-    container.innerHTML = '';
-
-    if (defecten.length === 0) {
-        container.innerHTML = '<p>Geen openstaande meldingen.</p>';
-        return;
-    }
-
-    defecten.forEach(d => {
-        // Maak de kaart
-        const card = document.createElement('div');
-        card.className = 'defect-card'; // Zorg dat deze class in style.css staat!
-
-        // Tijd berekenen
-        const tijd = tijdGeleden(d.timestamp);
-
-        // Extra info (Benodigdheden & Onderdelen) - Net als op dashboard
-        let extraInfo = '';
-        if (d.benodigdheden) {
-            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
         }
-        if (d.onderdelenStatus) {
-            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 ${d.onderdelenStatus}</div>`;
-        }
-
-        // HTML Samenstellen
-        card.innerHTML = `
-            <h3>${d.locatie}</h3>
-            <div class="meta">
-                <span class="meta-item">👤 ${d.medewerker}</span>
-                <span class="meta-item">🕒 ${tijd}</span>
-            </div>
-            <p class="omschrijving">${d.defect}</p>
-            ${extraInfo}
-        `;
-
-        // Voeg eventueel een edit-knop toe als de gebruiker eigenaar is (optioneel)
-        // ...
-
-        container.appendChild(card);
-    });
-}
     }).catch(err => console.log("Geen instellingen gevonden, we gebruiken defaults."));
 }
