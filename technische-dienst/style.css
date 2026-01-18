@@ -104,10 +104,23 @@ h1 { text-align: center; color: #fff; margin-bottom: 20px; }
 
 /* MODAL */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; }
+
 .modal-box {
-    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #222; padding: 20px; width: 90%; max-width: 500px;
-    border-radius: 10px; z-index: 100; border: 1px solid #444;
+    display: none; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    background: #222; 
+    padding: 20px; 
+    width: 90%; 
+    max-width: 500px;
+    border-radius: 10px; 
+    
+    /* HIER ZIT DE FIX: */
+    z-index: 3000;  /* Was 100. Moet hoger zijn dan de overlay (2000) */
+    
+    border: 1px solid #444;
 }
 .form-row { display: flex; gap: 10px; }
 .form-group { margin-bottom: 15px; }
