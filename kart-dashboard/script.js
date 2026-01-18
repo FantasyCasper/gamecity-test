@@ -232,45 +232,60 @@ function vulDropdowns(naam, totaal) {
    DEEL 4: KAARTEN RENDERING
    =============================== */
 function renderCards(lijst) {
-
     const container = document.getElementById("defect-card-container");
-
     if(!container) return;
-
     container.innerHTML = "";
-
+    
+    // Filters toepassen
     const fs = document.getElementById('filter-status') ? document.getElementById('filter-status').value : "";
-
     const fn = document.getElementById('filter-kart-select').value;
-
     let items = lijst.filter(d => d.status !== 'Verwijderd');
-
+    
     if(fs) items = items.filter(d => d.status === fs);
-
     if(fn) items = items.filter(d => d.nummer == fn);
 
+    if (items.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#888; margin-top:20px;'>Geen defecten gevonden.</p>"; 
+        return;
+    }
 
-
-    if (items.length === 0) { container.innerHTML = "<p style='text-align:center; color:#888;'>Geen defecten gevonden.</p>"; return; }
-
-    items.sort((a, b) => ("Open" === a.status ? -1 : 1) - ("Open" === b.status ? -1 : 1));
-
-
+    // --- SORTERING AANGEPAST ---
+    // 1. Openstaande defecten eerst
+    // 2. Daarna sorteren op datum (Nieuwste eerst)
+    items.sort((a, b) => {
+        // Status check: Open komt voor alles wat niet Open is
+        const statusA = (a.status === 'Open') ? 0 : 1;
+        const statusB = (b.status === 'Open') ? 0 : 1;
+        
+        if (statusA !== statusB) {
+            return statusA - statusB;
+        }
+        
+        // Datum check: Nieuwste tijdstip eerst
+        // (Zorg dat b - a wordt gedaan voor aflopende volgorde)
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
 
     items.forEach(d => {
-
         const conf = CONFIG[ACTIVE_TYPE];
+        
+        const kaart = document.createElement("div");
+        kaart.className = "defect-card";
+        if (d.status === "Opgelost") kaart.classList.add("status-opgelost");
 
+        // --- Rechten Logica ---
+        let editKnopHtml = '';
+        const isEigenaar = (d.medewerker === ingelogdeNaam);
+        const isVers = (Date.now() - new Date(d.timestamp).getTime() < 86400000); // 24 uur
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
-        const isOwn = d.medewerker === ingelogdeNaam && (Date.now() - new Date(d.timestamp).getTime() < 86400000);
+        // Potloodje tonen als: (Eigen melding & Open & <24u) OF (TD/Admin)
+        if ((isEigenaar && d.status === "Open" && isVers) || isTD) {
+            const jsonString = JSON.stringify(d).replace(/'/g, "&#39;");
+            editKnopHtml = `<button class="edit-icon-btn" onclick='openEditModal(${jsonString})'>✎</button>`;
+        }
 
-        let btn = (isOwn && d.status === 'Open') || isTD ? `<button class="edit-icon-btn" onclick='openEditModal(${JSON.stringify(d).replace(/'/g, "&#39;")})'>✎</button>` : "";
-
-       
-
-        // --- KLEUREN LOGICA ---
-
+        // Extra info (TD velden)
         let statusColor = '#2ecc71'; // Groen (Aanwezig)
 
         if (d.onderdelenStatus === 'Niet aanwezig') statusColor = '#dc3545'; // Rood
@@ -281,28 +296,25 @@ function renderCards(lijst) {
 
 
 
-        let extra = "";
+        let extraInfo = "";
 
         if (d.benodigdheden) extra += `<div style="font-size:0.85em; color:#ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
 
         if (d.onderdelenStatus) extra += `<div style="font-size:0.85em; color:${statusColor}; margin-top:2px;">📦 ${d.onderdelenStatus}</div>`;
 
-
-
-        const div = document.createElement('div');
-
-        div.className = `defect-card ${d.status === 'Opgelost' ? 'status-opgelost' : ''}`;
-
-        div.innerHTML = `<h3>${conf.itemNaam} ${d.nummer}</h3>
-
-            <div class="meta"><span>👤 ${d.medewerker}</span> <span>🕒 ${tijdGeleden(d.timestamp)}</span> <span>Status: <strong>${d.status}</strong></span></div>
-
-            <p class="omschrijving">${d.defect}</p>${extra}${btn}`;
-
-        container.appendChild(div);
-
+        kaart.innerHTML = `
+            <h3>${conf.itemNaam} ${d.nummer}</h3>
+            <div class="meta">
+                <span>👤 ${d.medewerker}</span>
+                <span>🕒 ${tijdGeleden(d.timestamp)}</span>
+                <span>Status: <strong>${d.status}</strong></span>
+            </div>
+            <p class="omschrijving">${d.defect}</p>
+            ${extraInfo}
+            ${editKnopHtml}
+        `;
+        container.appendChild(kaart);
     });
-
 }
 
 /* ===============================
