@@ -766,6 +766,52 @@ function laadGlobaleInstellingen() {
             } catch (e) {
                 console.error("Kon activiteiten niet lezen, we gebruiken de standaard.", e);
             }
+        }/* --- UPDATE: renderAlgemeenDefectCards --- */
+/* --- UPDATE: renderAlgemeenDefectCards --- */
+function renderAlgemeenDefectCards(defecten) {
+    const container = document.getElementById('algemeen-defecten-grid');
+    if (!container) return; // Veiligheidscheck
+    
+    container.innerHTML = '';
+
+    if (defecten.length === 0) {
+        container.innerHTML = '<p>Geen openstaande meldingen.</p>';
+        return;
+    }
+
+    defecten.forEach(d => {
+        // Maak de kaart
+        const card = document.createElement('div');
+        card.className = 'defect-card'; // Zorg dat deze class in style.css staat!
+
+        // Tijd berekenen
+        const tijd = tijdGeleden(d.timestamp);
+
+        // Extra info (Benodigdheden & Onderdelen) - Net als op dashboard
+        let extraInfo = '';
+        if (d.benodigdheden) {
+            extraInfo += `<div style="font-size: 0.85em; color: #ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
         }
+        if (d.onderdelenStatus) {
+            extraInfo += `<div style="font-size: 0.85em; color: #2ecc71;">📦 ${d.onderdelenStatus}</div>`;
+        }
+
+        // HTML Samenstellen
+        card.innerHTML = `
+            <h3>${d.locatie}</h3>
+            <div class="meta">
+                <span class="meta-item">👤 ${d.medewerker}</span>
+                <span class="meta-item">🕒 ${tijd}</span>
+            </div>
+            <p class="omschrijving">${d.defect}</p>
+            ${extraInfo}
+        `;
+
+        // Voeg eventueel een edit-knop toe als de gebruiker eigenaar is (optioneel)
+        // ...
+
+        container.appendChild(card);
+    });
+}
     }).catch(err => console.log("Geen instellingen gevonden, we gebruiken defaults."));
 }
