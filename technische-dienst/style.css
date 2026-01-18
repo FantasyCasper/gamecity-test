@@ -5,7 +5,11 @@ body {
     padding-top: 60px;
 }
 
-.container { max-width: 900px; margin: 0 auto; padding: 10px; }
+.container { 
+    max-width: 1200px; /* AANGEPAST NAAR 1200px */
+    margin: 0 auto; 
+    padding: 10px; 
+}
 h1 { text-align: center; color: #fff; margin-bottom: 20px; }
 
 /* HEADER CONTROLS */
@@ -35,12 +39,7 @@ h1 { text-align: center; color: #fff; margin-bottom: 20px; }
 .td-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    
-    gap: 20px;
-    align-items: start; 
-    grid-auto-rows: max-content;
-    margin-top: 20px;
-    padding-bottom: 50px;
+    gap: 15px;
 }
 
 /* CARD DESIGN */

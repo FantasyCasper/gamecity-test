@@ -186,7 +186,7 @@ h2 {
 
 .problem-card-grid {
     display: grid;
-    /* AANGEPAST: Was 300px, nu 350px. */
+    /* AANGEPAST: Was 300px, nu 350px */
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     
     gap: 20px;
