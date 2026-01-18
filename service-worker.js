@@ -3,11 +3,11 @@
    =============================== */
 
 // De naam is veranderd om de cache te forceren
-const CACHE_NAAM = 'checklist-app-cache-v0.116.3';
+const CACHE_NAAM = 'checklist-app-cache-v0.116.4';
 
 // De lijst is bijgewerkt met de nieuwe map
 const urlsToCache = [
-  '.',
+'.',
   'index.html',
   'style.css',
   'script.js',
@@ -24,7 +24,10 @@ const urlsToCache = [
   'kart-dashboard/',
   'kart-dashboard/index.html',
   'kart-dashboard/style.css',
-  'kart-dashboard/script.js'
+  'kart-dashboard/script.js',
+  'technische-dienst/index.html',
+  'technische-dienst/style.css',
+  'technische-dienst/script.js'
 ];
 
 // 1. Installatie
