@@ -298,9 +298,9 @@ function renderCards(lijst) {
 
         let extraInfo = "";
 
-        if (d.benodigdheden) extra += `<div style="font-size:0.85em; color:#ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
+        if (d.benodigdheden) extraInfo += `<div style="font-size:0.85em; color:#ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
 
-        if (d.onderdelenStatus) extra += `<div style="font-size:0.85em; color:${statusColor}; margin-top:2px;">📦 ${d.onderdelenStatus}</div>`;
+        if (d.onderdelenStatus) extraInfo += `<div style="font-size:0.85em; color:${statusColor}; margin-top:2px;">📦 ${d.onderdelenStatus}</div>`;
 
         kaart.innerHTML = `
             <h3>${conf.itemNaam} ${d.nummer}</h3>
