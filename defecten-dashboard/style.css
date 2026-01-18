@@ -186,16 +186,12 @@ h2 {
 
 .problem-card-grid {
     display: grid;
-    /* Zorgt voor kolommen van minimaal 300px, en verdeelt de rest */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* AANGEPAST: Was 300px, nu 350px. */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     
-    /* Ruimte tussen kaarten */
     gap: 20px;
-    
-    /* FIX: Zorgt dat kaarten niet over elkaar heen vallen door hoogteverschillen */
     align-items: start; 
     grid-auto-rows: max-content;
-    
     margin-top: 20px;
     padding-bottom: 50px;
 }

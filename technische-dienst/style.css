@@ -34,8 +34,13 @@ h1 { text-align: center; color: #fff; margin-bottom: 20px; }
 /* GRID */
 .td-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    
+    gap: 20px;
+    align-items: start; 
+    grid-auto-rows: max-content;
+    margin-top: 20px;
+    padding-bottom: 50px;
 }
 
 /* CARD DESIGN */
