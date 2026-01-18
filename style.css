@@ -851,3 +851,34 @@ input[type="checkbox"]:checked+label {
     font-weight: bold;
     font-size: 1em;
 }
+
+/* Styling voor Defect Kaarten (Gelijk aan Dashboard) */
+.defect-card {
+    background-color: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    color: #eee;
+}
+
+.defect-card h3 {
+    margin-top: 0;
+    color: #fff;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.defect-card .meta {
+    font-size: 0.85em;
+    color: #aaa;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.defect-card .omschrijving {
+    white-space: pre-wrap; /* Behoud enters */
+}
