@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algemene Defecten</title>
+    <link rel="stylesheet" href="../style.css"> <link rel="stylesheet" href="style.css">   <link rel="icon" type="image/png" href="../icons/icon-192x192.png">
+</head>
+<body>
+
+    <a href="../index.html" id="back-button">&laquo; Terug naar menu</a>
+
+    <div class="container">
+        <h1>Algemene Defecten</h1>
+
+        <div class="action-bar">
+            <button id="open-defect-modal-btn" class="submit-button">+ Meld Nieuw Defect</button>
+        </div>
+
+        <div class="form-bar user-info">
+            <span>Toon:</span>
+            <select id="filter-algemeen-locatie">
+                <option value="alle">Alle Locaties (Gegroepeerd)</option>
+                <option value="Baan">Baan</option>
+                <option value="Lasergame">Lasergame</option>
+                <option value="Prison Island">Prison Island</option>
+                <option value="Minigolf">Minigolf</option>
+                <option value="Algemeen">Algemeen</option>
+            </select>
+        </div>
+
+        <div id="algemeen-defect-status" class="status-bericht"></div>
+
+        <div id="algemeen-defecten-grid" class="problem-card-grid">
+            <p style="text-align:center;">Laden...</p>
+        </div>
+    </div>
+
+    <div id="modal-overlay-algemeen" class="modal-overlay"></div>
+    <div id="modal-algemeen-defect" class="modal-box">
+        <div class="modal-header">
+            <h2>Nieuw Defect Melden</h2>
+            <button class="close-modal-btn" data-target="modal-algemeen-defect">×</button>
+        </div>
+        <form id="algemeen-defect-form">
+            <div class="form-veld">
+                <label for="locatie-select">Activiteit / Locatie:</label>
+                <select id="locatie-select" required>
+                    <option value="">-- Selecteer Locatie --</option>
+                    <option value="Baan">Baan</option>
+                    <option value="Lasergame">Lasergame</option>
+                    <option value="Prison Island">Prison Island</option>
+                    <option value="Minigolf">Minigolf</option>
+                    <option value="Algemeen">Algemeen</option>
+                </select>
+            </div>
+            <div class="form-veld">
+                <label for="algemeen-defect-omschrijving">Omschrijving:</label>
+                <textarea id="algemeen-defect-omschrijving" rows="5" placeholder="Omschrijf het probleem..." required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel close-modal-btn" data-target="modal-algemeen-defect">Annuleren</button>
+                <button type="submit" class="btn-save">Versturen</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="modal-edit-algemeen" class="modal-box">
+        <div class="modal-header">
+            <h2>Defect Aanpassen</h2>
+            <button class="close-modal-btn" data-target="modal-edit-algemeen">×</button>
+        </div>
+        <form id="edit-algemeen-form">
+            <input type="hidden" id="edit-algemeen-id">
+            
+            <div class="form-veld">
+                <label for="edit-algemeen-locatie">Locatie:</label>
+                <select id="edit-algemeen-locatie" required>
+                    <option value="Baan">Baan</option>
+                    <option value="Lasergame">Lasergame</option>
+                    <option value="Prison Island">Prison Island</option>
+                    <option value="Minigolf">Minigolf</option>
+                    <option value="Algemeen">Algemeen</option>
+                </select>
+            </div>
+
+            <div class="form-veld">
+                <label for="edit-algemeen-omschrijving">Omschrijving:</label>
+                <textarea id="edit-algemeen-omschrijving" rows="5" required></textarea>
+            </div>
+
+            <div id="td-extra-fields" style="display:none; border-top:1px solid #444; margin-top:15px; padding-top:15px;">
+                <h3 style="font-size:1em; color:#aaa; margin-top:0;">TD Opties</h3>
+                <div class="form-veld">
+                    <label for="edit-benodigdheden">Benodigdheden:</label>
+                    <input type="text" id="edit-benodigdheden" placeholder="Bijv. Lamp, Schroeven...">
+                </div>
+                <div class="form-veld">
+                    <label for="edit-onderdelen-status">Onderdelen Status:</label>
+                    <select id="edit-onderdelen-status">
+                        <option value="">-- Status --</option>
+                        <option value="Niet nodig">Niet nodig</option>
+                        <option value="Aanwezig">Aanwezig</option>
+                        <option value="Niet aanwezig">Niet aanwezig</option>
+                        <option value="Besteld">Besteld</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button" id="delete-algemeen-btn" class="btn-delete">Verwijderen</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn-cancel close-modal-btn" data-target="modal-edit-algemeen">Annuleren</button>
+                    <button type="submit" id="save-edit-algemeen-btn" class="btn-save">Opslaan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

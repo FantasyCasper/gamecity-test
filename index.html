@@ -19,7 +19,7 @@
             <button id="mobile-menu-toggle">☰ Menu</button>
             <button class="main-tab-link active" data-tab="tab-algemeen">Home</button>
             <button class="main-tab-link" data-tab="tab-checklists">Checklists</button>
-            <button class="main-tab-link" data-tab="tab-algemeen-defect">Algemene Defect</button>
+            <a href="algemeen-defecten/index.html" class="main-tab-link">Algemene Defecten</a>
             <a href="kart-dashboard/index.html" class="main-tab-link" data-tab="tab-kart-dashboard">Defecten Dashboard</a>
             <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
         </div>
@@ -121,106 +121,6 @@
             </div>
         </div>
 
-        <div id="tab-algemeen-defect" class="tab-content">
-            <h1>Algemene Defecten</h1>
-
-            <button id="open-defect-modal-btn" class="submit-button"
-                style="max-width: 350px; margin: 0 auto 30px auto; display: block;">
-                + Meld Nieuw Defect
-            </button>
-
-            <div class="form-bar user-info" style="margin-bottom: 20px; background-color: #222;">
-                <span>Toon:</span>
-                <select id="filter-algemeen-locatie">
-                    <option value="alle">Alle Locaties (Gegroepeerd)</option>
-                    <option value="Baan">Baan</option>
-                    <option value="Lasergame">Lasergame</option>
-                    <option value="Prison Island">Prison Island</option>
-                    <option value="Minigolf">Minigolf</option>
-                    <option value="Algemeen">Algemeen</option>
-                </select>
-            </div>
-
-            <div id="algemeen-defecten-grid" class="problem-card-grid">
-                <p>Laden...</p>
-            </div>
-
-            <div id="algemeen-defect-status" class="status-bericht"></div>
-        </div>
-
-    </div>
-    <div id="modal-overlay-algemeen" class="modal-overlay"></div>
-    <div id="modal-algemeen-defect" class="modal-box" style="display:none; text-align: left;">
-        <div class="modal-header">
-            <h2>Nieuw Defect Melden</h2>
-            <button id="close-defect-modal-btn"
-                style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
-        </div>
-
-        <form id="algemeen-defect-form">
-            <div class="form-veld">
-                <label for="locatie-select">Activiteit / Locatie:</label>
-                <select id="locatie-select" required style="width: 100%;">
-                    <option value="">-- Selecteer Locatie --</option>
-                    <option value="Baan">Baan</option>
-                    <option value="Lasergame">Lasergame</option>
-                    <option value="Prison Island">Prison Island</option>
-                    <option value="Minigolf">Minigolf</option>
-                    <option value="Algemeen">Algemeen</option>
-                </select>
-            </div>
-            <div class="form-veld" style="margin-top: 15px;">
-                <label for="algemeen-defect-omschrijving">Omschrijving Defect:</label>
-                <textarea id="algemeen-defect-omschrijving" rows="6" placeholder="Omschrijf het probleem..." required
-                    style="width: 100%;"></textarea>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" id="cancel-defect-modal-btn"
-                    style="background-color: #555; color: white; margin-right: 10px;">Annuleren</button>
-                <button type="submit" id="algemeen-defect-submit"
-                    style="background-color: #28a745; color: white;">Versturen</button>
-            </div>
-        </form>
-    </div>
-    <div id="modal-overlay-edit-algemeen" class="modal-overlay"></div>
-    <div id="modal-edit-algemeen" class="modal-box" style="display:none; text-align: left;">
-        <div class="modal-header">
-            <h2>Defect Aanpassen</h2>
-            <button id="close-edit-algemeen-btn"
-                style="background:none; border:none; color:#aaa; font-size:1.5em; cursor:pointer;">×</button>
-        </div>
-
-        <form id="edit-algemeen-form">
-            <input type="hidden" id="edit-algemeen-id">
-            <div class="form-veld">
-                <label for="edit-algemeen-locatie">Locatie:</label>
-                <select id="edit-algemeen-locatie" required style="width: 100%;">
-                    <option value="Baan">Baan</option>
-                    <option value="Lasergame">Lasergame</option>
-                    <option value="Prison Island">Prison Island</option>
-                    <option value="Minigolf">Minigolf</option>
-                    <option value="Algemeen">Algemeen</option>
-                </select>
-            </div>
-            <div class="form-veld" style="margin-top: 15px;">
-                <label for="edit-algemeen-omschrijving">Omschrijving:</label>
-                <textarea id="edit-algemeen-omschrijving" rows="6" required style="width: 100%;"></textarea>
-            </div>
-
-            <div class="modal-footer" style="justify-content: space-between;">
-                <button type="button" id="delete-algemeen-btn"
-                    style="background-color: #dc3545; color: white;">Verwijderen</button>
-
-                <div style="display:flex; gap:10px;">
-                    <button type="button" id="cancel-edit-algemeen-btn"
-                        style="background-color: #555; color: white;">Annuleren</button>
-                    <button type="submit" id="save-edit-algemeen-btn"
-                        style="background-color: #007bff; color: white;">Opslaan</button>
-                </div>
-            </div>
-        </form>
-    </div>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js');
