@@ -1,6 +1,7 @@
 /* =======================================================
    UNIVERSEEL DEFECTEN DASHBOARD SCRIPT
    Locatie: kart-dashboard/script.js
+   Bevat: Parallel laden, Beveiligde Modal, Meervoud fix
    ======================================================= */
 
 window.onerror = function(msg, url, line, col, error) {
@@ -13,19 +14,22 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpoAN_0SEKUgIa4QP
 const CONFIG = {
     kart: {
         titel: "Kart Defecten",
-        itemNaam: "Kart",       // Bijv: "Kart 5"
+        itemNaam: "Kart",
+        itemNaamMeervoud: "Karts",
         settingKey: "totaal_karts",
         defaultTotaal: 40
     },
     lasergame: {
         titel: "Lasergame Defecten",
-        itemNaam: "Pak",        // Bijv: "Pak 5"
+        itemNaam: "Pak",
+        itemNaamMeervoud: "Pakken", // Correct Nederlands
         settingKey: "totaal_lasergame",
         defaultTotaal: 20
     },
     prisonisland: {
         titel: "Prison Island Defecten",
-        itemNaam: "Cel",        // Bijv: "Cel 5"
+        itemNaam: "Cel",
+        itemNaamMeervoud: "Cellen", // Correct Nederlands
         settingKey: "totaal_pi",
         defaultTotaal: 25
     }
@@ -39,32 +43,30 @@ let ACTIVE_TYPE = 'kart'; // Huidige tabblad
 let TOTAAL_ITEMS = 40; 
 
 /* ===============================
-   DEEL 1: SCHAKELEN TUSSEN DASHBOARDS
-   ================================ */
-// Deze functie staat op 'window' zodat de HTML knoppen hem kunnen vinden
-/* ===============================
-   GEOPTIMALISEERDE LAAD LOGICA
+   DEEL 1: LAAD LOGICA (GEOPTIMALISEERD)
    =============================== */
 
-// 1. Hulpfunctie om UI te blokkeren/vrijgeven
+// Hulpfunctie om UI te blokkeren/vrijgeven tijdens laden
 function setLoadingState(isLoading) {
-    const overlay = document.getElementById('loading-overlay');
+    const overlay = document.getElementById('loading-overlay'); // Zorg dat deze DIV in je HTML bestaat of voeg css toe
     const inputs = document.querySelectorAll('#new-defect-form input, #new-defect-form select, #new-defect-form button');
+    const container = document.getElementById('defect-card-container');
     
     if (isLoading) {
         if(overlay) overlay.style.display = 'flex';
         inputs.forEach(el => el.disabled = true);
+        if(container) container.style.opacity = '0.5';
     } else {
         if(overlay) overlay.style.display = 'none';
         inputs.forEach(el => {
             el.disabled = false;
-            // Reset placeholders als nodig
             if(el.tagName === 'INPUT') el.placeholder = "Omschrijving...";
         });
+        if(container) container.style.opacity = '1';
     }
 }
 
-// 2. Vernieuwde switchDashboard (Sneller & Veiliger)
+// Vernieuwde switchDashboard (Sneller met Promise.all)
 window.switchDashboard = function(type) {
     if (!CONFIG[type]) type = 'kart';
     ACTIVE_TYPE = type;
@@ -74,26 +76,31 @@ window.switchDashboard = function(type) {
     const titleEl = document.getElementById('dashboard-title');
     if (titleEl) titleEl.textContent = conf.titel;
 
-    // Knoppen status
+    // Knoppen status updaten
     document.querySelectorAll('.defect-nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === type);
+        btn.classList.remove('active');
+        if (btn.innerText.toLowerCase().includes(type === 'prisonisland' ? 'prison' : type)) {
+            btn.classList.add('active');
+        }
     });
 
-    // URL update
+    // URL update zonder refresh
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
     window.history.replaceState({}, '', newUrl);
 
-    // START LADEN: Blokkeer scherm
+    // START LADEN
     setLoadingState(true);
+    const container = document.getElementById('defect-card-container');
+    if(container) container.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Laden...</div>';
 
-    // PARALLEL OPHALEN: We vragen Instellingen EN Defecten tegelijk op
+    // PARALLEL OPHALEN: Instellingen EN Defecten tegelijk
     const promiseSettings = callApi({ type: "GET_SETTINGS" });
     const promiseDefects = callApi({ type: "GET_OBJECT_DEFECTS", subType: ACTIVE_TYPE });
 
     Promise.all([promiseSettings, promiseDefects])
         .then(results => {
-            const settingsData = results[0].data; // Resultaat van 1e call
-            const defectsData = results[1].data;  // Resultaat van 2e call
+            const settingsData = results[0].data; // Resultaat 1
+            const defectsData = results[1].data;  // Resultaat 2
 
             // 1. Instellingen verwerken
             if (settingsData && settingsData[conf.settingKey]) {
@@ -110,11 +117,9 @@ window.switchDashboard = function(type) {
         })
         .catch(error => {
             console.error("Laadfout:", error);
-            document.getElementById('defect-card-container').innerHTML = 
-                `<p style="color: red; text-align:center;">Fout bij laden: ${error.message}<br><button onclick="location.reload()">Opnieuw proberen</button></p>`;
+            if(container) container.innerHTML = `<p style="color: red; text-align:center;">Fout bij laden: ${error.message}<br><button onclick="location.reload()">Opnieuw proberen</button></p>`;
         })
         .finally(() => {
-            // STOP LADEN: Geef scherm vrij
             setLoadingState(false);
         });
 };
@@ -144,16 +149,17 @@ window.switchDashboard = function(type) {
     const urlParams = new URLSearchParams(window.location.search);
     const startType = urlParams.get('type');
 
+    // Start het dashboard met de geoptimaliseerde functie
     switchDashboard(startType && CONFIG[startType] ? startType : 'kart');
 })();
 
 /* ===============================
-   DEEL 3: DATA OPHALEN
+   DEEL 3: DATA & UI UPDATES
    =============================== */
 
+// Oude functie voor losse updates (indien nodig)
 function haalInstellingenOp(key, fallback) {
     TOTAAL_ITEMS = fallback;
-    
     callApi({ type: "GET_SETTINGS" }) 
         .then(res => {
             if(res.data && res.data[key]) {
@@ -167,21 +173,16 @@ function haalInstellingenOp(key, fallback) {
         });
 }
 
+// Oude functie voor losse updates
 function laadDefectenDashboard() {
-    // Zet een laad-melding of skeleton
-    const container = document.getElementById('defect-card-container');
-    container.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Gegevens laden...</div>';
-
-    // Vraag defecten op voor het actieve type
     const payload = { type: "GET_OBJECT_DEFECTS", subType: ACTIVE_TYPE };
-
     callApi(payload)
         .then(result => {
             alleDefecten = result.data;
-            updateUI(); // Teken alles
+            updateUI(); 
         })
         .catch(error => {
-            container.innerHTML = `<p style="color: red; text-align:center;">Fout bij laden: ${error.message}</p>`;
+            console.error(error);
         });
 }
 
@@ -193,21 +194,20 @@ function updateUI() {
 
     // 2. Statistieken berekenen
     const openDefecten = alleDefecten.filter(d => d.status === 'Open');
-    // Unieke items tellen (bijv. Kart 5 telt maar 1x mee, ook al zijn er 3 meldingen over)
     const uniekeKapotteItems = [...new Set(openDefecten.map(d => d.nummer))];
 
     const aantalKapot = uniekeKapotteItems.length;
     const aantalWerkend = TOTAAL_ITEMS - aantalKapot;
 
-    // 3. Update de boxen
+    // 3. Update de boxen (Gebruik Meervoudsvorm!)
     document.getElementById('stat-totaal').textContent = TOTAAL_ITEMS;
-    document.getElementById('stat-label-totaal').textContent = `Totaal ${conf.itemNaam}s`;
+    document.getElementById('stat-label-totaal').textContent = `Totaal ${conf.itemNaamMeervoud}`;
 
     document.getElementById('stat-problemen').textContent = aantalKapot;
-    document.getElementById('stat-label-probleem').textContent = `Defecte ${conf.itemNaam}s`;
+    document.getElementById('stat-label-probleem').textContent = `Defecte ${conf.itemNaamMeervoud}`;
 
     document.getElementById('stat-werkend').textContent = aantalWerkend;
-    document.getElementById('stat-label-werkend').textContent = `Werkende ${conf.itemNaam}s`;
+    document.getElementById('stat-label-werkend').textContent = `Werkende ${conf.itemNaamMeervoud}`;
 
     // 4. Kaarten tekenen
     renderCards(alleDefecten);
@@ -220,7 +220,6 @@ function vulDropdowns(naam, totaal) {
         const select = document.getElementById(id);
         if(!select) return;
 
-        // Bepaal de standaard tekst
         let eersteOptie = (id === 'filter-kart-select') ? "Alle nummers" : `Kies ${naam}...`;
         
         select.innerHTML = `<option value="">${eersteOptie}</option>`;
@@ -230,18 +229,19 @@ function vulDropdowns(naam, totaal) {
     });
 }
 
-
 /* ===============================
    DEEL 4: KAARTEN RENDERING
    =============================== */
 function renderCards(lijst) {
     const container = document.getElementById("defect-card-container");
+    if(!container) return;
     container.innerHTML = "";
     
-    // Filters toepassen (vanuit UI)
+    // Filters toepassen
     const filterStatusEl = document.getElementById('filter-status');
-const filterStatus = filterStatusEl ? filterStatusEl.value : "";
-    const filterNummer = document.getElementById('filter-kart-select').value;
+    const filterStatus = filterStatusEl ? filterStatusEl.value : "";
+    const filterNummerEl = document.getElementById('filter-kart-select');
+    const filterNummer = filterNummerEl ? filterNummerEl.value : "";
     
     let items = lijst.filter(d => d.status !== 'Verwijderd');
     
@@ -271,8 +271,6 @@ const filterStatus = filterStatusEl ? filterStatusEl.value : "";
 
         // Potloodje tonen als: (Eigen melding & Open & <24u) OF (TD/Admin)
         if ((isEigenaar && defect.status === "Open" && isVers) || isTD) {
-            // We geven het hele object mee aan de modal functie
-            // We gebruiken escape om quotes in tekst niet te breken
             const jsonString = JSON.stringify(defect).replace(/'/g, "&#39;");
             editKnopHtml = `<button class="edit-icon-btn" onclick='openEditModal(${jsonString})'>✎</button>`;
         }
@@ -297,7 +295,6 @@ const filterStatus = filterStatusEl ? filterStatusEl.value : "";
     });
 }
 
-
 /* ===============================
    DEEL 5: FORMULIEREN & MODAL
    =============================== */
@@ -315,10 +312,8 @@ function setupDefectForm() {
 
         if (!nummer || !omschrijving) return;
         
-        // BEVEILIGING: Knoppen uitschakelen tijdens verzenden
         btn.disabled = true; 
         btn.textContent = "Versturen...";
-        document.getElementById('new-defect-problem').disabled = true;
 
         const payload = { 
             type: "LOG_OBJECT_DEFECT", 
@@ -331,48 +326,39 @@ function setupDefectForm() {
         callApi(payload).then(() => {
             toonDefectStatus("Gemeld!", "success");
             form.reset(); 
-            // Herlaad data (dit triggert de overlay weer)
-            switchDashboard(ACTIVE_TYPE); 
+            // Gebruik switchDashboard om alles vers te herladen
+            switchDashboard(ACTIVE_TYPE);
         }).catch(err => {
             toonDefectStatus(err.message, "error");
-            // Bij fout: knoppen weer aanzetten
             btn.disabled = false; 
             btn.textContent = "+ Toevoegen";
-            document.getElementById('new-defect-problem').disabled = false;
         });
     });
 }
 
-// Functie om de modal te openen (aangeroepen vanuit HTML button)
-// AANGEPASTE VERSIE: openEditModal
+// AANGEPASTE VERSIE: openEditModal (Met Rechten Fixes)
 window.openEditModal = function(d) {
-    // 1. Velden vullen
     document.getElementById('edit-row-id').value = d.rowId;
     document.getElementById('edit-kart-select').value = d.nummer;
     document.getElementById('edit-defect-omschrijving').value = d.defect;
     
-    // TD velden vullen (veilig)
     document.getElementById('edit-benodigdheden').value = d.benodigdheden || '';
     document.getElementById('edit-onderdelen-status').value = d.onderdelenStatus || '';
 
-    // 2. Rechten Bepalen
+    // Rechten checks
     const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
     const isEigenaar = (d.medewerker === ingelogdeNaam);
-    // Check of melding vers is (< 24 uur)
     const isVers = (Date.now() - new Date(d.timestamp).getTime() < 86400000);
 
-    // 3. Elementen ophalen
     const tdSec = document.getElementById('td-fields');
     const delBtn = document.getElementById('modal-delete-btn');
-    const resolveBtn = document.getElementById('modal-resolve-btn'); // DEZE IS BELANGRIJK
+    const resolveBtn = document.getElementById('modal-resolve-btn');
     const modalBox = document.getElementById('edit-modal');
 
-    // --- LOGICA TOEPASSEN ---
-
-    // A. TD Sectie: Alleen voor TD zichtbaar
+    // 1. TD Velden
     if (tdSec) tdSec.style.display = isTD ? 'block' : 'none';
 
-    // B. Verwijder Knop: Voor TD *OF* (Eigenaar die "vers" is)
+    // 2. Verwijder Knop (TD of Eigenaar<24u)
     if (delBtn) {
         if (isTD || (isEigenaar && isVers)) {
             delBtn.style.display = 'block';
@@ -381,18 +367,17 @@ window.openEditModal = function(d) {
         }
     }
 
-    // C. Oplossen Knop: ALLEEN voor TD! (Hier zat de fout)
+    // 3. Oplossen Knop (ALLEEN TD)
     if (resolveBtn) {
         resolveBtn.style.display = isTD ? 'block' : 'none';
     }
     
-    // D. Breedte aanpassen (Alleen breed als TD velden zichtbaar zijn)
+    // 4. Modal Breedte
     if (modalBox) {
         if(isTD) modalBox.classList.add('wide-mode');
         else modalBox.classList.remove('wide-mode');
     }
 
-    // 4. Openen
     document.getElementById('edit-modal').style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
 };
@@ -403,51 +388,59 @@ function setupEditModal() {
         document.getElementById('modal-overlay').style.display = 'none'; 
     };
 
-    // Sluit knoppen
-    document.getElementById('modal-cancel-btn').onclick = sluit;
-    document.getElementById('modal-overlay').onclick = sluit;
-    // (Optioneel kruisje als je die hebt toegevoegd in HTML)
+    const cancelBtn = document.getElementById('modal-cancel-btn');
+    if(cancelBtn) cancelBtn.onclick = sluit;
+    
+    const overlay = document.getElementById('modal-overlay');
+    if(overlay) overlay.onclick = sluit;
+    
     const closeBtn = document.getElementById('modal-close-btn');
     if(closeBtn) closeBtn.onclick = sluit;
 
-    // Opslaan
-    document.getElementById('edit-defect-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('modal-save-btn');
-        btn.disabled = true; btn.textContent = "...";
+    const form = document.getElementById('edit-defect-form');
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('modal-save-btn');
+            btn.disabled = true; btn.textContent = "...";
 
-        const payload = {
-            type: "UPDATE_OBJECT_EXTENDED",
-            subType: ACTIVE_TYPE,
-            rowId: document.getElementById('edit-row-id').value,
-            newNummer: document.getElementById('edit-kart-select').value,
-            newText: document.getElementById('edit-defect-omschrijving').value,
-            benodigdheden: document.getElementById('edit-benodigdheden').value,
-            onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
-            newStatus: "Open" // Standaard blijft hij open bij bewerken
+            const payload = {
+                type: "UPDATE_OBJECT_EXTENDED",
+                subType: ACTIVE_TYPE,
+                rowId: document.getElementById('edit-row-id').value,
+                newNummer: document.getElementById('edit-kart-select').value,
+                newText: document.getElementById('edit-defect-omschrijving').value,
+                benodigdheden: document.getElementById('edit-benodigdheden').value,
+                onderdelenStatus: document.getElementById('edit-onderdelen-status').value,
+                newStatus: "Open"
+            };
+
+            callApi(payload).then(() => {
+                sluit();
+                toonDefectStatus("Opgeslagen.", "success");
+                laadDefectenDashboard();
+            }).catch(err => alert("Fout: " + err.message))
+              .finally(() => { btn.disabled = false; btn.textContent = "Opslaan"; });
+        });
+    }
+
+    const resBtn = document.getElementById('modal-resolve-btn');
+    if(resBtn) {
+        resBtn.onclick = function() {
+            if(confirm("Markeren als Opgelost?")) {
+                updateStatus(document.getElementById('edit-row-id').value, "Opgelost", sluit);
+            }
         };
+    }
 
-        callApi(payload).then(() => {
-            toonDefectStatus("Opgeslagen.", "success");
-            sluit();
-            laadDefectenDashboard();
-        }).catch(err => alert("Fout: " + err.message))
-          .finally(() => { btn.disabled = false; btn.textContent = "Opslaan"; });
-    });
-
-    // Oplossen
-    document.getElementById('modal-resolve-btn').onclick = function() {
-        if(confirm("Markeren als Opgelost?")) {
-            updateStatus(document.getElementById('edit-row-id').value, "Opgelost", sluit);
-        }
-    };
-
-    // Verwijderen
-    document.getElementById('modal-delete-btn').onclick = function() {
-        if(confirm("Definitief verwijderen?")) {
-            updateStatus(document.getElementById('edit-row-id').value, "Verwijderd", sluit);
-        }
-    };
+    const delBtn = document.getElementById('modal-delete-btn');
+    if(delBtn) {
+        delBtn.onclick = function() {
+            if(confirm("Definitief verwijderen?")) {
+                updateStatus(document.getElementById('edit-row-id').value, "Verwijderd", sluit);
+            }
+        };
+    }
 }
 
 function updateStatus(rowId, newStatus, callback) {
@@ -469,7 +462,6 @@ function setupFilters() {
     if(s1) s1.addEventListener('change', () => renderCards(alleDefecten));
     if(s2) s2.addEventListener('change', () => renderCards(alleDefecten));
 }
-
 
 /* ===============================
    HELPERS
