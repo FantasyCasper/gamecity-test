@@ -71,13 +71,30 @@ function renderGrid() {
 
     let items = [...tasksCache];
 
-    // Sorteren
-    if (sortMode === 'prio')
-        items.sort((a, b) => Number(a.prioriteit) - Number(b.prioriteit));
-    else if (sortMode === 'date')
-        items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    else if (sortMode === 'oldest')
-        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    // --- NIEUWE SORTERING ---
+    items.sort((a, b) => {
+        // STAP 1: Eerst sorteren op Status (Open = 0, Opgelost = 1)
+        // Hierdoor komen alle open taken BOVENAAN en opgeloste ONDERAAN.
+        const statusA = (a.status === 'Open') ? 0 : 1;
+        const statusB = (b.status === 'Open') ? 0 : 1;
+
+        if (statusA !== statusB) {
+            return statusA - statusB; 
+        }
+
+        // STAP 2: Als de status gelijk is, sorteer dan op de gekozen filter (Prio/Datum)
+        if (sortMode === 'prio') {
+            // Let op: Prio 1 is hoger dan 3, dus oplopend sorteren
+            return Number(a.prioriteit) - Number(b.prioriteit);
+        } else if (sortMode === 'date') {
+            // Nieuwste eerst
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        } else if (sortMode === 'oldest') {
+            // Oudste eerst
+            return new Date(a.timestamp) - new Date(b.timestamp);
+        }
+        return 0;
+    });
 
     if (!items.length) {
         grid.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Geen taken gevonden.</p>';

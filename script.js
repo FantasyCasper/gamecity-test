@@ -42,10 +42,15 @@ let statusTimeout;
     }
 
     // B. Admin Panel Link (Toon als je Admin OF TD OF Users rechten hebt)
+    // 1. Manager Styling (TD mag wel styling houden voor groene knoppen etc.)
     if (ingelogdePermissies.admin || ingelogdePermissies.td || ingelogdePermissies.users) {
-        document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
         const container = document.querySelector('.container');
         if (container) container.classList.add('is-manager');
+    }
+
+    // 2. Admin Panel Knop (TD HIER VERWIJDERD -> Alleen Admin & Users)
+    if (ingelogdePermissies.admin || ingelogdePermissies.users) {
+        document.querySelectorAll('.admin-tab').forEach(link => link.classList.add('zichtbaar'));
     }
 
     // 4. Start modules
@@ -370,7 +375,7 @@ function toonStatus(bericht, type) {
     if (statusDiv) {
         clearTimeout(statusTimeout);
         statusDiv.style.display = 'none';
-        void statusDiv.offsetWidth; 
+        void statusDiv.offsetWidth;
 
         const icon = type === 'success' ? '✅ ' : '⚠️ ';
         statusDiv.textContent = icon + bericht;

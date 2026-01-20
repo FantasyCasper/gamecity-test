@@ -23,7 +23,7 @@ let localUsersCache = []; // Opslag voor optimistic UI gebruikers
     ingelogdePermissies = JSON.parse(rawPerms);
 
     // 2. Beveiliging: Heb je uberhaupt iets te zoeken hier?
-    if (!ingelogdePermissies.admin && !ingelogdePermissies.td && !ingelogdePermissies.users) {
+    if (!ingelogdePermissies.admin && !ingelogdePermissies.users) {
         alert("Geen toegang tot Admin Panel.");
         window.location.href = "../index.html";
         return;
