@@ -91,6 +91,60 @@ h2 {
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
+/* IN: kart-dashboard/style.css */
+
+/* --- NAVIGATIE WISSELAAR (Desktop vs Mobiel) --- */
+
+/* 1. Standaard (Desktop): Knoppen zichtbaar, Dropdown weg */
+.desktop-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+.mobile-nav-container {
+    display: none; /* Verberg dropdown op PC */
+}
+
+/* 2. Mobiel (< 768px): Knoppen weg, Dropdown zichtbaar */
+@media (max-width: 768px) {
+    .desktop-nav {
+        display: none; /* Verberg knoppen op mobiel */
+    }
+
+    .mobile-nav-container {
+        display: block; /* Toon dropdown */
+        margin-bottom: 25px;
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .mobile-nav-container label {
+        display: block;
+        color: #aaa;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .mobile-select {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1em;
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+        border-radius: 5px;
+        outline: none;
+    }
+    
+    .mobile-select:focus {
+        border-color: #28a745;
+    }
+}
+
 /* --- 4. STATISTIEK BOXEN --- */
 .stat-box-grid {
     display: grid;

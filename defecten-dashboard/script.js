@@ -1,7 +1,7 @@
 /* =======================================================
    UNIVERSEEL DEFECTEN DASHBOARD SCRIPT
    Locatie: kart-dashboard/script.js
-   Bevat: Datum Sortering, Parallel laden, Beveiligde Modal, Meervoud fix
+   Bevat: Datum Sortering, Parallel laden, Beveiligde Modal, Meervoud fix, Mobiele Navigatie
    ======================================================= */
 
 window.onerror = function (msg, url, line, col, error) {
@@ -40,7 +40,6 @@ const CONFIG = {
         settingKey: "totaal_minigolf",
         defaultTotaal: 18
     },
-
 };
 
 // Globale Variabelen
@@ -84,13 +83,17 @@ window.switchDashboard = function (type) {
     const titleEl = document.getElementById('dashboard-title');
     if (titleEl) titleEl.textContent = conf.titel;
 
-    // Knoppen status updaten
+    // A. Desktop Knoppen status updaten
     document.querySelectorAll('.defect-nav-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.type === type) {
             btn.classList.add('active');
         }
     });
+
+    // B. Mobiele Dropdown updaten (zodat hij gelijk loopt met desktop)
+    const mobileSelect = document.getElementById('mobile-type-select');
+    if (mobileSelect) mobileSelect.value = type;
 
     // URL update zonder refresh
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?type=' + type;
@@ -150,6 +153,24 @@ window.switchDashboard = function (type) {
         document.body.classList.add('is-manager');
     }
 
+    // --- NIEUW: NAVIGATIE LISTENERS (Desktop & Mobiel) ---
+    
+    // 1. Desktop Knoppen
+    document.querySelectorAll('.defect-nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const type = e.target.dataset.type;
+            if(type) switchDashboard(type);
+        });
+    });
+
+    // 2. Mobiele Dropdown
+    const mobileSelect = document.getElementById('mobile-type-select');
+    if (mobileSelect) {
+        mobileSelect.addEventListener('change', (e) => {
+            switchDashboard(e.target.value);
+        });
+    }
+
     setupDefectForm();
     setupEditModal();
     setupFilters();
@@ -164,22 +185,6 @@ window.switchDashboard = function (type) {
 /* ===============================
    DEEL 3: DATA & UI UPDATES
    =============================== */
-
-// Oude functie voor losse updates (indien nodig)
-function haalInstellingenOp(key, fallback) {
-    TOTAAL_ITEMS = fallback;
-    callApi({ type: "GET_SETTINGS" })
-        .then(res => {
-            if (res.data && res.data[key]) {
-                TOTAAL_ITEMS = parseInt(res.data[key]);
-            }
-            laadDefectenDashboard();
-        })
-        .catch(err => {
-            console.warn("Instellingen niet geladen, gebruik fallback.", err);
-            laadDefectenDashboard();
-        });
-}
 
 function laadDefectenDashboard() {
     const payload = { type: "GET_OBJECT_DEFECTS", subType: ACTIVE_TYPE };
@@ -257,11 +262,8 @@ function renderCards(lijst) {
         return;
     }
 
-    // --- SORTERING AANGEPAST ---
-    // 1. Openstaande defecten eerst
-    // 2. Daarna sorteren op datum (Nieuwste eerst)
+    // --- SORTERING ---
     items.sort((a, b) => {
-        // Status check: Open komt voor alles wat niet Open is
         const statusA = (a.status === 'Open') ? 0 : 1;
         const statusB = (b.status === 'Open') ? 0 : 1;
 
@@ -269,8 +271,6 @@ function renderCards(lijst) {
             return statusA - statusB;
         }
 
-        // Datum check: Nieuwste tijdstip eerst
-        // (Zorg dat b - a wordt gedaan voor aflopende volgorde)
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
 
@@ -287,27 +287,20 @@ function renderCards(lijst) {
         const isVers = (Date.now() - new Date(d.timestamp).getTime() < 86400000); // 24 uur
         const isTD = ingelogdePermissies.td || ingelogdePermissies.admin;
 
-        // Potloodje tonen als: (Eigen melding & Open & <24u) OF (TD/Admin)
+        // Potloodje tonen
         if ((isEigenaar && d.status === "Open" && isVers) || isTD) {
             const jsonString = JSON.stringify(d).replace(/'/g, "&#39;");
             editKnopHtml = `<button class="edit-icon-btn" onclick='openEditModal(${jsonString})'>✎</button>`;
         }
 
         // Extra info (TD velden)
-        let statusColor = '#2ecc71'; // Groen (Aanwezig)
-
-        if (d.onderdelenStatus === 'Niet aanwezig') statusColor = '#dc3545'; // Rood
-
-        if (d.onderdelenStatus === 'Besteld') statusColor = '#e67e22'; // Oranje
-
-        if (d.onderdelenStatus === 'Niet nodig') statusColor = '#aaa'; // Grijs
-
-
+        let statusColor = '#2ecc71';
+        if (d.onderdelenStatus === 'Niet aanwezig') statusColor = '#dc3545';
+        if (d.onderdelenStatus === 'Besteld') statusColor = '#e67e22';
+        if (d.onderdelenStatus === 'Niet nodig') statusColor = '#aaa';
 
         let extraInfo = "";
-
         if (d.benodigdheden) extraInfo += `<div style="font-size:0.85em; color:#ffc107; margin-top:5px;">🛠️ Nodig: ${d.benodigdheden}</div>`;
-
         if (d.onderdelenStatus) extraInfo += `<div style="font-size:0.85em; color:${statusColor}; margin-top:2px;">📦 ${d.onderdelenStatus}</div>`;
 
         kaart.innerHTML = `
@@ -356,7 +349,6 @@ function setupDefectForm() {
         callApi(payload).then(() => {
             toonDefectStatus("Gemeld!", "success");
             form.reset();
-            // Gebruik switchDashboard om alles vers te herladen
             switchDashboard(ACTIVE_TYPE);
         }).catch(err => {
             toonDefectStatus(err.message, "error");
@@ -366,7 +358,6 @@ function setupDefectForm() {
     });
 }
 
-// AANGEPASTE VERSIE: openEditModal (Met Rechten Fixes)
 window.openEditModal = function (d) {
     document.getElementById('edit-row-id').value = d.rowId;
     document.getElementById('edit-kart-select').value = d.nummer;
@@ -385,10 +376,8 @@ window.openEditModal = function (d) {
     const resolveBtn = document.getElementById('modal-resolve-btn');
     const modalBox = document.getElementById('edit-modal');
 
-    // 1. TD Velden
     if (tdSec) tdSec.style.display = isTD ? 'block' : 'none';
 
-    // 2. Verwijder Knop (TD of Eigenaar<24u)
     if (delBtn) {
         if (isTD || (isEigenaar && isVers)) {
             delBtn.style.display = 'block';
@@ -397,12 +386,10 @@ window.openEditModal = function (d) {
         }
     }
 
-    // 3. Oplossen Knop (ALLEEN TD)
     if (resolveBtn) {
         resolveBtn.style.display = isTD ? 'block' : 'none';
     }
 
-    // 4. Modal Breedte
     if (modalBox) {
         if (isTD) modalBox.classList.add('wide-mode');
         else modalBox.classList.remove('wide-mode');

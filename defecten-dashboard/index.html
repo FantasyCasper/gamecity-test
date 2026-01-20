@@ -15,14 +15,21 @@
 
     <div class="container">
 
-        <div class="defect-nav">
-            <button class="defect-nav-btn" data-type="kart" onclick="switchDashboard('kart')">🏎️ Karts</button>
-            <button class="defect-nav-btn" data-type="lasergame" onclick="switchDashboard('lasergame')">🔫
-                Lasergame</button>
-            <button class="defect-nav-btn" data-type="prisonisland" onclick="switchDashboard('prisonisland')">🔑 Prison
-                Island</button>
-            <button class="defect-nav-btn" data-type="minigolf" onclick="switchDashboard('minigolf')">⛳
-                Minigolf</button>
+        <div class="defect-nav desktop-nav">
+            <button class="defect-nav-btn active" data-type="kart">🏎️ Karts</button>
+            <button class="defect-nav-btn" data-type="lasergame">🔫 Lasergame</button>
+            <button class="defect-nav-btn" data-type="prisonisland">🔑 Prison Island</button>
+            <button class="defect-nav-btn" data-type="minigolf">⛳ Minigolf</button>
+        </div>
+
+        <div class="mobile-nav-container">
+            <label for="mobile-type-select">Kies Activiteit:</label>
+            <select id="mobile-type-select" class="mobile-select">
+                <option value="kart">🏎️ Karts</option>
+                <option value="lasergame">🔫 Lasergame</option>
+                <option value="prisonisland">🔑 Prison Island</option>
+                <option value="minigolf">⛳ Minigolf</option>
+            </select>
         </div>
     </div>
 
