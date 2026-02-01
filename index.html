@@ -1,132 +1,19 @@
 <!DOCTYPE html>
 <html lang="nl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-</head>
-
-<body>
-
-    <button id="logout-button">Uitloggen</button>
-
-    <div class="container">
-        <div class="main-nav">
-            <button id="mobile-menu-toggle">☰ Menu</button>
-            <button class="main-tab-link active" data-tab="tab-algemeen">Home</button>
-            <button class="main-tab-link" data-tab="tab-checklists">Checklists</button>
-            <a href="technische-dienst/index.html" class="main-tab-link">TD Taken</a>
-            <a href="defecten-dashboard/index.html" class="main-tab-link" data-tab="tab-kart-dashboard">Defecten Dashboard</a>
-            <a href="admin/admin.html" id="admin-log-link" class="main-tab-link admin-tab">Admin Panel</a>
-        </div>
-
-        <div id="tab-algemeen" class="tab-content active">
-            <h1>Welkom, <span id="algemeen-welkom-naam">...</span>!</h2>
-                <ul>
-                    <li>Ga naar het "Checklists" tabblad om je taken te starten.</li>
-                    <li>Meld eventuele defecten aan via het "Defecten Dashboard" tabblad.</li>
-                    <li>Meld alle taken voor de TD via het "TD Taken" tabblad.</li>
-                </ul>
-
-                <div id="bijzonderheden-container">
-                    <h3>Bijzonderheden van Gisteren</h3>
-                    <table id="bijzonderheden-table">
-                        <thead>
-                            <tr>
-                                <th>Medewerker</th>
-                                <th>Activiteit</th>
-                                <th>Lijst</th>
-                                <th>Bijzonderheid</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bijzonderheden-body">
-                            <tr>
-                                <td colspan="4">Laden...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-        </div>
-
-        <div id="tab-checklists" class="tab-content">
-            <div class="user-info">
-                <div class="info-veld">
-                    <label for="activiteit-select">Kies activiteit:</label>
-                    <select id="activiteit-select">
-                        <option value="">-- Selecteer een activiteit --</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="status-message"></div>
-
-            <div class="checklist-section" id="sectie-openen">
-                <button class="collapsible">Checklist Openen</button>
-                <div class="content">
-
-                    <div id="progress-container-openen"
-                        style="display:none; margin: 10px 0; background-color: #222; padding: 10px; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span style="font-weight:bold; font-size:0.8em; color:#aaa;">Voortgang Openen:</span>
-                            <span id="progress-text-openen"
-                                style="font-weight:bold; color: #fff; font-size:0.8em;">0%</span>
-                        </div>
-                        <div style="background:#444; height:8px; border-radius:4px; overflow:hidden;">
-                            <div id="progress-bar-openen"
-                                style="width:0%; height:100%; background:#28a745; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-
-                    <ul id="lijst-openen"></ul>
-
-                    <label for="bijzonderheden-openen" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-openen" class="bijzonderheden-text" rows="3"
-                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
-
-                    <button class="submit-button" id="btn-openen" onclick="verstuurData('Checklist Openen')">Openen
-                        Voltooid & Verzenden</button>
-                </div>
-            </div>
-
-            <div class="checklist-section" id="sectie-sluiten">
-                <button class="collapsible">Checklist Sluiten</button>
-                <div class="content">
-
-                    <div id="progress-container-sluiten"
-                        style="display:none; margin: 10px 0; background-color: #222; padding: 10px; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span style="font-weight:bold; font-size:0.8em; color:#aaa;">Voortgang Sluiten:</span>
-                            <span id="progress-text-sluiten"
-                                style="font-weight:bold; color: #fff; font-size:0.8em;">0%</span>
-                        </div>
-                        <div style="background:#444; height:8px; border-radius:4px; overflow:hidden;">
-                            <div id="progress-bar-sluiten"
-                                style="width:0%; height:100%; background:#28a745; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-
-                    <ul id="lijst-sluiten"></ul>
-
-                    <label for="bijzonderheden-sluiten" class="bijzonderheden-label">Bijzonderheden:</label>
-                    <textarea id="bijzonderheden-sluiten" class="bijzonderheden-text" rows="3"
-                        placeholder="Typ hier eventuele opmerkingen..."></textarea>
-
-                    <button class="submit-button" id="btn-sluiten" onclick="verstuurData('Checklist Sluiten')">Sluiten
-                        Voltooid & Verzenden</button>
-                </div>
-            </div>
-        </div>
+    <title>Doorverwijzen...</title>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js');
-        }
-    </script>
-    <script src="script.js"></script>
-</body>
+        // De melding die de gebruiker te zien krijgt
+        alert("Je wordt nu doorverwezen naar de nieuwe website!");
 
+        // De daadwerkelijke doorverwijzing
+        window.location.href = "https://fantasycasper.nl/dashboard/";
+    </script>
+</head>
+<body>
+    <p>Als je niet automatisch wordt doorverwezen, <a href="https://fantasycasper.nl/dashboard/">klik dan hier</a>.</p>
+</body>
 </html>
